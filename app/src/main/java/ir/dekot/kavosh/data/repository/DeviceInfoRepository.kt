@@ -13,6 +13,7 @@ import ir.dekot.kavosh.data.model.components.SensorInfo
 import ir.dekot.kavosh.data.model.components.StorageInfo
 import ir.dekot.kavosh.data.model.components.SystemInfo
 import ir.dekot.kavosh.data.model.components.ThermalInfo
+import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.data.source.MemoryDataSource
 import ir.dekot.kavosh.data.source.NetworkDataSource
 import ir.dekot.kavosh.data.source.PowerDataSource
@@ -35,6 +36,8 @@ class DeviceInfoRepository @Inject constructor(
     // --- SettingsDataSource ---
     fun isFirstLaunch(): Boolean = settingsDataSource.isFirstLaunch()
     fun setFirstLaunchCompleted() = settingsDataSource.setFirstLaunchCompleted()
+    fun saveTheme(theme: Theme) = settingsDataSource.saveTheme(theme)
+    fun getTheme(): Theme = settingsDataSource.getTheme()
 
     // --- PowerDataSource ---
     fun getThermalInfo(): List<ThermalInfo> = powerDataSource.getThermalInfo()
@@ -61,7 +64,6 @@ class DeviceInfoRepository @Inject constructor(
     // --- NetworkDataSource ---
     fun getNetworkInfo(): NetworkInfo = networkDataSource.getNetworkInfo() // <-- متد جدید
     // StateFlow وضعیت هات‌اسپات را در معرض نمایش قرار می‌دهیم
-//    val isHotspotEnabled: StateFlow<Boolean> = networkDataSource.isHotspotEnabled
-
+//    val isHotspotEnabled: StateFlow<Boolean> = networkDataSource.isHotspotEnabled ...
 
 }

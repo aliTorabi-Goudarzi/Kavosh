@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import ir.dekot.kavosh.data.model.settings.Theme // <-- ایمپورت جدید
+import kotlinx.coroutines.flow.StateFlow // <-- ایمپورت جدید
 
 @HiltViewModel
 @RequiresApi(Build.VERSION_CODES.R)
@@ -39,7 +41,13 @@ class DeviceInfoViewModel @Inject constructor(
     private val _scanStatusText = MutableStateFlow("آماده برای اسکن...")
     val scanStatusText = _scanStatusText.asStateFlow()
 
+    private val _themeState = MutableStateFlow(Theme.SYSTEM)
+    val themeState: StateFlow<Theme> = _themeState.asStateFlow()
+
     init {
+        // در زمان ساخته شدن ViewModel، آخرین تم ذخیره شده را می‌خوانیم
+        _themeState.value = repository.getTheme()
+
         if (repository.isFirstLaunch()) {
             _currentScreen.value = Screen.Splash
         } else {
@@ -47,6 +55,23 @@ class DeviceInfoViewModel @Inject constructor(
         }
         // گوش دادن به تغییرات وضعیت هات‌اسپات
 
+    }
+
+    /**
+     * این متد زمانی فراخوانی می‌شود که کاربر تم جدیدی را انتخاب می‌کند.
+     */
+    fun onThemeSelected(theme: Theme) {
+        // 1. تم جدید را در StateFlow قرار می‌دهیم تا UI آپدیت شود
+        _themeState.value = theme
+        // 2. انتخاب جدید کاربر را برای استفاده در آینده ذخیره می‌کنیم
+        viewModelScope.launch {
+            repository.saveTheme(theme)
+        }
+    }
+
+    // متد جدید برای ناوبری به صفحه تنظیمات
+    fun navigateToSettings() {
+        _currentScreen.value = Screen.Settings
     }
 
     fun loadDataForNonFirstLaunch(activity: Activity) {

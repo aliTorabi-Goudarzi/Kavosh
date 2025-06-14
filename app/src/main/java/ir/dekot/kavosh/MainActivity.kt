@@ -13,7 +13,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 import ir.dekot.kavosh.ui.screen.DeviceInspectorApp
-import ir.dekot.kavosh.ui.theme.KavoshTheme
 import ir.dekot.kavosh.ui.viewmodel.BatteryViewModel
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.SocViewModel
@@ -39,7 +38,6 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            KavoshTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -56,6 +54,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
+
 
 
