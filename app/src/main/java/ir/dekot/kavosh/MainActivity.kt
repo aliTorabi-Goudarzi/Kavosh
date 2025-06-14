@@ -25,8 +25,6 @@ import ir.dekot.kavosh.ui.viewmodel.SocViewModel
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    // دریافت ViewModelها به صورت خودکار توسط Hilt با استفاده از by viewModels()
-    // دیگر نیازی به Factory یا ViewModelProvider دستی نیست.
     private val deviceInfoViewModel: DeviceInfoViewModel by viewModels()
     private val batteryViewModel: BatteryViewModel by viewModels()
     private val socViewModel: SocViewModel by viewModels()
@@ -35,6 +33,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // در اینجا، پس از ساخت ViewModel، داده‌ها را برای اجراهای بعدی بارگذاری می‌کنیم
+        // ViewModel در init خود دیگر این کار را انجام نمی‌دهد.
+        deviceInfoViewModel.loadDataForNonFirstLaunch(this)
+
         enableEdgeToEdge()
         setContent {
             KavoshTheme {
@@ -42,8 +44,14 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // پاس دادن ViewModelهای دریافت شده از Hilt به اپلیکیشن
-                    DeviceInspectorApp(deviceInfoViewModel, batteryViewModel, socViewModel)
+                    // در اینجا یک لامبدا برای startScan می‌سازیم که Activity را پاس دهد
+                    DeviceInspectorApp(
+                        deviceInfoViewModel = deviceInfoViewModel,
+                        batteryViewModel = batteryViewModel,
+                        socViewModel = socViewModel,
+                        // به این ترتیب، UI از وجود Activity بی‌خبر می‌ماند
+                        onStartScan = { deviceInfoViewModel.startScan(this) }
+                    )
                 }
             }
         }

@@ -28,14 +28,17 @@ import ir.dekot.kavosh.ui.viewmodel.SocViewModel
 fun DeviceInspectorApp(
     deviceInfoViewModel: DeviceInfoViewModel,
     batteryViewModel: BatteryViewModel, // پارامتر جدید
-    socViewModel: SocViewModel // پارامتر جدید
+    socViewModel: SocViewModel, // پارامتر جدید
+    onStartScan: () -> Unit // <-- پارامتر جدید برای لامبدا
+
 ) {
     val currentScreen by deviceInfoViewModel.currentScreen.collectAsState()
 
     Crossfade(targetState = currentScreen, label = "screen_fade") { screen ->
         when (screen) {
             is Screen.Splash -> SplashScreen(
-                onStartScan = { deviceInfoViewModel.startScan() },
+                // لامبدا را مستقیماً به صفحه اسپلش پاس می‌دهیم
+                onStartScan = onStartScan,
                 viewModel = deviceInfoViewModel
             )
 

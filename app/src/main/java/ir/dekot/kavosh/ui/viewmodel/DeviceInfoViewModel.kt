@@ -1,10 +1,11 @@
 package ir.dekot.kavosh.ui.viewmodel
 
-import android.content.Context
+import android.app.Activity
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.ThermalInfo
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
@@ -12,14 +13,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
-@HiltViewModel // <-- انوتیشن برای شناسایی ViewModel توسط Hilt
+@HiltViewModel
 @RequiresApi(Build.VERSION_CODES.R)
-class DeviceInfoViewModel @Inject constructor (private val repository: DeviceInfoRepository) : ViewModel() {
+class DeviceInfoViewModel @Inject constructor(
+    private val repository: DeviceInfoRepository
+) : ViewModel() {
 
-    // --- State های اصلی (فقط اطلاعات استاتیک و ناوبری) ---
     private val _deviceInfo = MutableStateFlow(DeviceInfo())
     val deviceInfo = _deviceInfo.asStateFlow()
 
@@ -38,18 +39,21 @@ class DeviceInfoViewModel @Inject constructor (private val repository: DeviceInf
     private val _scanStatusText = MutableStateFlow("آماده برای اسکن...")
     val scanStatusText = _scanStatusText.asStateFlow()
 
-
-    // --- توابع ---
     init {
         if (repository.isFirstLaunch()) {
             _currentScreen.value = Screen.Splash
         } else {
             _currentScreen.value = Screen.Dashboard
-            loadDataWithoutAnimation()
         }
     }
 
-    fun startScan() {
+    fun loadDataForNonFirstLaunch(activity: Activity) {
+        if (!repository.isFirstLaunch()) {
+            loadDataWithoutAnimation(activity)
+        }
+    }
+
+    fun startScan(activity: Activity) {
         if (_isScanning.value) return
 
         viewModelScope.launch {
@@ -73,12 +77,12 @@ class DeviceInfoViewModel @Inject constructor (private val repository: DeviceInf
             val dataLoadingJob = launch {
                 _deviceInfo.value = DeviceInfo(
                     cpu = repository.getCpuInfo(),
-                    gpu = repository.getGpuInfo(),
+                    gpu = repository.getGpuInfo(activity),
                     ram = repository.getRamInfo(),
                     storage = repository.getStorageInfo(),
-                    display = repository.getDisplayInfo(),
+                    display = repository.getDisplayInfo(activity), // <-- Activity را اینجا پاس می‌دهیم
                     system = repository.getSystemInfo(),
-                    sensors = repository.getSensorInfo(),
+                    sensors = repository.getSensorInfo(activity), // <-- Activity را اینجا پاس می‌دهیم
                     thermal = repository.getThermalInfo()
                 )
             }
@@ -92,9 +96,24 @@ class DeviceInfoViewModel @Inject constructor (private val repository: DeviceInf
         }
     }
 
-    fun navigateToDetail(category: InfoCategory, context: Context) {
+    private fun loadDataWithoutAnimation(activity: Activity) {
+        viewModelScope.launch {
+            _deviceInfo.value = DeviceInfo(
+                cpu = repository.getCpuInfo(),
+                gpu = repository.getGpuInfo(activity),
+                ram = repository.getRamInfo(),
+                storage = repository.getStorageInfo(),
+                display = repository.getDisplayInfo(activity), // <-- Activity را اینجا پاس می‌دهیم
+                system = repository.getSystemInfo(),
+                sensors = repository.getSensorInfo(activity), // <-- Activity را اینجا پاس می‌دهیم
+                thermal = repository.getThermalInfo()
+            )
+        }
+    }
+
+    fun navigateToDetail(category: InfoCategory) {
         if (category == InfoCategory.THERMAL) {
-            prepareThermalDetails(context)
+            prepareThermalDetails()
         }
         _currentScreen.value = Screen.Detail(category)
     }
@@ -103,24 +122,9 @@ class DeviceInfoViewModel @Inject constructor (private val repository: DeviceInf
         _currentScreen.value = Screen.Dashboard
     }
 
-    private fun loadDataWithoutAnimation() {
-        viewModelScope.launch {
-            _deviceInfo.value = DeviceInfo(
-                cpu = repository.getCpuInfo(),
-                gpu = repository.getGpuInfo(),
-                ram = repository.getRamInfo(),
-                storage = repository.getStorageInfo(),
-                display = repository.getDisplayInfo(),
-                system = repository.getSystemInfo(),
-                sensors = repository.getSensorInfo(),
-                thermal = repository.getThermalInfo()
-            )
-        }
-    }
-
-    private fun prepareThermalDetails(context: Context) {
+    private fun prepareThermalDetails() {
         val combinedList = mutableListOf<ThermalInfo>()
-        repository.getInitialBatteryInfo(context)?.let { batteryData ->
+        repository.getInitialBatteryInfo()?.let { batteryData ->
             if (batteryData.temperature.isNotBlank()) {
                 combinedList.add(
                     ThermalInfo(
