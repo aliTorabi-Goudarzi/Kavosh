@@ -1,6 +1,9 @@
 package ir.dekot.kavosh.ui.screen.infoCards
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,27 +27,43 @@ fun CpuInfoCard(info: CpuInfo, liveFrequencies: List<String>) {
         InfoRow("تعداد هسته‌ها", info.coreCount.toString())
 
         SectionTitleInCard(title = "سرعت هسته‌ها (لحظه‌ای)")
-        val freqsToShow = if (liveFrequencies.isNotEmpty()) liveFrequencies else info.liveFrequencies
 
-        freqsToShow.forEachIndexed { index, freq ->
-            InfoRow("هسته $index", freq)
+        // لیست فرکانس‌های زنده را به صورت تکه‌های دوتایی درمی‌آوریم
+        val freqsToShow = (if (liveFrequencies.isNotEmpty()) liveFrequencies else info.liveFrequencies)
+            .mapIndexed { index, freq -> Pair(index, freq) }
+            .chunked(2)
 
-            // محاسبه درصد پیشرفت برای هر هسته
-            val maxFreq = info.maxFrequenciesKhz.getOrElse(index) { 0L }
-            val currentFreq = freq.removeSuffix(" MHz").trim().toLongOrNull() ?: 0L
-            val progress = if (maxFreq > 0) (currentFreq * 1000) / maxFreq.toFloat() else 0f
-            val animatedProgress by animateFloatAsState(targetValue = progress, label = "CpuProgress$index")
+        // برای هر تکه دوتایی، یک ردیف (Row) ایجاد می‌کنیم
+        freqsToShow.forEach { rowItems ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // برای هر آیتم در ردیف، یک ستون (Column) با وزن برابر ایجاد می‌کنیم
+                rowItems.forEach { (index, freq) ->
+                    Column(modifier = Modifier.weight(1f)) {
+                        InfoRow("هسته $index", freq)
 
-            // اضافه کردن نوار پیشرفت برای هر هسته
-            LinearProgressIndicator(
-                progress = { animatedProgress },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(5.dp)
-            )
+                        val maxFreq = info.maxFrequenciesKhz.getOrElse(index) { 0L }
+                        val currentFreq = freq.removeSuffix(" MHz").trim().toLongOrNull() ?: 0L
+                        val progress = if (maxFreq > 0) (currentFreq * 1000) / maxFreq.toFloat() else 0f
+                        val animatedProgress by animateFloatAsState(targetValue = progress, label = "CpuProgress$index")
+
+                        LinearProgressIndicator(
+                            progress = { animatedProgress },
+                            modifier = Modifier.fillMaxWidth().height(5.dp)
+                        )
+                    }
+                }
+                // اگر ردیف فقط یک آیتم داشت (در تعداد فرد هسته‌ها)، یک فضای خالی با وزن برابر اضافه می‌کنیم
+                if (rowItems.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
             Spacer(modifier = Modifier.height(8.dp))
         }
 
+        Spacer(modifier = Modifier.height(8.dp)) // یک فاصله اضافه قبل از بخش بعدی
         SectionTitleInCard(title = "بازه سرعت کلاک")
         info.clockSpeedRanges.forEach { range ->
             val parts = range.split(":")

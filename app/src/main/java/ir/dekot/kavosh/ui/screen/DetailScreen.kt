@@ -3,6 +3,7 @@ package ir.dekot.kavosh.ui.screen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,10 +17,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -30,10 +28,9 @@ import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import ir.dekot.kavosh.ui.viewmodel.SocViewModel
 import ir.dekot.kavosh.util.InfoFormatter
 import ir.dekot.kavosh.util.shareText
-import ir.dekot.kavosh.ui.screen.infoCards.CameraInfoCard // <-- ایمپورت کارت جدید
 
-@RequiresApi(Build.VERSION_CODES.R)
 @OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.R)
 @Composable
 fun DetailScreen(
     category: InfoCategory,
@@ -49,6 +46,8 @@ fun DetailScreen(
     val liveGpuLoad by socViewModel.liveGpuLoad.collectAsState()
 
     val context = LocalContext.current
+
+    // کدهای مربوط به وضعیت و افکت انیمیشن به طور کامل حذف شدند
 
     DisposableEffect(key1 = category) {
         when (category) {
@@ -69,21 +68,10 @@ fun DetailScreen(
         topBar = {
             TopAppBar(
                 title = { Text(getCategoryTitle(category)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                // اضافه کردن دکمه اشتراک‌گذاری به نوار بالا
+                navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } },
                 actions = {
                     IconButton(onClick = {
-                        // ۱. فرمت کردن اطلاعات به صورت متن
-                        val textToShare = InfoFormatter.formatInfoForSharing(
-                            category = category,
-                            deviceInfo = deviceInfo,
-                            batteryInfo = batteryInfo
-                        )
-                        // ۲. اجرای تابع کمکی برای اشتراک‌گذاری
+                        val textToShare = InfoFormatter.formatInfoForSharing(category, deviceInfo, batteryInfo)
                         shareText(context, textToShare)
                     }) {
                         Icon(Icons.Default.Share, contentDescription = "Share Info")
@@ -92,12 +80,14 @@ fun DetailScreen(
             )
         }
     ) { paddingValues ->
+        // LazyColumn حالا بدون هیچ‌گونه انیمیشن والد نمایش داده می‌شود
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             when (category) {
                 InfoCategory.SOC -> {
@@ -105,37 +95,33 @@ fun DetailScreen(
                     item { GpuInfoCard(deviceInfo.gpu, liveGpuLoad) }
                     item { RamInfoCard(deviceInfo.ram) }
                 }
-
                 InfoCategory.DEVICE -> {
                     item { DisplayInfoCard(deviceInfo.display) }
                     item { StorageInfoCard(deviceInfo.storage) }
                 }
-
                 InfoCategory.SYSTEM -> {
                     item { SystemInfoCard(deviceInfo.system) }
                 }
-
                 InfoCategory.BATTERY -> {
                     item { BatteryInfoCard(batteryInfo) }
                 }
-
                 InfoCategory.SENSORS -> {
-                    items(deviceInfo.sensors) { sensor -> SensorInfoCard(info = sensor) }
+                    items(deviceInfo.sensors, key = { it.name }) { sensor ->
+                        SensorInfoCard(info = sensor)
+                    }
                 }
-
                 InfoCategory.THERMAL -> {
-                    items(thermalDetails) { thermalInfo -> ThermalInfoCard(info = thermalInfo) }
+                    items(thermalDetails, key = { it.type }) { thermalInfo ->
+                        ThermalInfoCard(info = thermalInfo)
+                    }
                 }
-
-                InfoCategory.NETWORK -> {
-                    item { NetworkInfoCard(deviceInfo.network) }
-                }
-
                 InfoCategory.CAMERA -> {
-                    // برای هر دوربین موجود در لیست، یک کارت جداگانه نمایش می‌دهیم
-                    items(deviceInfo.cameras) { camera ->
+                    items(deviceInfo.cameras, key = { it.id }) { camera ->
                         CameraInfoCard(info = camera)
                     }
+                }
+                InfoCategory.NETWORK -> {
+                    item { NetworkInfoCard(deviceInfo.network) }
                 }
             }
         }
