@@ -4,13 +4,20 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import ir.dekot.kavosh.data.model.components.BatteryInfo
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class BatteryViewModel(private val repository: DeviceInfoRepository) : ViewModel() {
+
+@HiltViewModel // <-- انوتیشن برای شناسایی ViewModel توسط Hilt
+@RequiresApi(Build.VERSION_CODES.R)
+class BatteryViewModel @Inject constructor (private val repository: DeviceInfoRepository) : ViewModel() {
 
     private val _batteryInfo = MutableStateFlow(BatteryInfo())
     val batteryInfo = _batteryInfo.asStateFlow()

@@ -12,9 +12,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
+@HiltViewModel // <-- انوتیشن برای شناسایی ViewModel توسط Hilt
 @RequiresApi(Build.VERSION_CODES.R)
-class DeviceInfoViewModel(private val repository: DeviceInfoRepository) : ViewModel() {
+class DeviceInfoViewModel @Inject constructor (private val repository: DeviceInfoRepository) : ViewModel() {
 
     // --- State های اصلی (فقط اطلاعات استاتیک و ناوبری) ---
     private val _deviceInfo = MutableStateFlow(DeviceInfo())

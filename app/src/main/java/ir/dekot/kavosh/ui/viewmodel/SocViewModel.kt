@@ -1,5 +1,7 @@
 package ir.dekot.kavosh.ui.viewmodel
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
@@ -8,8 +10,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class SocViewModel(private val repository: DeviceInfoRepository) : ViewModel() {
+@HiltViewModel // <-- انوتیشن برای شناسایی ViewModel توسط Hilt
+@RequiresApi(Build.VERSION_CODES.R)
+class SocViewModel @Inject constructor (private val repository: DeviceInfoRepository) : ViewModel() {
 
     private val _liveCpuFrequencies = MutableStateFlow<List<String>>(emptyList())
     val liveCpuFrequencies = _liveCpuFrequencies.asStateFlow()
