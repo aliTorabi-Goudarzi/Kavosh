@@ -20,7 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import ir.dekot.kavosh.ui.screen.dashboard.DashboardItem
+import androidx.compose.material.icons.filled.NetworkWifi
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 
 // --- صفحه داشبورد (Dashboard) ---
@@ -33,11 +33,8 @@ fun DashboardScreen(onCategoryClick: (InfoCategory, Context) -> Unit) { // ور�
         DashboardItem(InfoCategory.SYSTEM, "سیستم", Icons.Default.Android),
         DashboardItem(InfoCategory.BATTERY, "باتری", Icons.Default.BatteryFull),
         DashboardItem(InfoCategory.SENSORS, "سنسورها", Icons.Default.Sensors),
-        DashboardItem(
-            InfoCategory.THERMAL,
-            "دما",
-            Icons.Default.Thermostat
-        ) // <-- این خط را اضافه کنید
+        DashboardItem(InfoCategory.THERMAL, "دما", Icons.Default.Thermostat), // <-- این خط را اضافه کنید
+        DashboardItem(InfoCategory.NETWORK, "شبکه", Icons.Default.NetworkWifi) // <-- آیتم جدید
     )
 
 

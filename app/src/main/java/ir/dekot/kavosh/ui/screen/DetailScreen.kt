@@ -31,6 +31,7 @@ import ir.dekot.kavosh.ui.screen.infoCards.SensorInfoCard
 import ir.dekot.kavosh.ui.screen.infoCards.StorageInfoCard
 import ir.dekot.kavosh.ui.screen.infoCards.SystemInfoCard
 import ir.dekot.kavosh.ui.screen.infoCards.ThermalInfoCard
+import ir.dekot.kavosh.ui.screen.infoCards.NetworkInfoCard
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import ir.dekot.kavosh.ui.viewmodel.BatteryViewModel
@@ -97,22 +98,31 @@ fun DetailScreen(
                     item { GpuInfoCard(deviceInfo.gpu, liveGpuLoad) }
                     item { RamInfoCard(deviceInfo.ram) }
                 }
+
                 InfoCategory.DEVICE -> {
                     item { DisplayInfoCard(deviceInfo.display) }
                     item { StorageInfoCard(deviceInfo.storage) }
                 }
+
                 InfoCategory.SYSTEM -> {
                     item { SystemInfoCard(deviceInfo.system) }
                 }
+
                 InfoCategory.BATTERY -> {
                     // حالا از state مربوط به BatteryViewModel استفاده می‌کند
                     item { BatteryInfoCard(batteryInfo) }
                 }
+
                 InfoCategory.SENSORS -> {
                     items(deviceInfo.sensors) { sensor -> SensorInfoCard(info = sensor) }
                 }
+
                 InfoCategory.THERMAL -> {
                     items(thermalDetails) { thermalInfo -> ThermalInfoCard(info = thermalInfo) }
+                }
+
+                InfoCategory.NETWORK -> {
+                    item { NetworkInfoCard(deviceInfo.network) } // <-- نمایش کارت جدید
                 }
             }
         }

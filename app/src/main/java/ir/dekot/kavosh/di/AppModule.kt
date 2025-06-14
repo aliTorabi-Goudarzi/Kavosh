@@ -20,19 +20,27 @@ object AppModule {
      */
     @Provides
     @Singleton
+    fun provideNetworkDataSource(@ApplicationContext context: Context): NetworkDataSource {
+        return NetworkDataSource(context)
+    }
+
+    @Provides
+    @Singleton
     fun provideDeviceInfoRepository(
         powerDataSource: PowerDataSource,
         socDataSource: SocDataSource,
         systemDataSource: SystemDataSource,
         memoryDataSource: MemoryDataSource,
-        settingsDataSource: SettingsDataSource
+        settingsDataSource: SettingsDataSource,
+        networkDataSource: NetworkDataSource // <-- اضافه کردن به پارامترها
     ): DeviceInfoRepository {
         return DeviceInfoRepository(
             powerDataSource,
             socDataSource,
             systemDataSource,
             memoryDataSource,
-            settingsDataSource
+            settingsDataSource,
+            networkDataSource // <-- پاس دادن به constructor
         )
     }
 

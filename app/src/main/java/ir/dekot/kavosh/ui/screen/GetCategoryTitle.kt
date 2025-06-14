@@ -10,5 +10,6 @@ fun getCategoryTitle(category: InfoCategory): String {
         InfoCategory.BATTERY -> "باتری"
         InfoCategory.SENSORS -> "سنسورها"
         InfoCategory.THERMAL -> "دما (Thermal)" // <-- این خط را اضافه کنید
+        InfoCategory.NETWORK -> "اطلاعات شبکه" // <-- عنوان جدید
     }
 }

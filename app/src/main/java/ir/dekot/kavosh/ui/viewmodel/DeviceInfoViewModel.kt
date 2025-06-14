@@ -45,6 +45,8 @@ class DeviceInfoViewModel @Inject constructor(
         } else {
             _currentScreen.value = Screen.Dashboard
         }
+        // گوش دادن به تغییرات وضعیت هات‌اسپات
+
     }
 
     fun loadDataForNonFirstLaunch(activity: Activity) {
@@ -83,7 +85,8 @@ class DeviceInfoViewModel @Inject constructor(
                     display = repository.getDisplayInfo(activity), // <-- Activity را اینجا پاس می‌دهیم
                     system = repository.getSystemInfo(),
                     sensors = repository.getSensorInfo(activity), // <-- Activity را اینجا پاس می‌دهیم
-                    thermal = repository.getThermalInfo()
+                    thermal = repository.getThermalInfo(),
+                    network = repository.getNetworkInfo() // <-- این خط را اضافه کنید
                 )
             }
 
