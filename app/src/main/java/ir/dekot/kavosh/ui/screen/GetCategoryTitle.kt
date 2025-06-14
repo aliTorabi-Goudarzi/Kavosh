@@ -11,5 +11,6 @@ fun getCategoryTitle(category: InfoCategory): String {
         InfoCategory.SENSORS -> "سنسورها"
         InfoCategory.THERMAL -> "دما (Thermal)" // <-- این خط را اضافه کنید
         InfoCategory.NETWORK -> "اطلاعات شبکه" // <-- عنوان جدید
+        InfoCategory.CAMERA -> "اطلاعات دوربین" // <-- عنوان جدید
     }
 }

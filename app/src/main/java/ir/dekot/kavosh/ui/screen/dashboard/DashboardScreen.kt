@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
+import androidx.compose.material.icons.filled.PhotoCamera // <-- ایمپورت آیکون جدید
 
 // امضای تابع را برای دریافت یک لامبدا برای ناوبری به تنظیمات تغییر می‌دهیم
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,7 +40,8 @@ fun DashboardScreen(
             DashboardItem(InfoCategory.BATTERY, "باتری", Icons.Default.BatteryFull),
             DashboardItem(InfoCategory.SENSORS, "سنسورها", Icons.Default.Sensors),
             DashboardItem(InfoCategory.THERMAL, "دما", Icons.Default.Thermostat),
-            DashboardItem(InfoCategory.NETWORK, "شبکه", Icons.Default.NetworkWifi)
+            DashboardItem(InfoCategory.NETWORK, "شبکه", Icons.Default.NetworkWifi),
+            DashboardItem(InfoCategory.CAMERA, "دوربین", Icons.Default.PhotoCamera) // <-- آیتم جدید
         )
 
         LazyVerticalGrid(

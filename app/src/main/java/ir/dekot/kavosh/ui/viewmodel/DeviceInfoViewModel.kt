@@ -111,7 +111,8 @@ class DeviceInfoViewModel @Inject constructor(
                     system = repository.getSystemInfo(),
                     sensors = repository.getSensorInfo(activity), // <-- Activity را اینجا پاس می‌دهیم
                     thermal = repository.getThermalInfo(),
-                    network = repository.getNetworkInfo() // <-- این خط را اضافه کنید
+                    network = repository.getNetworkInfo(), //
+                    cameras = repository.getCameraInfoList() // <-- این خط را اضافه کنید// <-- این خط را اضافه کنید
                 )
             }
 
@@ -134,7 +135,8 @@ class DeviceInfoViewModel @Inject constructor(
                 display = repository.getDisplayInfo(activity), // <-- Activity را اینجا پاس می‌دهیم
                 system = repository.getSystemInfo(),
                 sensors = repository.getSensorInfo(activity), // <-- Activity را اینجا پاس می‌دهیم
-                thermal = repository.getThermalInfo()
+                thermal = repository.getThermalInfo(),
+                cameras = repository.getCameraInfoList() // <-- این خط را اضافه کنید
             )
         }
     }

@@ -30,6 +30,7 @@ object InfoFormatter {
                 builder.appendLine("کل حافظه: ${deviceInfo.ram.total}")
                 builder.appendLine("حافظه در دسترس: ${deviceInfo.ram.available}")
             }
+
             InfoCategory.DEVICE -> {
                 builder.appendLine("--- صفحه نمایش ---")
                 builder.appendLine("رزولوشن: ${deviceInfo.display.resolution}")
@@ -39,6 +40,7 @@ object InfoFormatter {
                 builder.appendLine("کل حافظه: ${deviceInfo.storage.total}")
                 builder.appendLine("حافظه در دسترس: ${deviceInfo.storage.available}")
             }
+
             InfoCategory.SYSTEM -> {
                 builder.appendLine("--- سیستم عامل ---")
                 builder.appendLine("نسخه اندروید: ${deviceInfo.system.androidVersion}")
@@ -46,6 +48,7 @@ object InfoFormatter {
                 builder.appendLine("بیلد نامبر: ${deviceInfo.system.buildNumber}")
                 builder.appendLine("وضعیت روت: ${if (deviceInfo.system.isRooted) "روت شده" else "روت نشده"}")
             }
+
             InfoCategory.BATTERY -> {
                 builder.appendLine("--- باتری ---")
                 builder.appendLine("سلامت: ${batteryInfo.health}")
@@ -55,18 +58,21 @@ object InfoFormatter {
                 builder.appendLine("دما: ${batteryInfo.temperature}")
                 builder.appendLine("ولتاژ: ${batteryInfo.voltage}")
             }
+
             InfoCategory.SENSORS -> {
                 builder.appendLine("--- سنسورها ---")
                 deviceInfo.sensors.forEach { sensor ->
                     builder.appendLine("- ${sensor.name} (${sensor.vendor})")
                 }
             }
+
             InfoCategory.THERMAL -> {
                 builder.appendLine("--- دما (Thermal) ---")
                 deviceInfo.thermal.forEach { thermal ->
                     builder.appendLine("${thermal.type}: ${thermal.temperature}")
                 }
             }
+
             InfoCategory.NETWORK -> {
                 builder.appendLine("--- شبکه ---")
                 builder.appendLine("نوع اتصال: ${deviceInfo.network.networkType}")
@@ -77,9 +83,26 @@ object InfoFormatter {
                     builder.appendLine("DNS 1: ${deviceInfo.network.dns1}")
                 }
             }
-        }
-        builder.appendLine("\n\nارسال شده توسط اپلیکیشن کاوش")
-        return builder.toString()
+            InfoCategory.CAMERA -> {
+                builder.appendLine("--- اطلاعات دوربین ---")
+                if (deviceInfo.cameras.isEmpty()) {
+                    builder.appendLine("دوربینی یافت نشد یا دسترسی ممکن نیست.")
+                } else {
+                    // به ازای هر دوربین، اطلاعات آن را به متن اضافه می‌کنیم
+                    deviceInfo.cameras.forEach { camera ->
+                        builder.appendLine("\n[ ${camera.name} ]")
+                        builder.appendLine("  مگاپیکسل: ${camera.megapixels}")
+                        builder.appendLine("  حداکثر رزولوشن: ${camera.maxResolution}")
+                        builder.appendLine("  فلش: ${if (camera.hasFlash) "دارد" else "ندارد"}")
+                        builder.appendLine("  دیافراگم‌ها: ${camera.apertures}")
+                        builder.appendLine("  فاصله کانونی: ${camera.focalLengths}")
+                        builder.appendLine("  اندازه سنسور: ${camera.sensorSize}")
+                    }
+                }
+            }
     }
+    builder.appendLine("\n\nارسال شده توسط اپلیکیشن کاوش")
+    return builder.toString()
+}
 }
 

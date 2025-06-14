@@ -30,6 +30,7 @@ import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import ir.dekot.kavosh.ui.viewmodel.SocViewModel
 import ir.dekot.kavosh.util.InfoFormatter
 import ir.dekot.kavosh.util.shareText
+import ir.dekot.kavosh.ui.screen.infoCards.CameraInfoCard // <-- ایمپورت کارت جدید
 
 @RequiresApi(Build.VERSION_CODES.R)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -104,24 +105,37 @@ fun DetailScreen(
                     item { GpuInfoCard(deviceInfo.gpu, liveGpuLoad) }
                     item { RamInfoCard(deviceInfo.ram) }
                 }
+
                 InfoCategory.DEVICE -> {
                     item { DisplayInfoCard(deviceInfo.display) }
                     item { StorageInfoCard(deviceInfo.storage) }
                 }
+
                 InfoCategory.SYSTEM -> {
                     item { SystemInfoCard(deviceInfo.system) }
                 }
+
                 InfoCategory.BATTERY -> {
                     item { BatteryInfoCard(batteryInfo) }
                 }
+
                 InfoCategory.SENSORS -> {
                     items(deviceInfo.sensors) { sensor -> SensorInfoCard(info = sensor) }
                 }
+
                 InfoCategory.THERMAL -> {
                     items(thermalDetails) { thermalInfo -> ThermalInfoCard(info = thermalInfo) }
                 }
+
                 InfoCategory.NETWORK -> {
                     item { NetworkInfoCard(deviceInfo.network) }
+                }
+
+                InfoCategory.CAMERA -> {
+                    // برای هر دوربین موجود در لیست، یک کارت جداگانه نمایش می‌دهیم
+                    items(deviceInfo.cameras) { camera ->
+                        CameraInfoCard(info = camera)
+                    }
                 }
             }
         }

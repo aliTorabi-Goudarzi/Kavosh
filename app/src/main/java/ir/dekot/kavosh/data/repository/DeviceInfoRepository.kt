@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import androidx.annotation.RequiresApi
 import ir.dekot.kavosh.data.model.components.BatteryInfo
+import ir.dekot.kavosh.data.model.components.CameraInfo
 import ir.dekot.kavosh.data.model.components.CpuInfo
 import ir.dekot.kavosh.data.model.components.DisplayInfo
 import ir.dekot.kavosh.data.model.components.GpuInfo
@@ -14,6 +15,7 @@ import ir.dekot.kavosh.data.model.components.StorageInfo
 import ir.dekot.kavosh.data.model.components.SystemInfo
 import ir.dekot.kavosh.data.model.components.ThermalInfo
 import ir.dekot.kavosh.data.model.settings.Theme
+import ir.dekot.kavosh.data.source.CameraDataSource
 import ir.dekot.kavosh.data.source.MemoryDataSource
 import ir.dekot.kavosh.data.source.NetworkDataSource
 import ir.dekot.kavosh.data.source.PowerDataSource
@@ -30,7 +32,8 @@ class DeviceInfoRepository @Inject constructor(
     private val systemDataSource: SystemDataSource,
     private val memoryDataSource: MemoryDataSource,
     private val settingsDataSource: SettingsDataSource,
-    private val networkDataSource: NetworkDataSource // <-- تزریق سورس جدید
+    private val networkDataSource: NetworkDataSource, // <-- تزریق سورس جدید
+    private val cameraDataSource: CameraDataSource // <-- تزریق سورس جدید
 ) {
 
     // --- SettingsDataSource ---
@@ -65,5 +68,8 @@ class DeviceInfoRepository @Inject constructor(
     fun getNetworkInfo(): NetworkInfo = networkDataSource.getNetworkInfo() // <-- متد جدید
     // StateFlow وضعیت هات‌اسپات را در معرض نمایش قرار می‌دهیم
 //    val isHotspotEnabled: StateFlow<Boolean> = networkDataSource.isHotspotEnabled ...
+
+    // --- CameraDataSource ---
+    fun getCameraInfoList(): List<CameraInfo> = cameraDataSource.getCameraInfoList() // <-- متد جدید
 
 }

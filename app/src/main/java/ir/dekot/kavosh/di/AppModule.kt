@@ -26,13 +26,20 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideCameraDataSource(@ApplicationContext context: Context): CameraDataSource {
+        return CameraDataSource(context)
+    }
+
+    @Provides
+    @Singleton
     fun provideDeviceInfoRepository(
         powerDataSource: PowerDataSource,
         socDataSource: SocDataSource,
         systemDataSource: SystemDataSource,
         memoryDataSource: MemoryDataSource,
         settingsDataSource: SettingsDataSource,
-        networkDataSource: NetworkDataSource // <-- اضافه کردن به پارامترها
+        networkDataSource: NetworkDataSource, // <-- اضافه کردن به پارامترها
+        cameraDataSource: CameraDataSource // <-- اضافه کردن به پارامترها
     ): DeviceInfoRepository {
         return DeviceInfoRepository(
             powerDataSource,
@@ -40,9 +47,11 @@ object AppModule {
             systemDataSource,
             memoryDataSource,
             settingsDataSource,
-            networkDataSource // <-- پاس دادن به constructor
+            networkDataSource, // <-- پاس دادن به constructor
+            cameraDataSource // <-- پاس دادن به constructor
         )
     }
+
 
     @Provides
     @Singleton
