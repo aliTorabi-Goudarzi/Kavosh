@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.NetworkWifi
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Thermostat
@@ -20,37 +21,30 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.filled.NetworkWifi
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 
-// --- صفحه داشبورد (Dashboard) ---
 @Composable
-fun DashboardScreen(onCategoryClick: (InfoCategory, Context) -> Unit) { // ورودی تابع را تغییر دهید
-    val context = LocalContext.current // context را اینجا بگیرید
+fun DashboardScreen(onCategoryClick: (InfoCategory, Context) -> Unit) {
+    val context = LocalContext.current
     val categories = listOf(
         DashboardItem(InfoCategory.SOC, "پردازنده", Icons.Default.Memory),
         DashboardItem(InfoCategory.DEVICE, "دستگاه", Icons.Default.PhoneAndroid),
         DashboardItem(InfoCategory.SYSTEM, "سیستم", Icons.Default.Android),
         DashboardItem(InfoCategory.BATTERY, "باتری", Icons.Default.BatteryFull),
         DashboardItem(InfoCategory.SENSORS, "سنسورها", Icons.Default.Sensors),
-        DashboardItem(InfoCategory.THERMAL, "دما", Icons.Default.Thermostat), // <-- این خط را اضافه کنید
-        DashboardItem(InfoCategory.NETWORK, "شبکه", Icons.Default.NetworkWifi) // <-- آیتم جدید
+        DashboardItem(InfoCategory.THERMAL, "دما", Icons.Default.Thermostat),
+        DashboardItem(InfoCategory.NETWORK, "شبکه", Icons.Default.NetworkWifi)
     )
-
-
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
         modifier = Modifier
-            // این مادیفایر به طور هوشمند به اندازه ارتفاع استاتوس بار، از بالا فاصله ایجاد می‌کند
             .windowInsetsPadding(WindowInsets.statusBars)
-            // این مادیفایر هم برای ایجاد فاصله در اطراف کل گرید است
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(categories) { item ->
-            // context را اینجا پاس دهید
             DashboardTile(item = item, onClick = { onCategoryClick(item.category, context) })
         }
     }
