@@ -33,6 +33,8 @@ import ir.dekot.kavosh.ui.screen.infoCards.SystemInfoCard
 import ir.dekot.kavosh.ui.screen.infoCards.ThermalInfoCard
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
+import ir.dekot.kavosh.ui.viewmodel.BatteryViewModel
+import ir.dekot.kavosh.ui.viewmodel.SocViewModel
 
 // --- صفحه جزئیات (Detail) ---
 @RequiresApi(Build.VERSION_CODES.R)
@@ -40,33 +42,32 @@ import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 @Composable
 fun DetailScreen(
     category: InfoCategory,
-    viewModel: DeviceInfoViewModel,
+    deviceInfoViewModel: DeviceInfoViewModel, // برای اطلاعات استاتیک و ناوبری
+    batteryViewModel: BatteryViewModel,     // برای اطلاعات باتری
+    socViewModel: SocViewModel,             // برای اطلاعات SOC
     onBackClick: () -> Unit
 ) {
-    val deviceInfo by viewModel.deviceInfo.collectAsState()
-    val liveCpuFrequencies by viewModel.liveCpuFrequencies.collectAsState() // <-- این خط را اضافه کنید
-    val liveGpuLoad by viewModel.liveGpuLoad.collectAsState()           // <-- این خط را هم اضافه کنید
-    val batteryInfo by viewModel.batteryInfo.collectAsState()
-    val thermalDetails by viewModel.thermalDetails.collectAsState() // <-- این خط را اضافه کنید
+    val deviceInfo by deviceInfoViewModel.deviceInfo.collectAsState()
+    val thermalDetails by deviceInfoViewModel.thermalDetails.collectAsState()
     val context = LocalContext.current
 
-    // رجیستر کردن گیرنده باتری فقط زمانی که وارد صفحه باتری می‌شویم
-    DisposableEffect(key1 = category) {
-        // این بلوک کد زمانی اجرا می‌شود که کاربر وارد صفحه جزئیات می‌شود
-        when (category) {
-            InfoCategory.BATTERY -> viewModel.registerBatteryReceiver(context)
-            InfoCategory.SOC -> viewModel.startSocPolling() // <-- شروع آپدیت لحظه‌ای برای SOC
-            else -> { /* برای بقیه دسته‌بندی‌ها کاری انجام نده */
-            }
-        }
+    // --- دریافت stateها از ViewModelled مربوطه ---
+    val batteryInfo by batteryViewModel.batteryInfo.collectAsState()
+    val liveCpuFrequencies by socViewModel.liveCpuFrequencies.collectAsState()
+    val liveGpuLoad by socViewModel.liveGpuLoad.collectAsState()
 
-        // onDispose زمانی اجرا می‌شود که کاربر از این صفحه خارج می‌شود (مثلا دکمه بازگشت را می‌زند)
+    // مدیریت چرخه حیات ViewModelهای جدید
+    DisposableEffect(key1 = category) {
+        when (category) {
+            InfoCategory.BATTERY -> batteryViewModel.registerBatteryReceiver(context)
+            InfoCategory.SOC -> socViewModel.startSocPolling()
+            else -> {}
+        }
         onDispose {
             when (category) {
-                InfoCategory.BATTERY -> viewModel.unregisterBatteryReceiver(context)
-                InfoCategory.SOC -> viewModel.stopSocPolling() // <-- توقف آپدیت لحظه‌ای برای SOC
-                else -> { /* کاری انجام نده */
-                }
+                InfoCategory.BATTERY -> batteryViewModel.unregisterBatteryReceiver(context)
+                InfoCategory.SOC -> socViewModel.stopSocPolling()
+                else -> {}
             }
         }
     }
@@ -92,45 +93,26 @@ fun DetailScreen(
         ) {
             when (category) {
                 InfoCategory.SOC -> {
-                    item {
-                        CpuInfoCard(
-                            deviceInfo.cpu,
-                            liveCpuFrequencies
-                        )
-                    } // state جدید را به عنوان پارامتر دوم پاس می‌دهیم
-                    item {
-                        GpuInfoCard(
-                            deviceInfo.gpu,
-                            liveGpuLoad
-                        )
-                    } // لود زنده را به عنوان پارامتر دوم پاس می‌دهیم
+                    item { CpuInfoCard(deviceInfo.cpu, liveCpuFrequencies) }
+                    item { GpuInfoCard(deviceInfo.gpu, liveGpuLoad) }
                     item { RamInfoCard(deviceInfo.ram) }
                 }
-
                 InfoCategory.DEVICE -> {
                     item { DisplayInfoCard(deviceInfo.display) }
                     item { StorageInfoCard(deviceInfo.storage) }
                 }
-
                 InfoCategory.SYSTEM -> {
                     item { SystemInfoCard(deviceInfo.system) }
                 }
-
                 InfoCategory.BATTERY -> {
+                    // حالا از state مربوط به BatteryViewModel استفاده می‌کند
                     item { BatteryInfoCard(batteryInfo) }
                 }
-
                 InfoCategory.SENSORS -> {
-                    items(deviceInfo.sensors) { sensor ->
-                        SensorInfoCard(info = sensor)
-                    }
+                    items(deviceInfo.sensors) { sensor -> SensorInfoCard(info = sensor) }
                 }
-
                 InfoCategory.THERMAL -> {
-                    // از لیست ترکیبی جدید استفاده می‌کنیم
-                    items(thermalDetails) { thermalInfo ->
-                        ThermalInfoCard(info = thermalInfo)
-                    }
+                    items(thermalDetails) { thermalInfo -> ThermalInfoCard(info = thermalInfo) }
                 }
             }
         }

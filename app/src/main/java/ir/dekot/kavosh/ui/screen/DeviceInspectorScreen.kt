@@ -18,33 +18,39 @@ import ir.dekot.kavosh.ui.screen.dashboard.DashboardScreen
 import ir.dekot.kavosh.ui.screen.splash.SplashScreen
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.Screen
+import ir.dekot.kavosh.ui.viewmodel.BatteryViewModel
+import ir.dekot.kavosh.ui.viewmodel.SocViewModel
 
 // کامپوزبل اصلی که نقش ناوبر (Navigator) را دارد
 @RequiresApi(Build.VERSION_CODES.R)
 // کامپوزبل اصلی که نقش ناوبر (Navigator) را دارد
 @Composable
-fun DeviceInspectorApp(viewModel: DeviceInfoViewModel) {
-    val currentScreen by viewModel.currentScreen.collectAsState()
+fun DeviceInspectorApp(
+    deviceInfoViewModel: DeviceInfoViewModel,
+    batteryViewModel: BatteryViewModel, // پارامتر جدید
+    socViewModel: SocViewModel // پارامتر جدید
+) {
+    val currentScreen by deviceInfoViewModel.currentScreen.collectAsState()
 
-    // با استفاده از Crossroad، انیمیشن نرمی بین صفحات خواهیم داشت
     Crossfade(targetState = currentScreen, label = "screen_fade") { screen ->
         when (screen) {
             is Screen.Splash -> SplashScreen(
-                onStartScan = { viewModel.startScan() },
-                viewModel = viewModel
+                onStartScan = { deviceInfoViewModel.startScan() },
+                viewModel = deviceInfoViewModel
             )
 
             is Screen.Dashboard -> DashboardScreen(onCategoryClick = { category, context ->
-                viewModel.navigateToDetail(category, context) // فراخوانی جدید
+                deviceInfoViewModel.navigateToDetail(category, context)
             })
 
             is Screen.Detail -> {
-                // مدیریت دکمه بازگشت سخت‌افزاری
-                BackHandler { viewModel.navigateBack() }
+                BackHandler { deviceInfoViewModel.navigateBack() }
                 DetailScreen(
                     category = screen.category,
-                    viewModel = viewModel,
-                    onBackClick = { viewModel.navigateBack() }
+                    deviceInfoViewModel = deviceInfoViewModel,
+                    batteryViewModel = batteryViewModel, // پاس دادن به صفحه جزئیات
+                    socViewModel = socViewModel,           // پاس دادن به صفحه جزئیات
+                    onBackClick = { deviceInfoViewModel.navigateBack() }
                 )
             }
         }
