@@ -43,7 +43,7 @@ fun DeviceInspectorApp(
             )
 
             is Screen.Dashboard -> DashboardScreen(onCategoryClick = { category, context ->
-                deviceInfoViewModel.navigateToDetail(category, context)
+                deviceInfoViewModel.navigateToDetail(category)
             })
 
             is Screen.Detail -> {

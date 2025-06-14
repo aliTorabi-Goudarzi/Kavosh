@@ -32,14 +32,19 @@ class SocDataSource @Inject constructor() {
         val model = getCpuModel()
         val ranges = mutableListOf<String>()
         val maxFreqMap = mutableMapOf<Long, Int>()
+        val maxFrequencies = mutableListOf<Long>() // <-- لیست جدید برای نگهداری ماکسیمم‌ها
 
         for (i in 0 until coreCount) {
             try {
                 val minFreq = File("/sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_min_freq").readText().trim().toLong()
                 val maxFreq = File("/sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_max_freq").readText().trim().toLong()
+
+                maxFrequencies.add(maxFreq) // <-- افزودن حداکثر فرکانس به لیست
+
                 ranges.add("هسته $i: ${minFreq/1000} - ${maxFreq/1000} MHz")
                 maxFreqMap[maxFreq] = (maxFreqMap[maxFreq] ?: 0) + 1
             } catch (_: Exception) {
+                maxFrequencies.add(0L) // در صورت خطا، یک مقدار پیش‌فرض اضافه کن
                 continue
             }
         }
@@ -57,6 +62,7 @@ class SocDataSource @Inject constructor() {
             process = "نامشخص",
             topology = if (topologyString.isNotBlank()) topologyString else "نامشخص",
             clockSpeedRanges = ranges,
+            maxFrequenciesKhz = maxFrequencies, // <-- پاس دادن لیست به مدل
             liveFrequencies = List(coreCount) { "..." }
         )
     }
