@@ -16,11 +16,16 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -29,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -42,7 +48,11 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
+import ir.dekot.kavosh.ui.viewmodel.ExportFormat
+import ir.dekot.kavosh.ui.viewmodel.ExportResult
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.R)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -53,6 +63,9 @@ fun DashboardScreen(
     onSettingsClick: () -> Unit,
     onEditDashboardClick: () -> Unit
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     val dashboardItems by deviceInfoViewModel.dashboardItems.collectAsState()
     // دریافت وضعیت قابلیت جابجایی از ViewModel
     val isReorderingEnabled by deviceInfoViewModel.isReorderingEnabled.collectAsState()
@@ -63,15 +76,33 @@ fun DashboardScreen(
     var draggedItemKey by remember { mutableStateOf<Any?>(null) }
     var dragOffset by remember { mutableStateOf(Offset.Zero) }
 
+    var showMenu by remember { mutableStateOf(false) }
+
+
+
     LaunchedEffect(dashboardItems) {
         if (draggedItemKey == null) {
             localItems = dashboardItems.filter { it.isVisible }
         }
     }
 
+    // --- گوش دادن به نتیجه عملیات خروجی برای نمایش Snackbar ---
+    LaunchedEffect(Unit) {
+        deviceInfoViewModel.exportResult.collectLatest { result ->
+            val message = when (result) {
+                is ExportResult.Success -> result.message
+                is ExportResult.Failure -> result.message
+            }
+            scope.launch {
+                snackbarHostState.showSnackbar(message)
+            }
+        }
+    }
+
     val gridState = rememberLazyGridState()
 
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, // افزودن SnackbarHost
         topBar = {
             TopAppBar(
                 title = { Text("کاوش") },
@@ -81,6 +112,31 @@ fun DashboardScreen(
                     }
                     IconButton(onClick = onSettingsClick) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    }
+                    // --- دکمه جدید برای منوی خروجی ---
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "More Options")
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("خروجی متنی (TXT)") },
+                                onClick = {
+                                    deviceInfoViewModel.onExportRequested(ExportFormat.TXT)
+                                    showMenu = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("خروجی PDF") },
+                                onClick = {
+                                    deviceInfoViewModel.onExportRequested(ExportFormat.PDF)
+                                    showMenu = false
+                                }
+                            )
+                        }
                     }
                 }
             )

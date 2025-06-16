@@ -1,7 +1,18 @@
 package ir.dekot.kavosh.ui.viewmodel
 
 import android.app.Activity
+import android.content.Context
+import android.graphics.Typeface
+import android.graphics.pdf.PdfDocument
+import android.net.Uri
 import android.os.Build
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.StaticLayout
+import android.text.TextPaint
+import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
+import android.text.style.StyleSpan
 import androidx.annotation.RequiresApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Android
@@ -15,23 +26,49 @@ import androidx.compose.material.icons.filled.Thermostat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.dekot.kavosh.data.model.DeviceInfo
+import ir.dekot.kavosh.data.model.components.BatteryInfo
 import ir.dekot.kavosh.data.model.components.ThermalInfo
 import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
 import ir.dekot.kavosh.ui.screen.dashboard.DashboardItem
+import ir.dekot.kavosh.ui.screen.getCategoryTitle
+import ir.dekot.kavosh.util.InfoFormatter
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.FileOutputStream
 import javax.inject.Inject
+import androidx.core.graphics.withTranslation
+
+sealed class ExportResult {
+    data class Success(val message: String) : ExportResult()
+    data class Failure(val message: String) : ExportResult()
+}
 
 @HiltViewModel
 @RequiresApi(Build.VERSION_CODES.R)
 class DeviceInfoViewModel @Inject constructor(
-    private val repository: DeviceInfoRepository
+    private val repository: DeviceInfoRepository,
+    @ApplicationContext private val context: Context // تزریق Context برای استفاده در خروجی
 ) : ViewModel() {
+
+    // --- کانال جدید برای ارسال نتیجه خروجی به UI ---
+    private val _exportResult = MutableSharedFlow<ExportResult>()
+    val exportResult = _exportResult.asSharedFlow()
+
+    // --- اصلاح منطق خروجی گرفتن با SharedFlow ---
+    private val _exportRequest = MutableSharedFlow<ExportFormat>()
+    val exportRequest = _exportRequest.asSharedFlow() // به جای receiveAsFlow
+
+    var pendingExportFormat: ExportFormat? = null
+        private set
 
     private val _deviceInfo = MutableStateFlow(DeviceInfo())
     val deviceInfo = _deviceInfo.asStateFlow()
@@ -110,6 +147,120 @@ class DeviceInfoViewModel @Inject constructor(
             DashboardItem(InfoCategory.CAMERA, "دوربین", Icons.Default.PhotoCamera)
         )
     }
+
+    fun onExportRequested(format: ExportFormat) {
+        viewModelScope.launch {
+            pendingExportFormat = format
+            _exportRequest.emit(format) // به جای send از emit استفاده می‌کنیم
+        }
+    }
+
+    fun performExport(uri: Uri, format: ExportFormat) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // دریافت اطلاعات یک بار در ابتدا
+                val currentDeviceInfo = _deviceInfo.value
+                val currentBatteryInfo = repository.getInitialBatteryInfo() ?: BatteryInfo()
+
+                context.contentResolver.openFileDescriptor(uri, "w")?.use { pfd ->
+                    FileOutputStream(pfd.fileDescriptor).use { fos ->
+                        when (format) {
+                            ExportFormat.TXT -> {
+                                val fullReportText = InfoFormatter.formatFullReport(currentDeviceInfo, currentBatteryInfo)
+                                fos.write(fullReportText.toByteArray())
+                            }
+                            ExportFormat.PDF -> {
+                                writeStyledPdf(fos, currentDeviceInfo, currentBatteryInfo)
+                            }
+                        }
+                    }
+                }
+                _exportResult.emit(ExportResult.Success("فایل با موفقیت در مسیر انتخابی شما ذخیره شد."))
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _exportResult.emit(ExportResult.Failure("خطا در ساخت فایل. لطفاً دوباره تلاش کنید."))
+            } finally {
+                pendingExportFormat = null
+            }
+        }
+    }
+
+    /**
+     * تابع نهایی برای ساخت PDF استایل‌دار با صفحه‌بندی صحیح.
+     */
+    private fun writeStyledPdf(fos: FileOutputStream, deviceInfo: DeviceInfo, batteryInfo: BatteryInfo) {
+        // ۱. ساخت متن استایل‌دار با SpannableStringBuilder
+        val spannableBuilder = SpannableStringBuilder()
+
+        // افزودن عنوان اصلی
+        val mainTitle = "گزارش کامل مشخصات دستگاه\n\n"
+        spannableBuilder.append(mainTitle)
+        spannableBuilder.setSpan(StyleSpan(Typeface.BOLD), 0, mainTitle.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+        spannableBuilder.setSpan(RelativeSizeSpan(1.5f), 0, mainTitle.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+        spannableBuilder.setSpan(ForegroundColorSpan(android.graphics.Color.BLACK), 0, mainTitle.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+
+        // افزودن بخش به بخش اطلاعات
+        InfoCategory.entries.forEach { category ->
+            val startSection = spannableBuilder.length
+            val sectionTitle = "--- ${getCategoryTitle(category)} ---\n"
+            spannableBuilder.append(sectionTitle)
+            spannableBuilder.setSpan(StyleSpan(Typeface.BOLD), startSection, spannableBuilder.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+            spannableBuilder.setSpan(ForegroundColorSpan(android.graphics.Color.rgb(0, 50, 150)), startSection, spannableBuilder.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+
+            val contentText = InfoFormatter.formatInfoForSharing(category, deviceInfo, batteryInfo)
+                .lines().drop(1).dropLast(2).joinToString("\n") { it.trim() }
+            spannableBuilder.append(contentText)
+            spannableBuilder.append("\n\n")
+        }
+
+        // ۲. تنظیمات اولیه صفحه و متن
+        val pageHeight = 1120
+        val pageWidth = 792
+        val margin = 50f
+        val contentWidth = (pageWidth - 2 * margin).toInt()
+        val contentHeight = (pageHeight - 2 * margin).toInt()
+
+        val pdfDocument = PdfDocument()
+        val paint = TextPaint().apply {
+            textSize = 12f
+        }
+
+        // ۳. ساخت یک StaticLayout واحد از روی کل متن استایل‌دار
+        val fullTextLayout = StaticLayout.Builder.obtain(
+            spannableBuilder, 0, spannableBuilder.length, paint, contentWidth
+        ).build()
+
+        // ۴. حلقه صفحه‌بندی صحیح
+        val totalTextHeight = fullTextLayout.height
+        var yOffset = 0
+        var pageNumber = 1
+
+        while (yOffset < totalTextHeight) {
+            val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNumber).create()
+            val page = pdfDocument.startPage(pageInfo)
+            val canvas = page.canvas
+
+            canvas.withTranslation(margin, margin) {
+                translate(0f, -yOffset.toFloat())
+                fullTextLayout.draw(this)
+            }
+
+            pdfDocument.finishPage(page)
+
+            yOffset += contentHeight
+            pageNumber++
+        }
+
+        // ۵. نوشتن و بستن سند
+        try {
+            pdfDocument.writeTo(fos)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            pdfDocument.close()
+        }
+    }
+
 
     /**
      * وضعیت قابلیت تم پویا را تغییر داده و ذخیره می‌کند.

@@ -5,22 +5,22 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import ir.dekot.kavosh.ui.screen.DeviceInspectorApp
 import ir.dekot.kavosh.ui.viewmodel.BatteryViewModel
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.SocViewModel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
-/**
- * MainActivity حالا یک نقطه ورود Hilt است.
- * @AndroidEntryPoint به Hilt اجازه می‌دهد تا وابستگی‌ها را به این Activity تزریق کند.
- */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -28,12 +28,31 @@ class MainActivity : ComponentActivity() {
     private val batteryViewModel: BatteryViewModel by viewModels()
     private val socViewModel: SocViewModel by viewModels()
 
+    // این لانچر اکنون باید به درستی فراخوانی شود
+    @RequiresApi(Build.VERSION_CODES.R)
+    private val createFileLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("*/*")
+    ) { uri ->
+        uri?.let {
+            val format = deviceInfoViewModel.pendingExportFormat
+            if (format != null) {
+                deviceInfoViewModel.performExport(it, format)
+            }
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // در اینجا، پس از ساخت ViewModel، داده‌ها را برای اجراهای بعدی بارگذاری می‌کنیم
-        // ViewModel در init خود دیگر این کار را انجام نمی‌دهد.
+        // این بخش بدون تغییر باقی می‌ماند و با SharedFlow به درستی کار می‌کند
+        lifecycleScope.launch {
+            deviceInfoViewModel.exportRequest.collectLatest { format ->
+                val fileName = "Kavosh_Report_${System.currentTimeMillis()}.${format.extension}"
+                createFileLauncher.launch(fileName)
+            }
+        }
+
         deviceInfoViewModel.loadDataForNonFirstLaunch(this)
 
         enableEdgeToEdge()
@@ -42,12 +61,10 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                // در اینجا یک لامبدا برای startScan می‌سازیم که Activity را پاس دهد
                 DeviceInspectorApp(
                     deviceInfoViewModel = deviceInfoViewModel,
                     batteryViewModel = batteryViewModel,
                     socViewModel = socViewModel,
-                    // به این ترتیب، UI از وجود Activity بی‌خبر می‌ماند
                     onStartScan = { deviceInfoViewModel.startScan(this) }
                 )
             }

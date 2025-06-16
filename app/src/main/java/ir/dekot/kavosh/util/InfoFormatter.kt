@@ -2,12 +2,40 @@ package ir.dekot.kavosh.util
 
 import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.BatteryInfo
+import ir.dekot.kavosh.ui.screen.getCategoryTitle
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 
 /**
  * یک آبجکت کمکی برای تبدیل اطلاعات دستگاه به یک رشته قابل اشتراک‌گذاری.
  */
 object InfoFormatter {
+
+    /**
+     * یک گزارش کامل متنی از تمام اطلاعات دستگاه تولید می‌کند.
+     */
+    fun formatFullReport(deviceInfo: DeviceInfo, batteryInfo: BatteryInfo): String {
+        val builder = StringBuilder()
+        builder.appendLine("گزارش کامل مشخصات دستگاه - اپلیکیشن کاوش")
+        builder.appendLine("========================================")
+        builder.appendLine()
+
+        // تمام دسته‌بندی‌ها را به ترتیب به گزارش اضافه می‌کنیم
+        InfoCategory.entries.forEach { category ->
+            builder.appendLine("--- ${getCategoryTitle(category)} ---")
+            // از تابع موجود برای فرمت کردن هر بخش استفاده می‌کنیم
+            val sectionText = formatInfoForSharing(category, deviceInfo, batteryInfo)
+                // حذف هدر و فوتر تکراری از هر بخش
+                .lines()
+                .drop(1)
+                .dropLast(2)
+                .joinToString(separator = "\n")
+
+            builder.appendLine(sectionText)
+            builder.appendLine("\n----------------------------------------\n")
+        }
+
+        return builder.toString()
+    }
 
     fun formatInfoForSharing(
         category: InfoCategory,
