@@ -22,6 +22,7 @@ import ir.dekot.kavosh.data.source.PowerDataSource
 import ir.dekot.kavosh.data.source.SettingsDataSource
 import ir.dekot.kavosh.data.source.SocDataSource
 import ir.dekot.kavosh.data.source.SystemDataSource
+import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -41,6 +42,12 @@ class DeviceInfoRepository @Inject constructor(
     fun setFirstLaunchCompleted() = settingsDataSource.setFirstLaunchCompleted()
     fun saveTheme(theme: Theme) = settingsDataSource.saveTheme(theme)
     fun getTheme(): Theme = settingsDataSource.getTheme()
+    // متدهای جدید برای داشبورد
+    fun saveDashboardOrder(categories: List<InfoCategory>) = settingsDataSource.saveDashboardOrder(categories)
+    fun getDashboardOrder(): List<InfoCategory> = settingsDataSource.getDashboardOrder()
+    fun saveHiddenCategories(hidden: Set<InfoCategory>) = settingsDataSource.saveHiddenCategories(hidden)
+    fun getHiddenCategories(): Set<InfoCategory> = settingsDataSource.getHiddenCategories()
+
 
     // --- PowerDataSource ---
     fun getThermalInfo(): List<ThermalInfo> = powerDataSource.getThermalInfo()
@@ -65,11 +72,9 @@ class DeviceInfoRepository @Inject constructor(
     fun getStorageInfo(): StorageInfo = memoryDataSource.getStorageInfo()
 
     // --- NetworkDataSource ---
-    fun getNetworkInfo(): NetworkInfo = networkDataSource.getNetworkInfo() // <-- متد جدید
-    // StateFlow وضعیت هات‌اسپات را در معرض نمایش قرار می‌دهیم
-//    val isHotspotEnabled: StateFlow<Boolean> = networkDataSource.isHotspotEnabled ...
+    fun getNetworkInfo(): NetworkInfo = networkDataSource.getNetworkInfo()
 
     // --- CameraDataSource ---
-    fun getCameraInfoList(): List<CameraInfo> = cameraDataSource.getCameraInfoList() // <-- متد جدید
+    fun getCameraInfoList(): List<CameraInfo> = cameraDataSource.getCameraInfoList()
 
 }

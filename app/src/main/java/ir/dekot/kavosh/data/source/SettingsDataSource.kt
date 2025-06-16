@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.dekot.kavosh.data.model.settings.Theme
+import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,17 +16,21 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
         context.getSharedPreferences("device_inspector_prefs", Context.MODE_PRIVATE)
     }
 
-    // یک کلید برای ذخیره نام تم در SharedPreferences
+    // کلیدهای SharedPreferences
     private companion object {
         const val KEY_THEME = "app_theme"
+        const val KEY_FIRST_LAUNCH = "is_first_launch"
+        // کلیدهای جدید برای شخصی‌سازی داشبورد
+        const val KEY_DASHBOARD_ORDER = "dashboard_order"
+        const val KEY_HIDDEN_CATEGORIES = "hidden_categories"
     }
 
     fun isFirstLaunch(): Boolean {
-        return prefs.getBoolean("is_first_launch", true)
+        return prefs.getBoolean(KEY_FIRST_LAUNCH, true)
     }
 
     fun setFirstLaunchCompleted() {
-        prefs.edit { putBoolean("is_first_launch", false) }
+        prefs.edit { putBoolean(KEY_FIRST_LAUNCH, false) }
     }
 
     /**
@@ -44,5 +49,43 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
     fun getTheme(): Theme {
         val themeName = prefs.getString(KEY_THEME, Theme.SYSTEM.name)
         return Theme.valueOf(themeName ?: Theme.SYSTEM.name)
+    }
+
+    /**
+     * ترتیب آیتم‌های داشبورد را به صورت یک رشته جدا شده با کاما ذخیره می‌کند.
+     */
+    fun saveDashboardOrder(categories: List<InfoCategory>) {
+        val orderString = categories.joinToString(",") { it.name }
+        prefs.edit {
+            putString(KEY_DASHBOARD_ORDER, orderString)
+        }
+    }
+
+    /**
+     * ترتیب ذخیره شده آیتم‌های داشبورد را بازخوانی می‌کند.
+     * اگر ترتیبی ذخیره نشده باشد، ترتیب پیش‌فرض را برمی‌گرداند.
+     */
+    fun getDashboardOrder(): List<InfoCategory> {
+        val defaultOrder = InfoCategory.entries.joinToString(",") { it.name }
+        val orderString = prefs.getString(KEY_DASHBOARD_ORDER, defaultOrder) ?: defaultOrder
+        return orderString.split(",").mapNotNull { try { InfoCategory.valueOf(it) } catch (_: Exception) { null } }
+    }
+
+    /**
+     * مجموعه‌ای از دسته‌بندی‌های مخفی را ذخیره می‌کند.
+     */
+    fun saveHiddenCategories(hidden: Set<InfoCategory>) {
+        val hiddenSetString = hidden.map { it.name }.toSet()
+        prefs.edit {
+            putStringSet(KEY_HIDDEN_CATEGORIES, hiddenSetString)
+        }
+    }
+
+    /**
+     * دسته‌بندی‌های مخفی شده را بازخوانی می‌کند.
+     */
+    fun getHiddenCategories(): Set<InfoCategory> {
+        val hiddenSetString = prefs.getStringSet(KEY_HIDDEN_CATEGORIES, emptySet()) ?: emptySet()
+        return hiddenSetString.mapNotNull { try { InfoCategory.valueOf(it) } catch (_: Exception) { null } }.toSet()
     }
 }

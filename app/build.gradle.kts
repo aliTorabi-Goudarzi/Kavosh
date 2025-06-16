@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kapt) // <-- به این شکل صحیح است
     alias(libs.plugins.hilt) // <-- به این شکل صحیح است
+
 }
 
 android {
@@ -15,7 +16,7 @@ android {
         minSdk = 28
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.25beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

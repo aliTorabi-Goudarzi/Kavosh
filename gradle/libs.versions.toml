@@ -1,6 +1,5 @@
 [versions]
 agp = "8.10.1"
-hiltCompiler = "2.51.1"
 kotlin = "2.0.21"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -11,13 +10,12 @@ activityCompose = "1.10.1"
 composeBom = "2025.06.00"
 media3CommonKtx = "1.7.1"
 hilt = "2.51.1" # <-- نسخه Hilt را اضافه کنید
-#kapt = "2.0.21"  # <-- نسخه Kapt را اضافه کنید (اگر از kotlin نسخه دیگری استفاده می‌کنید، این را هم تغییر دهید)
 
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+# کتابخانه جدید برای جابجایی آیتم‌ها
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
-dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltCompiler" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

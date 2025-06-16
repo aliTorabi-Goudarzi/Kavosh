@@ -119,8 +119,10 @@ class NetworkDataSource @Inject constructor(@ApplicationContext private val cont
                             }
                         } else if (!isIPv4 && ipv6 == "نامشخص") {
                             val delim = sAddr?.indexOf('%') // حذف zone
-                            ipv6 = if ((delim ?: -1) < 0) sAddr.toString().uppercase() else delim?.let { sAddr.toString().substring(0, it) }
-                                ?.uppercase() ?: "نامشخص"
+                            if (sAddr != null) {
+                                ipv6 = if ((delim ?: -1) < 0) sAddr.toString().uppercase() else delim?.let { sAddr.toString().substring(0, it) }
+                                    ?.uppercase() ?: "نامشخص"
+                            }
                         }
                     }
                 }

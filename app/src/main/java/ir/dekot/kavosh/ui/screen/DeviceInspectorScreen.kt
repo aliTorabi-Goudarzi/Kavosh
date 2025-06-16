@@ -9,6 +9,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.ui.screen.dashboard.DashboardScreen
+import ir.dekot.kavosh.ui.screen.dashboard.EditDashboardScreen
 import ir.dekot.kavosh.ui.screen.splash.SplashScreen
 import ir.dekot.kavosh.ui.viewmodel.BatteryViewModel
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
@@ -32,20 +33,20 @@ fun DeviceInspectorApp(
         Theme.DARK -> true
     }
 
-    // KavoshTheme هنوز برای اعمال تم لازم است، اما Crossfade داخلی آن حذف می‌شود
     ir.dekot.kavosh.ui.theme.KavoshTheme(darkTheme = useDarkTheme) {
-        // Crossfade به طور کامل حذف شد و با یک when ساده جایگزین شد
-        when (val screen = currentScreen) { // از screen در when استفاده می‌کنیم
+        when (val screen = currentScreen) {
             is Screen.Splash -> SplashScreen(
                 onStartScan = onStartScan,
                 viewModel = deviceInfoViewModel
             )
 
             is Screen.Dashboard -> DashboardScreen(
-                onCategoryClick = { category, context ->
+                deviceInfoViewModel = deviceInfoViewModel,
+                onCategoryClick = { category, _ ->
                     deviceInfoViewModel.navigateToDetail(category)
                 },
-                onSettingsClick = { deviceInfoViewModel.navigateToSettings() }
+                onSettingsClick = { deviceInfoViewModel.navigateToSettings() },
+                onEditDashboardClick = { deviceInfoViewModel.navigateToEditDashboard() } // <-- ناوبری به ویرایش
             )
 
             is Screen.Settings -> {
@@ -64,6 +65,15 @@ fun DeviceInspectorApp(
                     deviceInfoViewModel = deviceInfoViewModel,
                     batteryViewModel = batteryViewModel,
                     socViewModel = socViewModel,
+                    onBackClick = { deviceInfoViewModel.navigateBack() }
+                )
+            }
+
+            // مدیریت نمایش صفحه جدید ویرایش داشبورد
+            is Screen.EditDashboard -> {
+                BackHandler { deviceInfoViewModel.navigateBack() }
+                EditDashboardScreen(
+                    viewModel = deviceInfoViewModel,
                     onBackClick = { deviceInfoViewModel.navigateBack() }
                 )
             }

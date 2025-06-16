@@ -6,5 +6,6 @@ import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 data class DashboardItem(
     val category: InfoCategory,
     val title: String,
-    val icon: ImageVector
+    val icon: ImageVector,
+    val isVisible: Boolean = true // <-- فیلد جدید برای کنترل نمایش
 )

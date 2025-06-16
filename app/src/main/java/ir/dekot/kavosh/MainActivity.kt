@@ -38,22 +38,19 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    // در اینجا یک لامبدا برای startScan می‌سازیم که Activity را پاس دهد
-                    DeviceInspectorApp(
-                        deviceInfoViewModel = deviceInfoViewModel,
-                        batteryViewModel = batteryViewModel,
-                        socViewModel = socViewModel,
-                        // به این ترتیب، UI از وجود Activity بی‌خبر می‌ماند
-                        onStartScan = { deviceInfoViewModel.startScan(this) }
-                    )
-                }
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                // در اینجا یک لامبدا برای startScan می‌سازیم که Activity را پاس دهد
+                DeviceInspectorApp(
+                    deviceInfoViewModel = deviceInfoViewModel,
+                    batteryViewModel = batteryViewModel,
+                    socViewModel = socViewModel,
+                    // به این ترتیب، UI از وجود Activity بی‌خبر می‌ماند
+                    onStartScan = { deviceInfoViewModel.startScan(this) }
+                )
             }
         }
     }
-
-
-
+}
