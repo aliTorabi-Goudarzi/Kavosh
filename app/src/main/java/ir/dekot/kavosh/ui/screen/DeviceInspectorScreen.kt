@@ -26,6 +26,9 @@ fun DeviceInspectorApp(
 ) {
     val currentScreen by deviceInfoViewModel.currentScreen.collectAsState()
     val currentTheme by deviceInfoViewModel.themeState.collectAsState()
+    // دریافت وضعیت تم پویا از ViewModel
+    val dynamicColor by deviceInfoViewModel.isDynamicThemeEnabled.collectAsState()
+
 
     val useDarkTheme = when (currentTheme) {
         Theme.SYSTEM -> isSystemInDarkTheme()
@@ -33,7 +36,9 @@ fun DeviceInspectorApp(
         Theme.DARK -> true
     }
 
-    ir.dekot.kavosh.ui.theme.KavoshTheme(darkTheme = useDarkTheme) {
+
+
+    ir.dekot.kavosh.ui.theme.KavoshTheme(darkTheme = useDarkTheme,dynamicColor = dynamicColor) {
         when (val screen = currentScreen) {
             is Screen.Splash -> SplashScreen(
                 onStartScan = onStartScan,
@@ -51,9 +56,9 @@ fun DeviceInspectorApp(
 
             is Screen.Settings -> {
                 BackHandler { deviceInfoViewModel.navigateBack() }
+                // پاس دادن کل ViewModel به صفحه تنظیمات
                 SettingsScreen(
-                    currentTheme = currentTheme,
-                    onThemeSelected = { theme -> deviceInfoViewModel.onThemeSelected(theme) },
+                    viewModel = deviceInfoViewModel,
                     onBackClick = { deviceInfoViewModel.navigateBack() }
                 )
             }

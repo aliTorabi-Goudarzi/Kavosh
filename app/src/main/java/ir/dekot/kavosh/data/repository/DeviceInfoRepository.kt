@@ -47,6 +47,10 @@ class DeviceInfoRepository @Inject constructor(
     fun getDashboardOrder(): List<InfoCategory> = settingsDataSource.getDashboardOrder()
     fun saveHiddenCategories(hidden: Set<InfoCategory>) = settingsDataSource.saveHiddenCategories(hidden)
     fun getHiddenCategories(): Set<InfoCategory> = settingsDataSource.getHiddenCategories()
+    // متدهای جدید برای کنترل قابلیت جابجایی
+    fun setReorderingEnabled(enabled: Boolean) = settingsDataSource.setReorderingEnabled(enabled)
+    fun isReorderingEnabled(): Boolean = settingsDataSource.isReorderingEnabled()
+
 
 
     // --- PowerDataSource ---
@@ -76,5 +80,10 @@ class DeviceInfoRepository @Inject constructor(
 
     // --- CameraDataSource ---
     fun getCameraInfoList(): List<CameraInfo> = cameraDataSource.getCameraInfoList()
+
+    // متدهای جدید برای کنترل تم پویا
+    fun setDynamicThemeEnabled(enabled: Boolean) = settingsDataSource.setDynamicThemeEnabled(enabled)
+    fun isDynamicThemeEnabled(): Boolean = settingsDataSource.isDynamicThemeEnabled()
+
 
 }

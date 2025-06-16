@@ -57,8 +57,20 @@ class DeviceInfoViewModel @Inject constructor(
     private val _dashboardItems = MutableStateFlow<List<DashboardItem>>(emptyList())
     val dashboardItems: StateFlow<List<DashboardItem>> = _dashboardItems.asStateFlow()
 
+    // --- وضعیت جدید برای کنترل قابلیت جابجایی ---
+    private val _isReorderingEnabled = MutableStateFlow(true)
+    val isReorderingEnabled: StateFlow<Boolean> = _isReorderingEnabled.asStateFlow()
+
+    // --- وضعیت جدید برای کنترل تم پویا ---
+    private val _isDynamicThemeEnabled = MutableStateFlow(true)
+    val isDynamicThemeEnabled: StateFlow<Boolean> = _isDynamicThemeEnabled.asStateFlow()
+
     init {
         _themeState.value = repository.getTheme()
+        // خواندن وضعیت اولیه قابلیت جابجایی
+        _isReorderingEnabled.value = repository.isReorderingEnabled()
+        // خواندن وضعیت اولیه تم پویا
+        _isDynamicThemeEnabled.value = repository.isDynamicThemeEnabled()
         loadDashboardItems()
 
         if (repository.isFirstLaunch()) {
@@ -98,6 +110,27 @@ class DeviceInfoViewModel @Inject constructor(
             DashboardItem(InfoCategory.CAMERA, "دوربین", Icons.Default.PhotoCamera)
         )
     }
+
+    /**
+     * وضعیت قابلیت تم پویا را تغییر داده و ذخیره می‌کند.
+     */
+    fun onDynamicThemeToggled(enabled: Boolean) {
+        _isDynamicThemeEnabled.value = enabled
+        viewModelScope.launch {
+            repository.setDynamicThemeEnabled(enabled)
+        }
+    }
+
+    /**
+     * وضعیت قابلیت جابجایی داشبورد را تغییر داده و ذخیره می‌کند.
+     */
+    fun onReorderingToggled(enabled: Boolean) {
+        _isReorderingEnabled.value = enabled
+        viewModelScope.launch {
+            repository.setReorderingEnabled(enabled)
+        }
+    }
+
 
     fun onThemeSelected(theme: Theme) {
         _themeState.value = theme

@@ -23,6 +23,9 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
         // کلیدهای جدید برای شخصی‌سازی داشبورد
         const val KEY_DASHBOARD_ORDER = "dashboard_order"
         const val KEY_HIDDEN_CATEGORIES = "hidden_categories"
+        const val KEY_DASHBOARD_REORDER_ENABLED = "dashboard_reorder_enabled"
+        // کلید جدید برای ذخیره وضعیت تم پویا
+        const val KEY_DYNAMIC_THEME_ENABLED = "dynamic_theme_enabled"
     }
 
     fun isFirstLaunch(): Boolean {
@@ -87,5 +90,37 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
     fun getHiddenCategories(): Set<InfoCategory> {
         val hiddenSetString = prefs.getStringSet(KEY_HIDDEN_CATEGORIES, emptySet()) ?: emptySet()
         return hiddenSetString.mapNotNull { try { InfoCategory.valueOf(it) } catch (_: Exception) { null } }.toSet()
+    }
+
+    // --- متدهای جدید برای کنترل قابلیت جابجایی ---
+    /**
+     * وضعیت قابلیت جابجایی داشبورد را ذخیره می‌کند.
+     */
+    fun setReorderingEnabled(enabled: Boolean) {
+        prefs.edit { putBoolean(KEY_DASHBOARD_REORDER_ENABLED, enabled) }
+    }
+
+    /**
+     * وضعیت ذخیره شده قابلیت جابجایی را بازخوانی می‌کند.
+     * به صورت پیش‌فرض، این قابلیت فعال است.
+     */
+    fun isReorderingEnabled(): Boolean {
+        return prefs.getBoolean(KEY_DASHBOARD_REORDER_ENABLED, true)
+    }
+
+    // --- متدهای جدید برای کنترل تم پویا ---
+    /**
+     * وضعیت قابلیت تم پویا را ذخیره می‌کند.
+     */
+    fun setDynamicThemeEnabled(enabled: Boolean) {
+        prefs.edit { putBoolean(KEY_DYNAMIC_THEME_ENABLED, enabled) }
+    }
+
+    /**
+     * وضعیت ذخیره شده تم پویا را بازخوانی می‌کند.
+     * به صورت پیش‌فرض، این قابلیت فعال است.
+     */
+    fun isDynamicThemeEnabled(): Boolean {
+        return prefs.getBoolean(KEY_DYNAMIC_THEME_ENABLED, true)
     }
 }

@@ -54,6 +54,8 @@ fun DashboardScreen(
     onEditDashboardClick: () -> Unit
 ) {
     val dashboardItems by deviceInfoViewModel.dashboardItems.collectAsState()
+    // دریافت وضعیت قابلیت جابجایی از ViewModel
+    val isReorderingEnabled by deviceInfoViewModel.isReorderingEnabled.collectAsState()
     val context = LocalContext.current
 
     var localItems by remember { mutableStateOf<List<DashboardItem>>(emptyList()) }
@@ -113,53 +115,53 @@ fun DashboardScreen(
                                 translationY = dragOffset.y
                             }
                         }
-                        .pointerInput(Unit) {
-                            detectDragGesturesAfterLongPress(
-                                onDragStart = {
-                                    // --- اصلاح کلیدی: کلید آیتم را ذخیره می‌کنیم ---
-                                    draggedItemKey = item.category.name
-                                },
-                                onDragEnd = {
-                                    // ترتیب نهایی را ذخیره می‌کنیم
-                                    deviceInfoViewModel.saveDashboardOrder(localItems.map { it.category })
-                                    draggedItemKey = null
-                                    dragOffset = Offset.Zero
-                                },
-                                onDragCancel = {
-                                    draggedItemKey = null
-                                    dragOffset = Offset.Zero
-                                },
-                                onDrag = { change, dragAmount ->
-                                    change.consume()
-                                    dragOffset += dragAmount
-
-                                    // --- اصلاح کلیدی: ایندکس آیتم در حال جابجایی را در لحظه پیدا می‌کنیم ---
-                                    val currentDraggingItemIndex = localItems.indexOfFirst { it.category.name == draggedItemKey }
-                                    if (currentDraggingItemIndex == -1) return@detectDragGesturesAfterLongPress
-
-                                    val currentItemInfo = gridState.layoutInfo.visibleItemsInfo
-                                        .getOrNull(currentDraggingItemIndex) ?: return@detectDragGesturesAfterLongPress
-
-                                    val draggedItemCenter = currentItemInfo.offset.toOffset() + (currentItemInfo.size.toSize().center) + dragOffset
-
-                                    val targetItemInfo = gridState.layoutInfo.visibleItemsInfo.find {
-                                        it.key != draggedItemKey && draggedItemCenter in it.bounds()
-                                    }
-
-                                    if (targetItemInfo != null) {
-                                        val from = currentDraggingItemIndex
-                                        val to = targetItemInfo.index
-                                        if (from != to) {
-                                            localItems = localItems.toMutableList().apply {
-                                                add(to, removeAt(from))
-                                            }
-                                            // نیازی به آپدیت draggedItemKey نیست چون ثابت است
+                        .then(
+                            if (isReorderingEnabled) {
+                                Modifier.pointerInput(localItems) { // کلید را هم آپدیت می‌کنیم
+                                    detectDragGesturesAfterLongPress(
+                                        onDragStart = { draggedItemKey = item.category.name },
+                                        onDragEnd = {
+                                            deviceInfoViewModel.saveDashboardOrder(localItems.map { it.category })
+                                            draggedItemKey = null
                                             dragOffset = Offset.Zero
+                                        },
+                                        onDragCancel = {
+                                            draggedItemKey = null
+                                            dragOffset = Offset.Zero
+                                        },
+                                        onDrag = { change, dragAmount ->
+                                            change.consume()
+                                            dragOffset += dragAmount
+
+                                            val currentDraggingItemIndex = localItems.indexOfFirst { it.category.name == draggedItemKey }
+                                            if (currentDraggingItemIndex == -1) return@detectDragGesturesAfterLongPress
+
+                                            val currentItemInfo = gridState.layoutInfo.visibleItemsInfo
+                                                .getOrNull(currentDraggingItemIndex) ?: return@detectDragGesturesAfterLongPress
+
+                                            val draggedItemCenter = currentItemInfo.offset.toOffset() + (currentItemInfo.size.toSize().center) + dragOffset
+
+                                            val targetItemInfo = gridState.layoutInfo.visibleItemsInfo.find {
+                                                it.key != draggedItemKey && draggedItemCenter in it.bounds()
+                                            }
+
+                                            if (targetItemInfo != null) {
+                                                val from = currentDraggingItemIndex
+                                                val to = targetItemInfo.index
+                                                if (from != to) {
+                                                    localItems = localItems.toMutableList().apply {
+                                                        add(to, removeAt(from))
+                                                    }
+                                                    dragOffset = Offset.Zero
+                                                }
+                                            }
                                         }
-                                    }
+                                    )
                                 }
-                            )
-                        }
+                            } else {
+                                Modifier // اگر غیرفعال بود، هیچ قابلیتی اضافه نکن
+                            }
+                        )
                 ) {
                     DashboardTile(
                         item = item,
