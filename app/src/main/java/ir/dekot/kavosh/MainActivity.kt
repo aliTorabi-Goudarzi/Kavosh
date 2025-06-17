@@ -12,12 +12,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import ir.dekot.kavosh.ui.screen.DeviceInspectorApp
-import ir.dekot.kavosh.ui.viewmodel.BatteryViewModel
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
-import ir.dekot.kavosh.ui.viewmodel.SocViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -25,10 +25,7 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
 
     private val deviceInfoViewModel: DeviceInfoViewModel by viewModels()
-    private val batteryViewModel: BatteryViewModel by viewModels()
-    private val socViewModel: SocViewModel by viewModels()
 
-    // این لانچر اکنون باید به درستی فراخوانی شود
     @RequiresApi(Build.VERSION_CODES.R)
     private val createFileLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("*/*")
@@ -45,7 +42,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // این بخش بدون تغییر باقی می‌ماند و با SharedFlow به درستی کار می‌کند
+        // راه‌اندازی جمع‌آوری درخواست خروجی
         lifecycleScope.launch {
             deviceInfoViewModel.exportRequest.collectLatest { format ->
                 val fileName = "Kavosh_Report_${System.currentTimeMillis()}.${format.extension}"
@@ -53,7 +50,13 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        deviceInfoViewModel.loadDataForNonFirstLaunch(this)
+        // --- تغییر کلیدی برای رفع باگ ---
+        // بارگذاری داده‌ها فقط زمانی شروع می‌شود که اکتیویتی آماده باشد
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                deviceInfoViewModel.loadDataForNonFirstLaunch(this@MainActivity)
+            }
+        }
 
         enableEdgeToEdge()
         setContent {
@@ -63,8 +66,6 @@ class MainActivity : ComponentActivity() {
             ) {
                 DeviceInspectorApp(
                     deviceInfoViewModel = deviceInfoViewModel,
-                    batteryViewModel = batteryViewModel,
-                    socViewModel = socViewModel,
                     onStartScan = { deviceInfoViewModel.startScan(this) }
                 )
             }
