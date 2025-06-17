@@ -2,17 +2,8 @@ package ir.dekot.kavosh.ui.viewmodel
 
 import android.app.Activity
 import android.content.Context
-import android.graphics.Typeface
-import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.os.Build
-import android.text.Spannable
-import android.text.SpannableStringBuilder
-import android.text.StaticLayout
-import android.text.TextPaint
-import android.text.style.ForegroundColorSpan
-import android.text.style.RelativeSizeSpan
-import android.text.style.StyleSpan
 import androidx.annotation.RequiresApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Android
@@ -33,9 +24,10 @@ import ir.dekot.kavosh.data.model.components.ThermalInfo
 import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
 import ir.dekot.kavosh.ui.screen.dashboard.DashboardItem
-import ir.dekot.kavosh.ui.screen.getCategoryTitle
-import ir.dekot.kavosh.util.InfoFormatter
+import ir.dekot.kavosh.util.report.PdfGenerator
+import ir.dekot.kavosh.util.report.ReportFormatter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,7 +37,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.FileOutputStream
 import javax.inject.Inject
-import androidx.core.graphics.withTranslation
 
 sealed class ExportResult {
     data class Success(val message: String) : ExportResult()
@@ -117,6 +108,36 @@ class DeviceInfoViewModel @Inject constructor(
         }
     }
 
+    private suspend fun fetchAllDeviceInfo(activity: Activity): DeviceInfo {
+        // اجرای تمام عملیات‌های واکشی به صورت موازی با async
+        val cpuInfoJob = viewModelScope.async { repository.getCpuInfo() }
+        val gpuInfoJob = viewModelScope.async { repository.getGpuInfo(activity) }
+        val ramInfoJob = viewModelScope.async { repository.getRamInfo() }
+        val storageInfoJob = viewModelScope.async { repository.getStorageInfo() }
+        val systemInfoJob = viewModelScope.async { repository.getSystemInfo() }
+        val sensorInfoJob = viewModelScope.async { repository.getSensorInfo(activity) }
+        val cameraInfoJob = viewModelScope.async { repository.getCameraInfoList() }
+
+        // اطلاعات غیرهمزمان را جداگانه دریافت می‌کنیم
+        val displayInfo = repository.getDisplayInfo(activity)
+        val thermalInfo = repository.getThermalInfo()
+        val networkInfo = repository.getNetworkInfo()
+
+        // منتظر می‌مانیم تا تمام کارهای موازی تمام شوند و نتیجه را برمی‌گردانیم
+        return DeviceInfo(
+            cpu = cpuInfoJob.await(),
+            gpu = gpuInfoJob.await(),
+            ram = ramInfoJob.await(),
+            storage = storageInfoJob.await(),
+            system = systemInfoJob.await(),
+            sensors = sensorInfoJob.await(),
+            cameras = cameraInfoJob.await(),
+            display = displayInfo,
+            thermal = thermalInfo,
+            network = networkInfo
+        )
+    }
+
     private fun loadDashboardItems() {
         viewModelScope.launch {
             val orderedCategories = repository.getDashboardOrder()
@@ -155,6 +176,9 @@ class DeviceInfoViewModel @Inject constructor(
         }
     }
 
+    /**
+     * منطق اصلی خروجی گرفتن که حالا از کلاس‌های کمکی استفاده می‌کند.
+     */
     fun performExport(uri: Uri, format: ExportFormat) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -166,11 +190,12 @@ class DeviceInfoViewModel @Inject constructor(
                     FileOutputStream(pfd.fileDescriptor).use { fos ->
                         when (format) {
                             ExportFormat.TXT -> {
-                                val fullReportText = InfoFormatter.formatFullReport(currentDeviceInfo, currentBatteryInfo)
+                                val fullReportText = ReportFormatter.formatFullReport(currentDeviceInfo, currentBatteryInfo)
                                 fos.write(fullReportText.toByteArray())
                             }
                             ExportFormat.PDF -> {
-                                writeStyledPdf(fos, currentDeviceInfo, currentBatteryInfo)
+                                // فراخوانی تابع استخراج شده از کلاس کمکی
+                                PdfGenerator.writeStyledPdf(fos, currentDeviceInfo, currentBatteryInfo)
                             }
                         }
                     }
@@ -182,82 +207,6 @@ class DeviceInfoViewModel @Inject constructor(
             } finally {
                 pendingExportFormat = null
             }
-        }
-    }
-
-    /**
-     * تابع نهایی برای ساخت PDF استایل‌دار با صفحه‌بندی صحیح.
-     */
-    private fun writeStyledPdf(fos: FileOutputStream, deviceInfo: DeviceInfo, batteryInfo: BatteryInfo) {
-        // ۱. ساخت متن استایل‌دار با SpannableStringBuilder
-        val spannableBuilder = SpannableStringBuilder()
-
-        // افزودن عنوان اصلی
-        val mainTitle = "گزارش کامل مشخصات دستگاه\n\n"
-        spannableBuilder.append(mainTitle)
-        spannableBuilder.setSpan(StyleSpan(Typeface.BOLD), 0, mainTitle.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-        spannableBuilder.setSpan(RelativeSizeSpan(1.5f), 0, mainTitle.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-        spannableBuilder.setSpan(ForegroundColorSpan(android.graphics.Color.BLACK), 0, mainTitle.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-
-        // افزودن بخش به بخش اطلاعات
-        InfoCategory.entries.forEach { category ->
-            val startSection = spannableBuilder.length
-            val sectionTitle = "--- ${getCategoryTitle(category)} ---\n"
-            spannableBuilder.append(sectionTitle)
-            spannableBuilder.setSpan(StyleSpan(Typeface.BOLD), startSection, spannableBuilder.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-            spannableBuilder.setSpan(ForegroundColorSpan(android.graphics.Color.rgb(0, 50, 150)), startSection, spannableBuilder.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-
-            val contentText = InfoFormatter.formatInfoForSharing(category, deviceInfo, batteryInfo)
-                .lines().drop(1).dropLast(2).joinToString("\n") { it.trim() }
-            spannableBuilder.append(contentText)
-            spannableBuilder.append("\n\n")
-        }
-
-        // ۲. تنظیمات اولیه صفحه و متن
-        val pageHeight = 1120
-        val pageWidth = 792
-        val margin = 50f
-        val contentWidth = (pageWidth - 2 * margin).toInt()
-        val contentHeight = (pageHeight - 2 * margin).toInt()
-
-        val pdfDocument = PdfDocument()
-        val paint = TextPaint().apply {
-            textSize = 12f
-        }
-
-        // ۳. ساخت یک StaticLayout واحد از روی کل متن استایل‌دار
-        val fullTextLayout = StaticLayout.Builder.obtain(
-            spannableBuilder, 0, spannableBuilder.length, paint, contentWidth
-        ).build()
-
-        // ۴. حلقه صفحه‌بندی صحیح
-        val totalTextHeight = fullTextLayout.height
-        var yOffset = 0
-        var pageNumber = 1
-
-        while (yOffset < totalTextHeight) {
-            val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNumber).create()
-            val page = pdfDocument.startPage(pageInfo)
-            val canvas = page.canvas
-
-            canvas.withTranslation(margin, margin) {
-                translate(0f, -yOffset.toFloat())
-                fullTextLayout.draw(this)
-            }
-
-            pdfDocument.finishPage(page)
-
-            yOffset += contentHeight
-            pageNumber++
-        }
-
-        // ۵. نوشتن و بستن سند
-        try {
-            pdfDocument.writeTo(fos)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            pdfDocument.close()
         }
     }
 
@@ -326,18 +275,7 @@ class DeviceInfoViewModel @Inject constructor(
             }
 
             val dataLoadingJob = launch {
-                _deviceInfo.value = DeviceInfo(
-                    cpu = repository.getCpuInfo(),
-                    gpu = repository.getGpuInfo(activity),
-                    ram = repository.getRamInfo(),
-                    storage = repository.getStorageInfo(),
-                    display = repository.getDisplayInfo(activity),
-                    system = repository.getSystemInfo(),
-                    sensors = repository.getSensorInfo(activity),
-                    thermal = repository.getThermalInfo(),
-                    network = repository.getNetworkInfo(),
-                    cameras = repository.getCameraInfoList()
-                )
+                _deviceInfo.value = fetchAllDeviceInfo(activity)
             }
 
             animationJob.join()
@@ -351,17 +289,10 @@ class DeviceInfoViewModel @Inject constructor(
 
     private fun loadDataWithoutAnimation(activity: Activity) {
         viewModelScope.launch {
-            _deviceInfo.value = DeviceInfo(
-                cpu = repository.getCpuInfo(),
-                gpu = repository.getGpuInfo(activity),
-                ram = repository.getRamInfo(),
-                storage = repository.getStorageInfo(),
-                display = repository.getDisplayInfo(activity),
-                system = repository.getSystemInfo(),
-                sensors = repository.getSensorInfo(activity),
-                thermal = repository.getThermalInfo(),
-                cameras = repository.getCameraInfoList()
-            )
+            _isScanning.value = true // نمایش یک لودینگ کوچک
+            // فراخوانی تابع جدید برای بارگذاری موازی
+            _deviceInfo.value = fetchAllDeviceInfo(activity)
+            _isScanning.value = false // پنهان کردن لودینگ
         }
     }
 

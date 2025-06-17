@@ -23,12 +23,16 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // فعال‌سازی R8 برای کاهش حجم کد و مبهم‌سازی
+            isMinifyEnabled = true
+            // فعال‌سازی حذف منابع استفاده نشده
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
+        setProperty("archivesBaseName", "kavosh-${defaultConfig.versionName}")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -53,7 +57,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.media3.common.ktx)
+//    implementation(libs.androidx.media3.common.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

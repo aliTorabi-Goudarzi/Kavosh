@@ -26,7 +26,7 @@ import ir.dekot.kavosh.ui.viewmodel.BatteryViewModel
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import ir.dekot.kavosh.ui.viewmodel.SocViewModel
-import ir.dekot.kavosh.util.InfoFormatter
+import ir.dekot.kavosh.util.report.ReportFormatter
 import ir.dekot.kavosh.util.shareText
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +71,7 @@ fun DetailScreen(
                 navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } },
                 actions = {
                     IconButton(onClick = {
-                        val textToShare = InfoFormatter.formatInfoForSharing(category, deviceInfo, batteryInfo)
+                        val textToShare = ReportFormatter.formatInfoForSharing(category, deviceInfo, batteryInfo)
                         shareText(context, textToShare)
                     }) {
                         Icon(Icons.Default.Share, contentDescription = "Share Info")

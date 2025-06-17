@@ -6,6 +6,7 @@ import ir.dekot.kavosh.data.model.components.CpuInfo
 import ir.dekot.kavosh.data.model.components.GpuInfo
 import ir.dekot.kavosh.data.model.components.RamInfo
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
+import ir.dekot.kavosh.util.report.ReportFormatter
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -31,7 +32,7 @@ class InfoFormatterTest {
 
         // 2. Act (اجرا)
         // متدی که می‌خواهیم آن را تست کنیم، با داده‌های ساختگی فراخوانی می‌کنیم.
-        val resultString = InfoFormatter.formatInfoForSharing(
+        val resultString = ReportFormatter.formatInfoForSharing(
             category = InfoCategory.SOC,
             deviceInfo = sampleDeviceInfo,
             batteryInfo = sampleBatteryInfo
@@ -65,7 +66,7 @@ class InfoFormatterTest {
         )
 
         // 2. Act
-        val resultString = InfoFormatter.formatInfoForSharing(
+        val resultString = ReportFormatter.formatInfoForSharing(
             category = InfoCategory.BATTERY,
             deviceInfo = sampleDeviceInfo,
             batteryInfo = sampleBatteryInfo

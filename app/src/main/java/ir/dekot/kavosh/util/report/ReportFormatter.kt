@@ -1,4 +1,4 @@
-package ir.dekot.kavosh.util
+package ir.dekot.kavosh.util.report
 
 import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.BatteryInfo
@@ -8,7 +8,7 @@ import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 /**
  * یک آبجکت کمکی برای تبدیل اطلاعات دستگاه به یک رشته قابل اشتراک‌گذاری.
  */
-object InfoFormatter {
+object ReportFormatter {
 
     /**
      * یک گزارش کامل متنی از تمام اطلاعات دستگاه تولید می‌کند.
@@ -133,4 +133,3 @@ object InfoFormatter {
     return builder.toString()
 }
 }
-
