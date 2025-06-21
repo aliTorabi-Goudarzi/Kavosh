@@ -22,11 +22,6 @@ object PdfGenerator {
 
     /**
      * تابع نهایی برای ساخت PDF استایل‌دار با صفحه‌بندی صحیح.
-     * این تابع منطق را از ViewModel جدا کرده تا کد تمیزتر باشد.
-     *
-     * @param fos جریان خروجی فایل برای نوشتن PDF.
-     * @param deviceInfo اطلاعات کامل دستگاه.
-     * @param batteryInfo اطلاعات باتری.
      */
     fun writeStyledPdf(fos: FileOutputStream, deviceInfo: DeviceInfo, batteryInfo: BatteryInfo) {
         val spannableBuilder = SpannableStringBuilder()
@@ -39,14 +34,13 @@ object PdfGenerator {
 
         InfoCategory.entries.forEach { category ->
             val startSection = spannableBuilder.length
-            // استفاده مستقیم از خصوصیت title در enum
             val sectionTitle = "--- ${category.title} ---\n"
             spannableBuilder.append(sectionTitle)
             spannableBuilder.setSpan(StyleSpan(Typeface.BOLD), startSection, spannableBuilder.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
             spannableBuilder.setSpan(ForegroundColorSpan(android.graphics.Color.rgb(0, 50, 150)), startSection, spannableBuilder.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
 
-            val contentText = ReportFormatter.formatInfoForSharing(category, deviceInfo, batteryInfo)
-                .lines().drop(1).dropLast(2).joinToString("\n") { it.trim() }
+            // استفاده مستقیم از تابع جدید برای دریافت بدنه گزارش، بدون نیاز به دستکاری رشته
+            val contentText = ReportFormatter.formatCategoryBody(category, deviceInfo, batteryInfo)
             spannableBuilder.append(contentText)
             spannableBuilder.append("\n\n")
         }

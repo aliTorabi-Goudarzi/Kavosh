@@ -6,11 +6,31 @@ import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 
 /**
  * یک آبجکت کمکی برای تبدیل اطلاعات دستگاه به یک رشته قابل اشتراک‌گذاری.
+ * این کلاس برای خوانایی و نگهداری بهتر بازسازی شده است.
  */
 object ReportFormatter {
 
     /**
+     * گزارشی برای یک دسته‌بندی خاص، مناسب برای اشتراک‌گذاری، تولید می‌کند.
+     * این تابع یک هدر و فوتر استاندارد به گزارش اضافه می‌کند.
+     */
+    fun formatInfoForSharing(
+        category: InfoCategory,
+        deviceInfo: DeviceInfo,
+        batteryInfo: BatteryInfo
+    ): String {
+        val body = formatCategoryBody(category, deviceInfo, batteryInfo)
+        return """
+        --- ${category.title} ---
+        $body
+
+        ارسال شده توسط اپلیکیشن کاوش
+        """.trimIndent()
+    }
+
+    /**
      * یک گزارش کامل متنی از تمام اطلاعات دستگاه تولید می‌کند.
+     * این تابع حالا بسیار خواناتر و بهینه‌تر شده است.
      */
     fun formatFullReport(deviceInfo: DeviceInfo, batteryInfo: BatteryInfo): String {
         val builder = StringBuilder()
@@ -18,114 +38,106 @@ object ReportFormatter {
         builder.appendLine("========================================")
         builder.appendLine()
 
-        // تمام دسته‌بندی‌ها را به ترتیب به گزارش اضافه می‌کنیم
         InfoCategory.entries.forEach { category ->
-            // استفاده مستقیم از خصوصیت title در enum
             builder.appendLine("--- ${category.title} ---")
-            val sectionText = formatInfoForSharing(category, deviceInfo, batteryInfo)
-                .lines()
-                .drop(1)
-                .dropLast(2)
-                .joinToString(separator = "\n")
-
-            builder.appendLine(sectionText)
+            // دیگر نیازی به دستکاری رشته نیست
+            builder.appendLine(formatCategoryBody(category, deviceInfo, batteryInfo))
             builder.appendLine("\n----------------------------------------\n")
         }
 
         return builder.toString()
     }
 
-    fun formatInfoForSharing(
+    /**
+     * بدنه اصلی گزارش را برای یک دسته‌بندی مشخص تولید می‌کند.
+     * این تابع داخلی است و فقط توسط توابع دیگر این کلاس استفاده می‌شود.
+     */
+    internal fun formatCategoryBody(
         category: InfoCategory,
         deviceInfo: DeviceInfo,
         batteryInfo: BatteryInfo
     ): String {
-        val builder = StringBuilder()
+        return when (category) {
+            InfoCategory.SOC -> """
+                مدل CPU: ${deviceInfo.cpu.model}
+                معماری: ${deviceInfo.cpu.architecture}
+                توپولوژی: ${deviceInfo.cpu.topology}
+                
+                --- پردازنده گرافیکی (GPU) ---
+                مدل GPU: ${deviceInfo.gpu.model}
+                سازنده: ${deviceInfo.gpu.vendor}
+                
+                --- حافظه RAM ---
+                کل حافظه: ${deviceInfo.ram.total}
+                حافظه در دسترس: ${deviceInfo.ram.available}
+            """.trimIndent()
 
-        when (category) {
-            InfoCategory.SOC -> {
-                builder.appendLine("--- پردازنده (SOC) ---")
-                builder.appendLine("مدل CPU: ${deviceInfo.cpu.model}")
-                builder.appendLine("معماری: ${deviceInfo.cpu.architecture}")
-                builder.appendLine("توپولوژی: ${deviceInfo.cpu.topology}")
-                builder.appendLine("\n--- پردازنده گرافیکی (GPU) ---")
-                builder.appendLine("مدل GPU: ${deviceInfo.gpu.model}")
-                builder.appendLine("سازنده: ${deviceInfo.gpu.vendor}")
-                builder.appendLine("\n--- حافظه RAM ---")
-                builder.appendLine("کل حافظه: ${deviceInfo.ram.total}")
-                builder.appendLine("حافظه در دسترس: ${deviceInfo.ram.available}")
-            }
+            InfoCategory.DEVICE -> """
+                --- صفحه نمایش ---
+                رزولوشن: ${deviceInfo.display.resolution}
+                تراکم پیکسلی: ${deviceInfo.display.density}
+                نرخ نوسازی: ${deviceInfo.display.refreshRate}
+                
+                --- حافظه داخلی ---
+                کل حافظه: ${deviceInfo.storage.total}
+                حافظه در دسترس: ${deviceInfo.storage.available}
+            """.trimIndent()
 
-            InfoCategory.DEVICE -> {
-                builder.appendLine("--- صفحه نمایش ---")
-                builder.appendLine("رزولوشن: ${deviceInfo.display.resolution}")
-                builder.appendLine("تراکم پیکسلی: ${deviceInfo.display.density}")
-                builder.appendLine("نرخ نوسازی: ${deviceInfo.display.refreshRate}")
-                builder.appendLine("\n--- حافظه داخلی ---")
-                builder.appendLine("کل حافظه: ${deviceInfo.storage.total}")
-                builder.appendLine("حافظه در دسترس: ${deviceInfo.storage.available}")
-            }
+            InfoCategory.SYSTEM -> """
+                نسخه اندروید: ${deviceInfo.system.androidVersion}
+                سطح API: ${deviceInfo.system.sdkLevel}
+                بیلد نامبر: ${deviceInfo.system.buildNumber}
+                وضعیت روت: ${if (deviceInfo.system.isRooted) "روت شده" else "روت نشده"}
+            """.trimIndent()
 
-            InfoCategory.SYSTEM -> {
-                builder.appendLine("--- سیستم عامل ---")
-                builder.appendLine("نسخه اندروید: ${deviceInfo.system.androidVersion}")
-                builder.appendLine("سطح API: ${deviceInfo.system.sdkLevel}")
-                builder.appendLine("بیلد نامبر: ${deviceInfo.system.buildNumber}")
-                builder.appendLine("وضعیت روت: ${if (deviceInfo.system.isRooted) "روت شده" else "روت نشده"}")
-            }
+            InfoCategory.BATTERY -> """
+                سلامت: ${batteryInfo.health}
+                درصد شارژ: ${batteryInfo.level}%
+                وضعیت شارژ: ${batteryInfo.status}
+                تکنولوژی: ${batteryInfo.technology}
+                دما: ${batteryInfo.temperature}
+                ولتاژ: ${batteryInfo.voltage}
+            """.trimIndent()
 
-            InfoCategory.BATTERY -> {
-                builder.appendLine("--- باتری ---")
-                builder.appendLine("سلامت: ${batteryInfo.health}")
-                builder.appendLine("درصد شارژ: ${batteryInfo.level}%")
-                builder.appendLine("وضعیت شارژ: ${batteryInfo.status}")
-                builder.appendLine("تکنولوژی: ${batteryInfo.technology}")
-                builder.appendLine("دما: ${batteryInfo.temperature}")
-                builder.appendLine("ولتاژ: ${batteryInfo.voltage}")
-            }
+            InfoCategory.SENSORS ->
+                deviceInfo.sensors.joinToString(separator = "\n") { sensor ->
+                    "- ${sensor.name} (${sensor.vendor})"
+                }.ifEmpty { "سنسوری یافت نشد." }
 
-            InfoCategory.SENSORS -> {
-                builder.appendLine("--- سنسورها ---")
-                deviceInfo.sensors.forEach { sensor ->
-                    builder.appendLine("- ${sensor.name} (${sensor.vendor})")
-                }
-            }
 
-            InfoCategory.THERMAL -> {
-                builder.appendLine("--- دما (Thermal) ---")
-                deviceInfo.thermal.forEach { thermal ->
-                    builder.appendLine("${thermal.type}: ${thermal.temperature}")
-                }
-            }
+            InfoCategory.THERMAL ->
+                deviceInfo.thermal.joinToString(separator = "\n") { thermal ->
+                    "${thermal.type}: ${thermal.temperature}"
+                }.ifEmpty { "اطلاعات دما در دسترس نیست." }
 
-            InfoCategory.NETWORK -> {
-                builder.appendLine("--- شبکه ---")
-                builder.appendLine("نوع اتصال: ${deviceInfo.network.networkType}")
-                builder.appendLine("آدرس IPv4: ${deviceInfo.network.ipAddressV4}")
-                builder.appendLine("آدرس IPv6: ${deviceInfo.network.ipAddressV6}")
-                if (deviceInfo.network.networkType == "Wi-Fi") {
-                    builder.appendLine("SSID: ${deviceInfo.network.ssid}")
-                    builder.appendLine("DNS 1: ${deviceInfo.network.dns1}")
-                }
-            }
-            InfoCategory.CAMERA -> {
-                builder.appendLine("--- اطلاعات دوربین ---")
+
+            InfoCategory.NETWORK ->
+                buildString {
+                    appendLine("نوع اتصال: ${deviceInfo.network.networkType}")
+                    appendLine("آدرس IPv4: ${deviceInfo.network.ipAddressV4}")
+                    appendLine("آدرس IPv6: ${deviceInfo.network.ipAddressV6}")
+                    if (deviceInfo.network.networkType == "Wi-Fi") {
+                        appendLine("SSID: ${deviceInfo.network.ssid}")
+                        appendLine("DNS 1: ${deviceInfo.network.dns1}")
+                    }
+                }.trim()
+
+            InfoCategory.CAMERA ->
                 if (deviceInfo.cameras.isEmpty()) {
-                    builder.appendLine("دوربینی یافت نشد یا دسترسی ممکن نیست.")
+                    "دوربینی یافت نشد یا دسترسی ممکن نیست."
                 } else {
-                    deviceInfo.cameras.forEach { camera ->
-                        builder.appendLine("\n[ ${camera.name} ]")
-                        builder.appendLine("  مگاپیکسل: ${camera.megapixels}")
-                        builder.appendLine("  حداکثر رزولوشن: ${camera.maxResolution}")
-                        builder.appendLine("  فلش: ${if (camera.hasFlash) "دارد" else "ندارد"}")
-                        builder.appendLine("  دیافراگم‌ها: ${camera.apertures}")
-                        builder.appendLine("  فاصله کانونی: ${camera.focalLengths}")
-                        builder.appendLine("  اندازه سنسور: ${camera.sensorSize}")
+                    deviceInfo.cameras.joinToString(separator = "\n\n") { camera ->
+                        """
+                        [ ${camera.name} ]
+                          مگاپیکسل: ${camera.megapixels}
+                          حداکثر رزولوشن: ${camera.maxResolution}
+                          فلش: ${if (camera.hasFlash) "دارد" else "ندارد"}
+                          دیافراگم‌ها: ${camera.apertures}
+                          فاصله کانونی: ${camera.focalLengths}
+                          اندازه سنسور: ${camera.sensorSize}
+                        """.trimIndent()
                     }
                 }
-            }
         }
-        builder.appendLine("\n\nارسال شده توسط اپلیکیشن کاوش")
-        return builder.toString()
     }
 }
