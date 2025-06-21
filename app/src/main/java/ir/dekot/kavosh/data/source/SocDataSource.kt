@@ -20,37 +20,40 @@ import javax.microedition.khronos.opengles.GL10
  * منبع داده برای اطلاعات SOC (پردازنده مرکزی و گرافیکی).
  */
 @Singleton
-// Context را از constructor حذف می‌کنیم
 class SocDataSource @Inject constructor() {
 
     /**
      * اطلاعات پردازنده مرکزی (CPU) را از فایل‌های سیستمی می‌خواند.
+     * این تابع با رویکرد Functional بازنویسی شده تا خواناتر و بهینه‌تر باشد.
      */
     fun getCpuInfo(): CpuInfo {
         val coreCount = Runtime.getRuntime().availableProcessors()
         val architecture = System.getProperty("os.arch") ?: "نامشخص"
         val model = getCpuModel()
-        val ranges = mutableListOf<String>()
-        val maxFreqMap = mutableMapOf<Long, Int>()
-        val maxFrequencies = mutableListOf<Long>() // <-- لیست جدید برای نگهداری ماکسیمم‌ها
 
-        for (i in 0 until coreCount) {
+        // با استفاده از map، اطلاعات هر هسته را به صورت یک Pair(رشته محدوده، ماکسیمم فرکانس) استخراج می‌کنیم
+        val coreInfoList = (0 until coreCount).map { i ->
             try {
                 val minFreq = File("/sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_min_freq").readText().trim().toLong()
                 val maxFreq = File("/sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_max_freq").readText().trim().toLong()
-
-                maxFrequencies.add(maxFreq) // <-- افزودن حداکثر فرکانس به لیست
-
-                ranges.add("هسته $i: ${minFreq/1000} - ${maxFreq/1000} MHz")
-                maxFreqMap[maxFreq] = (maxFreqMap[maxFreq] ?: 0) + 1
+                "هسته $i: ${minFreq / 1000} - ${maxFreq / 1000} MHz" to maxFreq
             } catch (_: Exception) {
-                maxFrequencies.add(0L) // در صورت خطا، یک مقدار پیش‌فرض اضافه کن
-                continue
+                // در صورت خطا، یک مقدار پیش‌فرض برمی‌گردانیم
+                "هسته $i: نامشخص" to 0L
             }
         }
 
-        val topologyString = maxFreqMap.entries
-            .sortedByDescending { it.key }
+        // لیست‌های نهایی را از لیست بالا استخراج می‌کنیم
+        val clockSpeedRanges = coreInfoList.map { it.first }
+        val maxFrequenciesKhz = coreInfoList.map { it.second }
+
+        // توپولوژی را از لیست فرکانس‌های ماکسیمم می‌سازیم
+        val topologyString = maxFrequenciesKhz
+            .filter { it > 0 } // هسته‌هایی که اطلاعاتشان خوانده نشده را نادیده می‌گیریم
+            .groupingBy { it } // بر اساس فرکانس گروه‌بندی می‌کنیم
+            .eachCount()       // تعداد هر گروه را می‌شماریم
+            .entries
+            .sortedByDescending { it.key } // بر اساس فرکانس مرتب می‌کنیم
             .joinToString(" + ") { (maxFreq, count) ->
                 "${count}x @ ${"%.2f".format(maxFreq / 1000000.0)} GHz"
             }
@@ -61,8 +64,8 @@ class SocDataSource @Inject constructor() {
             coreCount = coreCount,
             process = "نامشخص",
             topology = if (topologyString.isNotBlank()) topologyString else "نامشخص",
-            clockSpeedRanges = ranges,
-            maxFrequenciesKhz = maxFrequencies, // <-- پاس دادن لیست به مدل
+            clockSpeedRanges = clockSpeedRanges,
+            maxFrequenciesKhz = maxFrequenciesKhz,
             liveFrequencies = List(coreCount) { "..." }
         )
     }
@@ -119,12 +122,11 @@ class SocDataSource @Inject constructor() {
      */
     @Suppress("DEPRECATION")
     suspend fun getGpuInfo(activity: Activity): GpuInfo {
-        // دیگر نیازی به cast کردن نیست، مستقیماً از پارامتر ورودی استفاده می‌کنیم
         val rootView = activity.findViewById<ViewGroup>(android.R.id.content)
         val deferred = CompletableDeferred<GpuInfo>()
 
         withContext(Dispatchers.Main) {
-            val glSurfaceView = GLSurfaceView(activity).apply { // از activity context استفاده می‌کنیم
+            val glSurfaceView = GLSurfaceView(activity).apply {
                 setRenderer(object : GLSurfaceView.Renderer {
                     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
                         val vendor = gl?.glGetString(GL10.GL_VENDOR) ?: "نامشخص"
