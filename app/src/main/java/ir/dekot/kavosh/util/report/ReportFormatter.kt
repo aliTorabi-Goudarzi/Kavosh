@@ -2,7 +2,6 @@ package ir.dekot.kavosh.util.report
 
 import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.BatteryInfo
-import ir.dekot.kavosh.ui.screen.getCategoryTitle
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 
 /**
@@ -21,10 +20,9 @@ object ReportFormatter {
 
         // تمام دسته‌بندی‌ها را به ترتیب به گزارش اضافه می‌کنیم
         InfoCategory.entries.forEach { category ->
-            builder.appendLine("--- ${getCategoryTitle(category)} ---")
-            // از تابع موجود برای فرمت کردن هر بخش استفاده می‌کنیم
+            // استفاده مستقیم از خصوصیت title در enum
+            builder.appendLine("--- ${category.title} ---")
             val sectionText = formatInfoForSharing(category, deviceInfo, batteryInfo)
-                // حذف هدر و فوتر تکراری از هر بخش
                 .lines()
                 .drop(1)
                 .dropLast(2)
@@ -42,7 +40,6 @@ object ReportFormatter {
         deviceInfo: DeviceInfo,
         batteryInfo: BatteryInfo
     ): String {
-        // از StringBuilder برای ساخت بهینه رشته استفاده می‌کنیم
         val builder = StringBuilder()
 
         when (category) {
@@ -116,7 +113,6 @@ object ReportFormatter {
                 if (deviceInfo.cameras.isEmpty()) {
                     builder.appendLine("دوربینی یافت نشد یا دسترسی ممکن نیست.")
                 } else {
-                    // به ازای هر دوربین، اطلاعات آن را به متن اضافه می‌کنیم
                     deviceInfo.cameras.forEach { camera ->
                         builder.appendLine("\n[ ${camera.name} ]")
                         builder.appendLine("  مگاپیکسل: ${camera.megapixels}")
@@ -128,8 +124,8 @@ object ReportFormatter {
                     }
                 }
             }
+        }
+        builder.appendLine("\n\nارسال شده توسط اپلیکیشن کاوش")
+        return builder.toString()
     }
-    builder.appendLine("\n\nارسال شده توسط اپلیکیشن کاوش")
-    return builder.toString()
-}
 }

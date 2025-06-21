@@ -62,7 +62,8 @@ fun DetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(getCategoryTitle(category)) },
+                // استفاده مستقیم از خصوصیت title در enum
+                title = { Text(category.title) },
                 navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } },
                 actions = {
                     IconButton(onClick = {
@@ -83,8 +84,7 @@ fun DetailScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            // فراخوانی تابع کمکی (که دیگر Composable نیست)
-            categoryDetailContent(
+            CategoryDetailContent(
                 category = category,
                 deviceInfo = deviceInfo,
                 batteryInfo = batteryInfo,
@@ -96,11 +96,7 @@ fun DetailScreen(
     }
 }
 
-/**
- * یک تابع کمکی (غیر Composable) برای سازماندهی محتوای LazyColumn.
- * این تابع به LazyListScope دسترسی دارد تا بتواند item ها را تعریف کند.
- */
-private fun LazyListScope.categoryDetailContent(
+private fun LazyListScope.CategoryDetailContent(
     category: InfoCategory,
     deviceInfo: DeviceInfo,
     batteryInfo: BatteryInfo,
