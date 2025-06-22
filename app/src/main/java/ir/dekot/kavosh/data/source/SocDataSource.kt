@@ -24,36 +24,31 @@ class SocDataSource @Inject constructor() {
 
     /**
      * اطلاعات پردازنده مرکزی (CPU) را از فایل‌های سیستمی می‌خواند.
-     * این تابع با رویکرد Functional بازنویسی شده تا خواناتر و بهینه‌تر باشد.
      */
     fun getCpuInfo(): CpuInfo {
         val coreCount = Runtime.getRuntime().availableProcessors()
         val architecture = System.getProperty("os.arch") ?: "نامشخص"
         val model = getCpuModel()
 
-        // با استفاده از map، اطلاعات هر هسته را به صورت یک Pair(رشته محدوده، ماکسیمم فرکانس) استخراج می‌کنیم
         val coreInfoList = (0 until coreCount).map { i ->
             try {
                 val minFreq = File("/sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_min_freq").readText().trim().toLong()
                 val maxFreq = File("/sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_max_freq").readText().trim().toLong()
                 "هسته $i: ${minFreq / 1000} - ${maxFreq / 1000} MHz" to maxFreq
             } catch (_: Exception) {
-                // در صورت خطا، یک مقدار پیش‌فرض برمی‌گردانیم
                 "هسته $i: نامشخص" to 0L
             }
         }
 
-        // لیست‌های نهایی را از لیست بالا استخراج می‌کنیم
         val clockSpeedRanges = coreInfoList.map { it.first }
         val maxFrequenciesKhz = coreInfoList.map { it.second }
 
-        // توپولوژی را از لیست فرکانس‌های ماکسیمم می‌سازیم
         val topologyString = maxFrequenciesKhz
-            .filter { it > 0 } // هسته‌هایی که اطلاعاتشان خوانده نشده را نادیده می‌گیریم
-            .groupingBy { it } // بر اساس فرکانس گروه‌بندی می‌کنیم
-            .eachCount()       // تعداد هر گروه را می‌شماریم
+            .filter { it > 0 }
+            .groupingBy { it }
+            .eachCount()
             .entries
-            .sortedByDescending { it.key } // بر اساس فرکانس مرتب می‌کنیم
+            .sortedByDescending { it.key }
             .joinToString(" + ") { (maxFreq, count) ->
                 "${count}x @ ${"%.2f".format(maxFreq / 1000000.0)} GHz"
             }
@@ -86,18 +81,17 @@ class SocDataSource @Inject constructor() {
 
     /**
      * فرکانس لحظه‌ای هسته‌های CPU را از فایل‌های سیستمی می‌خواند.
+     * این تابع با رویکرد Functional بازنویسی شده است.
      */
     fun getLiveCpuFrequencies(): List<String> {
-        val freqs = mutableListOf<String>()
-        for (i in 0 until Runtime.getRuntime().availableProcessors()) {
+        return (0 until Runtime.getRuntime().availableProcessors()).map { i ->
             try {
                 val freqKhz = File("/sys/devices/system/cpu/cpu$i/cpufreq/scaling_cur_freq").readText().trim().toLong()
-                freqs.add("${freqKhz / 1000} MHz")
+                "${freqKhz / 1000} MHz"
             } catch (_: Exception) {
-                freqs.add("خوابیده")
+                "خوابیده"
             }
         }
-        return freqs
     }
 
     /**
