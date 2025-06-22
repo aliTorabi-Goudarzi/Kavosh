@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -37,14 +36,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
@@ -65,28 +59,24 @@ fun DashboardScreen(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-
-    val dashboardItems by deviceInfoViewModel.dashboardItems.collectAsState()
-    // دریافت وضعیت قابلیت جابجایی از ViewModel
-    val isReorderingEnabled by deviceInfoViewModel.isReorderingEnabled.collectAsState()
     val context = LocalContext.current
 
-    var localItems by remember { mutableStateOf<List<DashboardItem>>(emptyList()) }
-    // --- اصلاح کلیدی: به جای ایندکس، کلید (نام دسته) را ذخیره می‌کنیم ---
-    var draggedItemKey by remember { mutableStateOf<Any?>(null) }
-    var dragOffset by remember { mutableStateOf(Offset.Zero) }
+    val dashboardItems by deviceInfoViewModel.dashboardItems.collectAsState()
+    val isReorderingEnabled by deviceInfoViewModel.isReorderingEnabled.collectAsState()
+
+    val gridState = rememberLazyGridState()
+
+    val dragState = rememberDashboardDragState(
+        gridState = gridState,
+        onOrderChanged = { newOrder -> deviceInfoViewModel.saveDashboardOrder(newOrder) }
+    )
+
+    LaunchedEffect(dashboardItems) {
+        dragState.updateItems(dashboardItems.filter { it.isVisible })
+    }
 
     var showMenu by remember { mutableStateOf(false) }
 
-
-
-    LaunchedEffect(dashboardItems) {
-        if (draggedItemKey == null) {
-            localItems = dashboardItems.filter { it.isVisible }
-        }
-    }
-
-    // --- گوش دادن به نتیجه عملیات خروجی برای نمایش Snackbar ---
     LaunchedEffect(Unit) {
         deviceInfoViewModel.exportResult.collectLatest { result ->
             val message = when (result) {
@@ -99,10 +89,8 @@ fun DashboardScreen(
         }
     }
 
-    val gridState = rememberLazyGridState()
-
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, // افزودن SnackbarHost
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("کاوش") },
@@ -113,7 +101,6 @@ fun DashboardScreen(
                     IconButton(onClick = onSettingsClick) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
-                    // --- دکمه جدید برای منوی خروجی ---
                     Box {
                         IconButton(onClick = { showMenu = true }) {
                             Icon(Icons.Default.MoreVert, contentDescription = "More Options")
@@ -151,10 +138,9 @@ fun DashboardScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(localItems, key = { it.category.name }) { item ->
-                // --- اصلاح کلیدی: وضعیت isDragging را بر اساس کلید بررسی می‌کنیم ---
-                val isDragging = item.category.name == draggedItemKey
-
+            items(dragState.localItems, key = { it.category.name }) { item ->
+                // دسترسی مستقیم به خصوصیت برای بررسی وضعیت جابجایی
+                val isDragging = dragState.draggedItemKey == item.category.name
                 val scale by animateFloatAsState(if (isDragging) 1.1f else 1f, label = "scale")
                 val elevation by animateFloatAsState(if (isDragging) 12.dp.value else 1.dp.value, label = "elevation")
 
@@ -167,55 +153,26 @@ fun DashboardScreen(
                             scaleY = scale
                             shadowElevation = elevation
                             if (isDragging) {
-                                translationX = dragOffset.x
-                                translationY = dragOffset.y
+                                // دسترسی مستقیم به خصوصیت برای مقدار جابجایی
+                                translationX = dragState.dragOffset.x
+                                translationY = dragState.dragOffset.y
                             }
                         }
                         .then(
                             if (isReorderingEnabled) {
-                                Modifier.pointerInput(localItems) { // کلید را هم آپدیت می‌کنیم
+                                Modifier.pointerInput(Unit) {
                                     detectDragGesturesAfterLongPress(
-                                        onDragStart = { draggedItemKey = item.category.name },
-                                        onDragEnd = {
-                                            deviceInfoViewModel.saveDashboardOrder(localItems.map { it.category })
-                                            draggedItemKey = null
-                                            dragOffset = Offset.Zero
-                                        },
-                                        onDragCancel = {
-                                            draggedItemKey = null
-                                            dragOffset = Offset.Zero
-                                        },
-                                        onDrag = { change, dragAmount ->
+                                        onDragStart = { dragState.onDragStart(item) },
+                                        onDragEnd = { dragState.onDragEnd() },
+                                        onDragCancel = { dragState.onDragCancel() },
+                                        onDrag = { change, amount ->
                                             change.consume()
-                                            dragOffset += dragAmount
-
-                                            val currentDraggingItemIndex = localItems.indexOfFirst { it.category.name == draggedItemKey }
-                                            if (currentDraggingItemIndex == -1) return@detectDragGesturesAfterLongPress
-
-                                            val currentItemInfo = gridState.layoutInfo.visibleItemsInfo
-                                                .getOrNull(currentDraggingItemIndex) ?: return@detectDragGesturesAfterLongPress
-
-                                            val draggedItemCenter = currentItemInfo.offset.toOffset() + (currentItemInfo.size.toSize().center) + dragOffset
-
-                                            val targetItemInfo = gridState.layoutInfo.visibleItemsInfo.find {
-                                                it.key != draggedItemKey && draggedItemCenter in it.bounds()
-                                            }
-
-                                            if (targetItemInfo != null) {
-                                                val from = currentDraggingItemIndex
-                                                val to = targetItemInfo.index
-                                                if (from != to) {
-                                                    localItems = localItems.toMutableList().apply {
-                                                        add(to, removeAt(from))
-                                                    }
-                                                    dragOffset = Offset.Zero
-                                                }
-                                            }
+                                            dragState.onDrag(amount)
                                         }
                                     )
                                 }
                             } else {
-                                Modifier // اگر غیرفعال بود، هیچ قابلیتی اضافه نکن
+                                Modifier
                             }
                         )
                 ) {
@@ -228,12 +185,3 @@ fun DashboardScreen(
         }
     }
 }
-
-// توابع کمکی
-private fun LazyGridItemInfo.bounds(): Rect {
-    return Rect(offset = this.offset.toOffset(), size = this.size.toSize())
-}
-
-private fun IntOffset.toOffset() = Offset(x.toFloat(), y.toFloat())
-
-private fun IntSize.toSize() = androidx.compose.ui.geometry.Size(width.toFloat(), height.toFloat())
