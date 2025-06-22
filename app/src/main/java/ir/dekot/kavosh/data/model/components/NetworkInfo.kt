@@ -1,6 +1,8 @@
 package ir.dekot.kavosh.data.model.components
 
-/**
+import androidx.compose.runtime.Immutable
+
+@Immutable /**
  * مدل داده برای نگهداری اطلاعات شبکه.
  */
 data class NetworkInfo(

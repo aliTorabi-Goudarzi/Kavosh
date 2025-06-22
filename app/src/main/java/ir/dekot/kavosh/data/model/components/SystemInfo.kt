@@ -1,5 +1,8 @@
 package ir.dekot.kavosh.data.model.components
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class SystemInfo(
     val androidVersion: String = "نامشخص",
     val sdkLevel: String = "نامشخص",

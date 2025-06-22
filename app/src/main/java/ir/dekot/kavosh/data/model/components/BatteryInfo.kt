@@ -1,5 +1,8 @@
 package ir.dekot.kavosh.data.model.components
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class BatteryInfo(
     val health: String = "نامشخص",
     val level: Int = 0,

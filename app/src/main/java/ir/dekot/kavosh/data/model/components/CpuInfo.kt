@@ -1,5 +1,8 @@
 package ir.dekot.kavosh.data.model.components
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class CpuInfo(
     val model: String = "نامشخص",
     val architecture: String = "نامشخص",
