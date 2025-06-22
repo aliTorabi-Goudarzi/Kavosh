@@ -1,4 +1,4 @@
-package ir.dekot.kavosh.ui.screen
+package ir.dekot.kavosh.ui.screen.settings
 
 import android.os.Build
 import androidx.annotation.RequiresApi

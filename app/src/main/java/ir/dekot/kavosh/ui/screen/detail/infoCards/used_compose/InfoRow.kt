@@ -1,4 +1,4 @@
-package ir.dekot.kavosh.ui.screen.infoCards.used_compose
+package ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

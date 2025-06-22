@@ -10,6 +10,8 @@ import androidx.compose.runtime.getValue
 import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.ui.screen.dashboard.DashboardScreen
 import ir.dekot.kavosh.ui.screen.dashboard.EditDashboardScreen
+import ir.dekot.kavosh.ui.screen.detail.DetailScreen
+import ir.dekot.kavosh.ui.screen.settings.SettingsScreen
 import ir.dekot.kavosh.ui.screen.splash.SplashScreen
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.Screen

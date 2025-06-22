@@ -1,4 +1,4 @@
-package ir.dekot.kavosh.ui.screen.infoCards
+package ir.dekot.kavosh.ui.screen.detail.infoCards
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Column
@@ -11,8 +11,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.data.model.components.GpuInfo
-import ir.dekot.kavosh.ui.screen.infoCards.used_compose.InfoCard
-import ir.dekot.kavosh.ui.screen.infoCards.used_compose.InfoRow
+import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoRow
 
 @Composable
 fun GpuInfoCard(info: GpuInfo, liveLoad: Int?) {

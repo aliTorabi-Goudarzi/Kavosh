@@ -1,4 +1,4 @@
-package ir.dekot.kavosh.ui.screen
+package ir.dekot.kavosh.ui.screen.detail
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -27,17 +27,17 @@ import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.BatteryInfo
 import ir.dekot.kavosh.data.model.components.ThermalInfo
-import ir.dekot.kavosh.ui.screen.infoCards.BatteryInfoCard
-import ir.dekot.kavosh.ui.screen.infoCards.CameraInfoCard
-import ir.dekot.kavosh.ui.screen.infoCards.CpuInfoCard
-import ir.dekot.kavosh.ui.screen.infoCards.DisplayInfoCard
-import ir.dekot.kavosh.ui.screen.infoCards.GpuInfoCard
-import ir.dekot.kavosh.ui.screen.infoCards.NetworkInfoCard
-import ir.dekot.kavosh.ui.screen.infoCards.RamInfoCard
-import ir.dekot.kavosh.ui.screen.infoCards.SensorInfoCard
-import ir.dekot.kavosh.ui.screen.infoCards.StorageInfoCard
-import ir.dekot.kavosh.ui.screen.infoCards.SystemInfoCard
-import ir.dekot.kavosh.ui.screen.infoCards.ThermalInfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.BatteryInfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.CameraInfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.CpuInfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.DisplayInfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.GpuInfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.NetworkInfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.RamInfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.SensorInfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.StorageInfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.SystemInfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.ThermalInfoCard
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import ir.dekot.kavosh.util.report.ReportFormatter
@@ -84,7 +84,7 @@ fun DetailScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            CategoryDetailContent(
+            categoryDetailContent(
                 category = category,
                 deviceInfo = deviceInfo,
                 batteryInfo = batteryInfo,
@@ -96,7 +96,7 @@ fun DetailScreen(
     }
 }
 
-private fun LazyListScope.CategoryDetailContent(
+private fun LazyListScope.categoryDetailContent(
     category: InfoCategory,
     deviceInfo: DeviceInfo,
     batteryInfo: BatteryInfo,

@@ -1,9 +1,9 @@
-package ir.dekot.kavosh.ui.screen.infoCards
+package ir.dekot.kavosh.ui.screen.detail.infoCards
 
 import androidx.compose.runtime.Composable
 import ir.dekot.kavosh.data.model.components.DisplayInfo
-import ir.dekot.kavosh.ui.screen.infoCards.used_compose.InfoCard
-import ir.dekot.kavosh.ui.screen.infoCards.used_compose.InfoRow
+import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoRow
 
 @Composable
 fun DisplayInfoCard(info: DisplayInfo) {
