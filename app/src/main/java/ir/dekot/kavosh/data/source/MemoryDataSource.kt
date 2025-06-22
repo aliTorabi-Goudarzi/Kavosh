@@ -7,11 +7,9 @@ import android.os.StatFs
 import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.dekot.kavosh.data.model.components.RamInfo
 import ir.dekot.kavosh.data.model.components.StorageInfo
-import java.text.DecimalFormat
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.log10
-import kotlin.math.pow
 
 /**
  * منبع داده برای اطلاعات حافظه (RAM و Storage).
@@ -50,11 +48,19 @@ class MemoryDataSource @Inject constructor(@ApplicationContext private val conte
 
     /**
      * یک متد کمکی برای فرمت کردن سایز از بایت به واحدهای خواناتر.
+     * این تابع با یک الگوریتم بهینه‌تر و سریع‌تر مبتنی بر حلقه جایگزین شده است.
      */
     private fun formatSize(size: Long): String {
         if (size <= 0) return "0 B"
         val units = arrayOf("B", "KB", "MB", "GB", "TB")
-        val digitGroups = (log10(size.toDouble()) / log10(1024.0)).toInt()
-        return DecimalFormat("#,##0.#").format(size / 1024.0.pow(digitGroups.toDouble())) + " " + units[digitGroups]
+        var value = size.toDouble()
+        var unitIndex = 0
+        // تا زمانی که مقدار از 1024 بزرگتر است و به آخرین واحد نرسیده‌ایم، تقسیم کن
+        while (value >= 1024.0 && unitIndex < units.size - 1) {
+            value /= 1024.0
+            unitIndex++
+        }
+        // رشته نهایی را با یک رقم اعشار فرمت می‌کند
+        return "%.1f %s".format(Locale.US, value, units[unitIndex])
     }
 }
