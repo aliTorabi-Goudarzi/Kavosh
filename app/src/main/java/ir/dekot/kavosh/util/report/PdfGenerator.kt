@@ -39,8 +39,13 @@ object PdfGenerator {
             spannableBuilder.setSpan(StyleSpan(Typeface.BOLD), startSection, spannableBuilder.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
             spannableBuilder.setSpan(ForegroundColorSpan(android.graphics.Color.rgb(0, 50, 150)), startSection, spannableBuilder.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
 
-            // استفاده مستقیم از تابع جدید برای دریافت بدنه گزارش، بدون نیاز به دستکاری رشته
-            val contentText = ReportFormatter.formatCategoryBody(category, deviceInfo, batteryInfo)
+            // --- تغییر کلیدی در این بخش ---
+            // حالا از تابع جدید getCategoryData استفاده کرده و نتیجه را فرمت می‌کنیم
+            val categoryData = ReportFormatter.getCategoryData(category, deviceInfo, batteryInfo)
+            val contentText = categoryData.joinToString(separator = "\n") { (label, value) ->
+                if (value.isEmpty()) label else "$label: $value"
+            }
+
             spannableBuilder.append(contentText)
             spannableBuilder.append("\n\n")
         }
