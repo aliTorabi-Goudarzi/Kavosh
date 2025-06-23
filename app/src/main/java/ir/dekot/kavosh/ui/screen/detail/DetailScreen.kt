@@ -44,10 +44,6 @@ import ir.dekot.kavosh.util.report.ReportFormatter
 import ir.dekot.kavosh.util.shareText
 import kotlinx.coroutines.launch
 
-/**
- * یک تابع کمکی برای ساختن رشته خروجی بر اساس موارد انتخاب شده.
- * این تابع از تکرار کد در بخش‌های کپی و اشتراک‌گذاری جلوگیری می‌کند.
- */
 private fun buildSelectedItemsString(
     allItems: List<Pair<String, String>>,
     selections: Map<Pair<String, String>, Boolean>
@@ -56,7 +52,6 @@ private fun buildSelectedItemsString(
         allItems.forEachIndexed { index, item ->
             val isHeader = item.second.isEmpty()
             if (isHeader) {
-                // اگر آیتم یک هدر است، چک کن که آیا فرزندی از آن انتخاب شده است یا خیر
                 val hasSelectedChildren = allItems
                     .subList(index + 1, allItems.size)
                     .takeWhile { !it.second.isEmpty() }
@@ -67,7 +62,6 @@ private fun buildSelectedItemsString(
                     appendLine(item.first)
                 }
             } else {
-                // اگر آیتم عادی است، فقط در صورت انتخاب شدن آن را اضافه کن
                 if (selections[item] == true) {
                     appendLine("${item.first}: ${item.second}")
                 }
@@ -89,6 +83,8 @@ fun DetailScreen(
     val thermalDetails by viewModel.thermalDetails.collectAsState()
     val liveCpuFrequencies by viewModel.liveCpuFrequencies.collectAsState()
     val liveGpuLoad by viewModel.liveGpuLoad.collectAsState()
+    val downloadSpeed by viewModel.downloadSpeed.collectAsState()
+    val uploadSpeed by viewModel.uploadSpeed.collectAsState()
 
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
@@ -125,8 +121,6 @@ fun DetailScreen(
             title = "انتخاب موارد برای اشتراک‌گذاری",
             confirmButtonText = "اشتراک‌گذاری",
             onConfirm = { selections ->
-                // --- اصلاحیه در این بخش ---
-                // تابع کمکی را فراخوانی کرده و نتیجه را مستقیماً برای اشتراک‌گذاری ارسال می‌کنیم
                 val textToShare = buildSelectedItemsString(itemsToSelect, selections)
                 if (textToShare.isNotBlank()) {
                     shareText(context, textToShare)
@@ -166,7 +160,10 @@ fun DetailScreen(
                 batteryInfo = batteryInfo,
                 thermalDetails = thermalDetails,
                 liveCpuFrequencies = liveCpuFrequencies,
-                liveGpuLoad = liveGpuLoad
+                liveGpuLoad = liveGpuLoad,
+                // --- پاس دادن پارامترهای جدید به تابع کمکی ---
+                downloadSpeed = downloadSpeed,
+                uploadSpeed = uploadSpeed
             )
         }
     }
@@ -178,9 +175,50 @@ private fun LazyListScope.CategoryDetailContent(
     batteryInfo: BatteryInfo,
     thermalDetails: List<ThermalInfo>,
     liveCpuFrequencies: List<String>,
-    liveGpuLoad: Int?
+    liveGpuLoad: Int?,
+    // --- افزودن پارامترهای جدید به امضای تابع ---
+    downloadSpeed: String,
+    uploadSpeed: String
 ) {
     when (category) {
+        InfoCategory.SENSORS -> {
+            if (deviceInfo.sensors.isEmpty()) {
+                item { EmptyStateMessage("هیچ سنسوری در این دستگاه یافت نشد.") }
+            } else {
+                items(deviceInfo.sensors, key = { it.name }) { sensor ->
+                    SensorInfoCard(info = sensor)
+                }
+            }
+        }
+        InfoCategory.THERMAL -> {
+            if (thermalDetails.isEmpty()) {
+                item { EmptyStateMessage("اطلاعات دمای حرارتی برای این دستگاه در دسترس نیست.") }
+            } else {
+                items(thermalDetails, key = { it.type }) { thermalInfo ->
+                    ThermalInfoCard(info = thermalInfo)
+                }
+            }
+        }
+        InfoCategory.CAMERA -> {
+            if (deviceInfo.cameras.isEmpty()) {
+                item { EmptyStateMessage("دوربینی یافت نشد یا دسترسی به آن ممکن نیست.") }
+            } else {
+                items(deviceInfo.cameras, key = { it.id }) { camera ->
+                    CameraInfoCard(info = camera)
+                }
+            }
+        }
+        InfoCategory.NETWORK -> {
+            item {
+                NetworkInfoCard(
+                    info = deviceInfo.network,
+                    // حالا این متغیرها در این حوزه قابل دسترسی هستند
+                    downloadSpeed = downloadSpeed,
+                    uploadSpeed = uploadSpeed
+                )
+            }
+        }
+        // ... سایر case ها بدون تغییر ...
         InfoCategory.SOC -> {
             item { CpuInfoCard(deviceInfo.cpu, liveCpuFrequencies) }
             item { GpuInfoCard(deviceInfo.gpu, liveGpuLoad) }
@@ -195,39 +233,6 @@ private fun LazyListScope.CategoryDetailContent(
         }
         InfoCategory.BATTERY -> {
             item { BatteryInfoCard(batteryInfo) }
-        }
-        InfoCategory.SENSORS -> {
-            // --- تغییر کلیدی در این بخش ---
-            if (deviceInfo.sensors.isEmpty()) {
-                item { EmptyStateMessage("هیچ سنسوری در این دستگاه یافت نشد.") }
-            } else {
-                items(deviceInfo.sensors, key = { it.name }) { sensor ->
-                    SensorInfoCard(info = sensor)
-                }
-            }
-        }
-        InfoCategory.THERMAL -> {
-            // --- تغییر کلیدی در این بخش ---
-            if (thermalDetails.isEmpty()) {
-                item { EmptyStateMessage("اطلاعات دمای حرارتی برای این دستگاه در دسترس نیست.") }
-            } else {
-                items(thermalDetails, key = { it.type }) { thermalInfo ->
-                    ThermalInfoCard(info = thermalInfo)
-                }
-            }
-        }
-        InfoCategory.CAMERA -> {
-            // --- تغییر کلیدی در این بخش ---
-            if (deviceInfo.cameras.isEmpty()) {
-                item { EmptyStateMessage("دوربینی یافت نشد یا دسترسی به آن ممکن نیست.") }
-            } else {
-                items(deviceInfo.cameras, key = { it.id }) { camera ->
-                    CameraInfoCard(info = camera)
-                }
-            }
-        }
-        InfoCategory.NETWORK -> {
-            item { NetworkInfoCard(deviceInfo.network) }
         }
     }
 }

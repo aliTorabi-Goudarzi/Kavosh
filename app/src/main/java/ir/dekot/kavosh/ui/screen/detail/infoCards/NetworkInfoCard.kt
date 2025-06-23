@@ -7,8 +7,14 @@ import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoCard
 import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoRow
 
 @Composable
-fun NetworkInfoCard(info: NetworkInfo) {
+fun NetworkInfoCard(
+    info: NetworkInfo,
+    downloadSpeed: String, // پارامتر جدید
+    uploadSpeed: String    // پارامتر جدید
+) {
     InfoCard("اطلاعات شبکه") {
+        InfoRow("سرعت دانلود", downloadSpeed) // ردیف جدید
+        InfoRow("سرعت آپلود", uploadSpeed)    // ردیف جدید
         InfoRow("وضعیت هات‌اسپات", if (info.isHotspotEnabled) "روشن" else "خاموش")
         InfoRow("نوع اتصال", info.networkType)
         InfoRow("آدرس IPv4", info.ipAddressV4)

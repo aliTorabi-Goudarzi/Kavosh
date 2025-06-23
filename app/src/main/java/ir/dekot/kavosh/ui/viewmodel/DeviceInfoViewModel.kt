@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.TrafficStats
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -27,6 +28,7 @@ import ir.dekot.kavosh.data.model.components.ThermalInfo
 import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
 import ir.dekot.kavosh.ui.screen.dashboard.DashboardItem
+import ir.dekot.kavosh.util.formatSizeOrSpeed
 import ir.dekot.kavosh.util.report.PdfGenerator
 import ir.dekot.kavosh.util.report.ReportFormatter
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +40,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.FileOutputStream
 import javax.inject.Inject
@@ -103,6 +106,15 @@ class DeviceInfoViewModel @Inject constructor(
     private var socPollingJob: Job? = null
     private var batteryReceiver: BroadcastReceiver? = null
 
+    // --- State های جدید برای سرعت شبکه ---
+    private val _downloadSpeed = MutableStateFlow("0.0 KB/s")
+    val downloadSpeed = _downloadSpeed.asStateFlow()
+
+    private val _uploadSpeed = MutableStateFlow("0.0 KB/s")
+    val uploadSpeed = _uploadSpeed.asStateFlow()
+
+    private var networkPollingJob: Job? = null
+
     // --- State های مربوط به خروجی گرفتن ---
     private val _exportResult = MutableSharedFlow<ExportResult>()
     val exportResult = _exportResult.asSharedFlow()
@@ -127,6 +139,45 @@ class DeviceInfoViewModel @Inject constructor(
             // در غیر این صورت، نیازی به بارگذاری داده اینجا نیست، به MainActivity سپرده می‌شود
             _currentScreen.value = Screen.Dashboard
         }
+    }
+
+    // --- افزودن منطق جدید ---
+    private fun startNetworkPolling() {
+        stopNetworkPolling() // جلوگیری از اجرای همزمان
+        networkPollingJob = viewModelScope.launch {
+            var lastRxBytes = TrafficStats.getTotalRxBytes()
+            var lastTxBytes = TrafficStats.getTotalTxBytes()
+
+            while (isActive) {
+                delay(2000) // هر ۲ ثانیه یک‌بار چک کن
+                val currentRxBytes = TrafficStats.getTotalRxBytes()
+                val currentTxBytes = TrafficStats.getTotalTxBytes()
+
+                // محاسبه سرعت بر حسب بایت بر ثانیه
+                val rxSpeed = (currentRxBytes - lastRxBytes) / 2
+                val txSpeed = (currentTxBytes - lastTxBytes) / 2
+
+                // آپدیت State ها با مقادیر فرمت شده
+                _downloadSpeed.value = formatSizeOrSpeed(rxSpeed, perSecond = true)
+                _uploadSpeed.value = formatSizeOrSpeed(txSpeed, perSecond = true)
+
+                // ذخیره مقادیر فعلی برای محاسبه بعدی
+                lastRxBytes = currentRxBytes
+                lastTxBytes = currentTxBytes
+            }
+        }
+    }
+
+    private fun stopNetworkPolling() {
+        networkPollingJob?.cancel()
+        networkPollingJob = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopSocPolling()
+        unregisterBatteryReceiver()
+        stopNetworkPolling() // --- توقف در اینجا ---
     }
 
     // --- منطق اسکن و بارگذاری داده ---
@@ -264,23 +315,19 @@ class DeviceInfoViewModel @Inject constructor(
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        stopSocPolling()
-        unregisterBatteryReceiver()
-    }
-
     fun navigateToDetail(category: InfoCategory) {
         stopSocPolling()
         unregisterBatteryReceiver()
-
+        stopNetworkPolling() // --- توقف polling قبلی ---
         when (category) {
             InfoCategory.THERMAL -> prepareThermalDetails()
             InfoCategory.SOC -> startSocPolling()
             InfoCategory.BATTERY -> registerBatteryReceiver()
+            InfoCategory.NETWORK -> startNetworkPolling() // --- شروع polling جدید ---
             else -> { }
         }
         _currentScreen.value = Screen.Detail(category)
+
     }
 
     fun navigateBack() {
@@ -290,7 +337,9 @@ class DeviceInfoViewModel @Inject constructor(
         if (_currentScreen.value is Screen.EditDashboard) {
             loadDashboardItems()
         }
+        stopNetworkPolling() // --- توقف polling قبلی ---
         _currentScreen.value = Screen.Dashboard
+
     }
 
     private fun loadDashboardItems() {
