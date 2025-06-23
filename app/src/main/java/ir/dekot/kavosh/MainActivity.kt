@@ -11,7 +11,10 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -42,7 +45,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // راه‌اندازی جمع‌آوری درخواست خروجی
         lifecycleScope.launch {
             deviceInfoViewModel.exportRequest.collectLatest { format ->
                 val fileName = "Kavosh_Report_${System.currentTimeMillis()}.${format.extension}"
@@ -50,8 +52,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // --- تغییر کلیدی برای رفع باگ ---
-        // بارگذاری داده‌ها فقط زمانی شروع می‌شود که اکتیویتی آماده باشد
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 deviceInfoViewModel.loadDataForNonFirstLaunch(this@MainActivity)
@@ -60,14 +60,18 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
-            ) {
-                DeviceInspectorApp(
-                    deviceInfoViewModel = deviceInfoViewModel,
-                    onStartScan = { deviceInfoViewModel.startScan(this) }
-                )
+            // --- تغییر کلیدی در این بخش ---
+            // با این Provider، جهت چیدمان کل برنامه به صورت سراسری راست-به-چپ می‌شود
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    DeviceInspectorApp(
+                        deviceInfoViewModel = deviceInfoViewModel,
+                        onStartScan = { deviceInfoViewModel.startScan(this) }
+                    )
+                }
             }
         }
     }
