@@ -13,7 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.data.model.components.CpuInfo
-import ir.dekot.kavosh.ui.screen.SectionTitleInCard
+import ir.dekot.kavosh.ui.screen.shared.SectionTitleInCard
 import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoCard
 import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoRow
 

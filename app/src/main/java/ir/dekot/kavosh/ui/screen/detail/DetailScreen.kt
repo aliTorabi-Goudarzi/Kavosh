@@ -37,6 +37,7 @@ import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.BatteryInfo
 import ir.dekot.kavosh.data.model.components.ThermalInfo
 import ir.dekot.kavosh.ui.screen.detail.infoCards.*
+import ir.dekot.kavosh.ui.screen.shared.EmptyStateMessage
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import ir.dekot.kavosh.util.report.ReportFormatter
@@ -196,18 +197,33 @@ private fun LazyListScope.CategoryDetailContent(
             item { BatteryInfoCard(batteryInfo) }
         }
         InfoCategory.SENSORS -> {
-            items(deviceInfo.sensors, key = { it.name }) { sensor ->
-                SensorInfoCard(info = sensor)
+            // --- تغییر کلیدی در این بخش ---
+            if (deviceInfo.sensors.isEmpty()) {
+                item { EmptyStateMessage("هیچ سنسوری در این دستگاه یافت نشد.") }
+            } else {
+                items(deviceInfo.sensors, key = { it.name }) { sensor ->
+                    SensorInfoCard(info = sensor)
+                }
             }
         }
         InfoCategory.THERMAL -> {
-            items(thermalDetails, key = { it.type }) { thermalInfo ->
-                ThermalInfoCard(info = thermalInfo)
+            // --- تغییر کلیدی در این بخش ---
+            if (thermalDetails.isEmpty()) {
+                item { EmptyStateMessage("اطلاعات دمای حرارتی برای این دستگاه در دسترس نیست.") }
+            } else {
+                items(thermalDetails, key = { it.type }) { thermalInfo ->
+                    ThermalInfoCard(info = thermalInfo)
+                }
             }
         }
         InfoCategory.CAMERA -> {
-            items(deviceInfo.cameras, key = { it.id }) { camera ->
-                CameraInfoCard(info = camera)
+            // --- تغییر کلیدی در این بخش ---
+            if (deviceInfo.cameras.isEmpty()) {
+                item { EmptyStateMessage("دوربینی یافت نشد یا دسترسی به آن ممکن نیست.") }
+            } else {
+                items(deviceInfo.cameras, key = { it.id }) { camera ->
+                    CameraInfoCard(info = camera)
+                }
             }
         }
         InfoCategory.NETWORK -> {
