@@ -167,4 +167,23 @@
     <string name="ambient_temperature_title">Ambient Temperature</string>
     <string name="relative_humidity_title">Relative Humidity</string>
     <string name="unit_format_percent_relative">%.1f %%</string>
+    <string name="uncalibrated_accelerometer_title">Uncalibrated Accelerometer</string>
+    <string name="uncalibrated_gyroscope_title">Uncalibrated Gyroscope</string>
+    <string name="uncalibrated_magnetometer_title">Uncalibrated Magnetometer</string>
+    <string name="magnetometer_unit">(in μT)</string>
+    <string name="uncalibrated_raw_data">Raw Data</string>
+    <string name="uncalibrated_bias">Estimated Bias</string>
+    <string name="step_detector_title">Step Detected</string>
+    <string name="step_detector_description">Counts each step as a separate event.</string>
+    <string name="tilt_detector_waiting">Waiting for a tilt event…</string>
+    <string name="tilt_detector_detected">Tilt Detected!</string>
+    <string name="significant_motion_title">Significant Motion</string>
+    <string name="pick_up_gesture_title">Pick-up Gesture</string>
+    <string name="tilt_detector_title">Tilt Detector</string>
+    <string name="trigger_sensor_waiting">Waiting for event…</string>
+    <string name="trigger_sensor_detected">Event Detected!</string>
+    <string name="rotation_vector_title">Device Orientation</string>
+    <string name="rotation_azimuth">Azimuth</string>
+    <string name="rotation_pitch">Pitch</string>
+    <string name="rotation_roll">Roll</string>
 </resources>

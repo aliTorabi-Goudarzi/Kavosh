@@ -169,4 +169,23 @@
     <string name="ambient_temperature_title">دمای محیط</string>
     <string name="relative_humidity_title">رطوبت نسبی</string>
     <string name="unit_format_percent_relative">%% %.1f</string>
+    <string name="uncalibrated_accelerometer_title">شتاب‌سنج کالیبره نشده</string>
+    <string name="uncalibrated_gyroscope_title">ژیروسکوپ کالیبره نشده</string>
+    <string name="uncalibrated_magnetometer_title">مغناطیس‌سنج کالیبره نشده</string>
+    <string name="magnetometer_unit">(به میکروتسلا)</string>
+    <string name="uncalibrated_raw_data">داده‌های خام</string>
+    <string name="uncalibrated_bias">خطای تخمینی</string>
+    <string name="step_detector_title">گام تشخیص داده شد</string>
+    <string name="step_detector_description">هر گام را به عنوان یک رویداد مجزا می‌شمارد.</string>
+    <string name="tilt_detector_waiting">در انتظار تشخیص یک رویداد شیب…</string>
+    <string name="tilt_detector_detected">شیب تشخیص داده شد!</string>
+    <string name="significant_motion_title">حرکت قابل توجه</string>
+    <string name="pick_up_gesture_title">حرکت برداشتن</string>
+    <string name="tilt_detector_title">تشخیص‌دهنده شیب</string>
+    <string name="trigger_sensor_waiting">در انتظار رویداد…</string>
+    <string name="trigger_sensor_detected">رویداد تشخیص داده شد!</string>
+    <string name="rotation_vector_title">جهت‌گیری دستگاه</string>
+    <string name="rotation_azimuth">عزیموت (Azimuth)</string>
+    <string name="rotation_pitch">پیچ (Pitch)</string>
+    <string name="rotation_roll">رول (Roll)</string>
 </resources>

@@ -35,9 +35,16 @@ val testableSensors = listOf(
     Sensor.TYPE_LINEAR_ACCELERATION,
     Sensor.TYPE_STEP_COUNTER,
     Sensor.TYPE_AMBIENT_TEMPERATURE,
-    Sensor.TYPE_RELATIVE_HUMIDITY
+    Sensor.TYPE_RELATIVE_HUMIDITY,
+    Sensor.TYPE_ACCELEROMETER_UNCALIBRATED,
+    Sensor.TYPE_GYROSCOPE_UNCALIBRATED,
+    Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED,
+    Sensor.TYPE_STEP_DETECTOR,
+    // سنسورهای جدید
+    Sensor.TYPE_SIGNIFICANT_MOTION,
+    // سنسور جدید
+    Sensor.TYPE_ROTATION_VECTOR
 )
-
 @Composable
 fun SensorInfoCard(
     info: SensorInfo,

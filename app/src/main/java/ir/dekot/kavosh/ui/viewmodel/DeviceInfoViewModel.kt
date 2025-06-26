@@ -64,6 +64,9 @@ class DeviceInfoViewModel @Inject constructor(
 ) : ViewModel() {
 
     // *** State های جدید برای داده‌های سنسورها ***
+    // *** این State حالا داده‌های خام وکتور چرخش را نگه می‌دارد ***
+    private val _rotationVectorData = MutableStateFlow(FloatArray(4))
+    val rotationVectorData: StateFlow<FloatArray> = _rotationVectorData.asStateFlow()
 
 
     // ... (سایر State ها)
@@ -207,6 +210,15 @@ class DeviceInfoViewModel @Inject constructor(
         event ?: return
 
         _liveSensorData.value = event.values.toList()
+        if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR) {
+            // *** داده‌های خام وکتور چرخش را مستقیماً در State جدید قرار می‌دهیم ***
+            // *** تغییر کلیدی و نهایی در این دو خط ***
+            // ما همیشه یک کپی جدید از داده‌ها را ایجاد می‌کنیم تا StateFlow متوجه تغییر شود
+            _liveSensorData.value = event.values.toList()
+        }
+        if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR) {
+            _rotationVectorData.value = event.values.clone() // استفاده از clone() برای ساخت آرایه جدید
+        }
 
         if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
             System.arraycopy(event.values, 0, accelerometerReading, 0, accelerometerReading.size)
@@ -273,6 +285,8 @@ class DeviceInfoViewModel @Inject constructor(
         sensorEventListener = null
         _liveSensorData.value = emptyList()
         _compassBearing.value = 0f
+        // ریست کردن وکتور چرخش
+        _rotationVectorData.value = FloatArray(4)
     }
 
 
