@@ -1,18 +1,20 @@
 package ir.dekot.kavosh.ui.screen.detail.infoCards
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.components.BatteryInfo
 import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoCard
 import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoRow
 
 @Composable
 fun BatteryInfoCard(info: BatteryInfo) {
-    InfoCard("باتری") {
-        InfoRow("سلامت", info.health)
-        InfoRow("درصد شارژ", "${info.level}%")
-        InfoRow("وضعیت شارژ", info.status)
-        InfoRow("تکنولوژی", info.technology)
-        InfoRow("دما", info.temperature)
-        InfoRow("ولتاژ", info.voltage)
+    InfoCard(stringResource(R.string.category_battery)) {
+        InfoRow(stringResource(R.string.battery_health), info.health)
+        InfoRow(stringResource(R.string.battery_level), stringResource(R.string.unit_format_percent, info.level))
+        InfoRow(stringResource(R.string.battery_status), info.status)
+        InfoRow(stringResource(R.string.battery_technology), info.technology)
+        InfoRow(stringResource(R.string.battery_temperature), info.temperature)
+        InfoRow(stringResource(R.string.battery_voltage), info.voltage)
     }
 }

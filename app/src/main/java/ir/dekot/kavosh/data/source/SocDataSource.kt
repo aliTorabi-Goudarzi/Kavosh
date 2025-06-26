@@ -1,10 +1,13 @@
 package ir.dekot.kavosh.data.source
 
 import android.app.Activity
+import android.content.Context
 import android.opengl.GLSurfaceView
 import android.os.Build
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import dagger.hilt.android.qualifiers.ApplicationContext
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.components.CpuInfo
 import ir.dekot.kavosh.data.model.components.GpuInfo
 import kotlinx.coroutines.CompletableDeferred
@@ -16,27 +19,26 @@ import javax.inject.Singleton
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-/**
- * منبع داده برای اطلاعات SOC (پردازنده مرکزی و گرافیکی).
- */
 @Singleton
-class SocDataSource @Inject constructor() {
+class SocDataSource @Inject constructor(@ApplicationContext private val context: Context) {
 
-    /**
-     * اطلاعات پردازنده مرکزی (CPU) را از فایل‌های سیستمی می‌خواند.
-     */
     fun getCpuInfo(): CpuInfo {
         val coreCount = Runtime.getRuntime().availableProcessors()
-        val architecture = System.getProperty("os.arch") ?: "نامشخص"
+        val architecture = System.getProperty("os.arch") ?: context.getString(R.string.label_undefined)
         val model = getCpuModel()
 
         val coreInfoList = (0 until coreCount).map { i ->
             try {
                 val minFreq = File("/sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_min_freq").readText().trim().toLong()
                 val maxFreq = File("/sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_max_freq").readText().trim().toLong()
-                "هسته $i: ${minFreq / 1000} - ${maxFreq / 1000} MHz" to maxFreq
+                val coreName = context.getString(R.string.cpu_core_prefix, i)
+                val minMhz = minFreq / 1000
+                val maxMhz = maxFreq / 1000
+                // Using a trick to get the unit (MHz) without the number
+                val mhzUnit = context.getString(R.string.unit_format_mhz, 0).substringAfter("0").trim()
+                "$coreName: $minMhz - $maxMhz $mhzUnit" to maxFreq
             } catch (_: Exception) {
-                "هسته $i: نامشخص" to 0L
+                "${context.getString(R.string.cpu_core_prefix, i)}: ${context.getString(R.string.label_undefined)}" to 0L
             }
         }
 
@@ -50,53 +52,44 @@ class SocDataSource @Inject constructor() {
             .entries
             .sortedByDescending { it.key }
             .joinToString(" + ") { (maxFreq, count) ->
-                "${count}x @ ${"%.2f".format(maxFreq / 1000000.0)} GHz"
+                val freqGhz = maxFreq / 1000000.0
+                "${count}x @ ${context.getString(R.string.unit_format_ghz, freqGhz)}"
             }
 
         return CpuInfo(
             model = model,
             architecture = architecture,
             coreCount = coreCount,
-            process = "نامشخص",
-            topology = if (topologyString.isNotBlank()) topologyString else "نامشخص",
+            process = context.getString(R.string.label_undefined),
+            topology = if (topologyString.isNotBlank()) topologyString else context.getString(R.string.label_undefined),
             clockSpeedRanges = clockSpeedRanges,
             maxFrequenciesKhz = maxFrequenciesKhz,
             liveFrequencies = List(coreCount) { "..." }
         )
     }
 
-    /**
-     * مدل پردازنده را برمی‌گرداند.
-     */
     private fun getCpuModel(): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Build.SOC_MODEL.let {
-                if (it.isNotBlank()) return it
+                if (it.isNotBlank() && it != "unknown") return it
             }
         }
-        return Build.HARDWARE.takeIf { it.isNotBlank() }
-            ?: Build.BOARD.takeIf { it.isNotBlank() }
-            ?: "نامشخص"
+        return Build.HARDWARE.takeIf { !it.isNullOrBlank() }
+            ?: Build.BOARD.takeIf { !it.isNullOrBlank() }
+            ?: context.getString(R.string.label_undefined)
     }
 
-    /**
-     * فرکانس لحظه‌ای هسته‌های CPU را از فایل‌های سیستمی می‌خواند.
-     * این تابع با رویکرد Functional بازنویسی شده است.
-     */
     fun getLiveCpuFrequencies(): List<String> {
         return (0 until Runtime.getRuntime().availableProcessors()).map { i ->
             try {
                 val freqKhz = File("/sys/devices/system/cpu/cpu$i/cpufreq/scaling_cur_freq").readText().trim().toLong()
-                "${freqKhz / 1000} MHz"
+                context.getString(R.string.unit_format_mhz, freqKhz / 1000)
             } catch (_: Exception) {
-                "خوابیده"
+                context.getString(R.string.label_sleeping)
             }
         }
     }
 
-    /**
-     * درصد بار پردازشی GPU را از فایل سیستمی (در صورت وجود) می‌خواند.
-     */
     fun getGpuLoadPercentage(): Int? {
         val kgslPath = "/sys/class/kgsl/kgsl-3d0/gpu_busy_percentage"
         return try {
@@ -110,10 +103,7 @@ class SocDataSource @Inject constructor() {
             null
         }
     }
-    /**
-     * اطلاعات GPU را استخراج می‌کند.
-     * @param activity این متد حالا Activity را به عنوان پارامتر ورودی می‌گیرد.
-     */
+
     @Suppress("DEPRECATION")
     suspend fun getGpuInfo(activity: Activity): GpuInfo {
         val rootView = activity.findViewById<ViewGroup>(android.R.id.content)
@@ -123,8 +113,8 @@ class SocDataSource @Inject constructor() {
             val glSurfaceView = GLSurfaceView(activity).apply {
                 setRenderer(object : GLSurfaceView.Renderer {
                     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-                        val vendor = gl?.glGetString(GL10.GL_VENDOR) ?: "نامشخص"
-                        val renderer = gl?.glGetString(GL10.GL_RENDERER) ?: "نامشخص"
+                        val vendor = gl?.glGetString(GL10.GL_VENDOR) ?: context.getString(R.string.label_undefined)
+                        val renderer = gl?.glGetString(GL10.GL_RENDERER) ?: context.getString(R.string.label_undefined)
                         deferred.complete(GpuInfo(vendor = vendor, model = renderer))
                         rootView.post {
                             rootView.removeView(this@apply)

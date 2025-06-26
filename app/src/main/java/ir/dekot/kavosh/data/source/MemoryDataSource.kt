@@ -7,7 +7,7 @@ import android.os.StatFs
 import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.dekot.kavosh.data.model.components.RamInfo
 import ir.dekot.kavosh.data.model.components.StorageInfo
-import ir.dekot.kavosh.util.formatSizeOrSpeed // <-- ایمپورت جدید
+import ir.dekot.kavosh.util.formatSizeOrSpeed
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,8 +20,9 @@ class MemoryDataSource @Inject constructor(@ApplicationContext private val conte
         val memoryInfo = ActivityManager.MemoryInfo()
         activityManager.getMemoryInfo(memoryInfo)
         return RamInfo(
-            total = formatSizeOrSpeed(memoryInfo.totalMem),
-            available = formatSizeOrSpeed(memoryInfo.availMem)
+            // *** تغییر کلیدی: پاس دادن context ***
+            total = formatSizeOrSpeed(context, memoryInfo.totalMem),
+            available = formatSizeOrSpeed(context, memoryInfo.availMem)
         )
     }
 
@@ -30,9 +31,9 @@ class MemoryDataSource @Inject constructor(@ApplicationContext private val conte
         val totalBytes = internalStat.blockCountLong * internalStat.blockSizeLong
         val availableBytes = internalStat.availableBlocksLong * internalStat.blockSizeLong
         return StorageInfo(
-            total = formatSizeOrSpeed(totalBytes),
-            available = formatSizeOrSpeed(availableBytes)
+            // *** تغییر کلیدی: پاس دادن context ***
+            total = formatSizeOrSpeed(context, totalBytes),
+            available = formatSizeOrSpeed(context, availableBytes)
         )
     }
-    // تابع formatSize داخلی از این کلاس حذف شد.
 }

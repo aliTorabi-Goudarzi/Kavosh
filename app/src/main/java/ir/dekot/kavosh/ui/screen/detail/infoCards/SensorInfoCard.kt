@@ -11,9 +11,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.components.SensorInfo
 
 @Composable
@@ -30,7 +32,7 @@ fun SensorInfoCard(info: SensorInfo) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "سازنده: ${info.vendor}",
+                text = stringResource(R.string.sensor_vendor, info.vendor),
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

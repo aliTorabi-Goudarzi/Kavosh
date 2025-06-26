@@ -9,29 +9,29 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.components.GpuInfo
 import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoCard
 import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoRow
 
 @Composable
 fun GpuInfoCard(info: GpuInfo, liveLoad: Int?) {
-    InfoCard("پردازنده گرافیکی (GPU)") {
-        InfoRow("مدل", info.model)
-        InfoRow("سازنده", info.vendor)
-        InfoRow("لود GPU", "${liveLoad ?: 0} %")
+    InfoCard(stringResource(R.string.gpu_title)) {
+        InfoRow(stringResource(R.string.gpu_model), info.model)
+        InfoRow(stringResource(R.string.gpu_vendor), info.vendor)
+        InfoRow(
+            stringResource(R.string.gpu_load),
+            stringResource(R.string.unit_format_percent, liveLoad ?: 0)
+        )
 
-        // ستون برای قرار دادن نوار پیشرفت
         Column(modifier = Modifier.fillMaxWidth()) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            // مقدار پیشرفت باید بین 0.0f و 1.0f باشد
             val progress = (liveLoad ?: 0) / 100f
-
-            // انیمیشن نرم برای تغییرات نوار پیشرفت
             val animatedProgress by animateFloatAsState(targetValue = progress, label = "GpuProgressAnimation")
 
-            // نوار پیشرفت خطی
             LinearProgressIndicator(
                 progress = { animatedProgress },
                 modifier = Modifier

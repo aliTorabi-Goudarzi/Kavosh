@@ -21,7 +21,6 @@ fun ThermalInfoCard(info: ThermalInfo) {
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
-        // از InfoRow استفاده می‌کنیم تا ظاهر یکپارچه باشد
         Row(
             modifier = Modifier
                 .fillMaxWidth()

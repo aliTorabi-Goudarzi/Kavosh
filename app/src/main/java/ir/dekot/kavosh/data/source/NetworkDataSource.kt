@@ -11,6 +11,7 @@ import android.os.Build
 import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.components.NetworkInfo
 import java.net.Inet4Address
 import java.net.Inet6Address
@@ -27,20 +28,12 @@ class NetworkDataSource @Inject constructor(@ApplicationContext private val cont
     private val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
     private val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 
-    /**
-     * وضعیت Hotspot (Tethering) را بررسی می‌کند.
-     * از آنجایی که هیچ API عمومی و مستقیمی برای این کار وجود ندارد،
-     * از Reflection برای فراخوانی متدهای داخلی و مخفی اندروید استفاده می‌کنیم.
-     * این روش یک "ترفند" رایج اما شکننده است.
-     */
     private fun isTetheringActive(): Boolean {
         try {
-            // این متد در اکثر دستگاه‌ها وجود دارد
             val method = connectivityManager.javaClass.getMethod("isTetheringOn")
             return method.invoke(connectivityManager) as? Boolean == true
         } catch (_: Exception) {
             try {
-                // این متد در برخی دستگاه‌های قدیمی‌تر استفاده می‌شود
                 val method = wifiManager.javaClass.getMethod("isWifiApEnabled")
                 return method.invoke(wifiManager) as? Boolean == true
             } catch (_: Exception) {
@@ -49,19 +42,14 @@ class NetworkDataSource @Inject constructor(@ApplicationContext private val cont
         }
     }
 
-    /**
-     * اطلاعات کامل شبکه را با بررسی تمام اینترفیس‌های فعال دستگاه برمی‌گرداند.
-     */
     @SuppressLint("MissingPermission")
     fun getNetworkInfo(): NetworkInfo {
         val isHotspotOn = isTetheringActive()
         val (ipv4, ipv6) = getIpAddresses()
 
-        // به جای یک شبکه فعال، تمام شبکه‌ها را بررسی می‌کنیم تا دقیق‌ترین اطلاعات را پیدا کنیم
         for (network in connectivityManager.allNetworks) {
             val capabilities = connectivityManager.getNetworkCapabilities(network) ?: continue
 
-            // بررسی اتصال وای‌فای
             if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
                 val wifiInfo = wifiManager.connectionInfo
                 val dhcpInfo = wifiManager.dhcpInfo
@@ -80,7 +68,6 @@ class NetworkDataSource @Inject constructor(@ApplicationContext private val cont
                 )
             }
 
-            // بررسی اتصال موبایل
             if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
                 return NetworkInfo(
                     networkType = getMobileNetworkType(),
@@ -93,14 +80,12 @@ class NetworkDataSource @Inject constructor(@ApplicationContext private val cont
             }
         }
 
-        // اگر هیچ شبکه‌ای پیدا نشد
-        return NetworkInfo(isHotspotEnabled = isHotspotOn)
+        return NetworkInfo(
+            networkType = context.getString(R.string.label_disconnected),
+            isHotspotEnabled = isHotspotOn
+        )
     }
 
-    /**
-     * آدرس‌های IPv4 و IPv6 دستگاه را پیدا می‌کند.
-     * این تابع با رویکرد Functional بازنویسی شده تا خواناتر باشد.
-     */
     private fun getIpAddresses(): Pair<String, String> {
         try {
             val allAddresses = Collections.list(NetworkInterface.getNetworkInterfaces())
@@ -109,19 +94,17 @@ class NetworkDataSource @Inject constructor(@ApplicationContext private val cont
                         .filter { !it.isLoopbackAddress && it.hostAddress != null }
                 }
 
-            val ipv4 = allAddresses.firstOrNull { it is Inet4Address }?.hostAddress ?: "نامشخص"
+            val ipv4 = allAddresses.firstOrNull { it is Inet4Address }?.hostAddress ?: context.getString(R.string.label_undefined)
 
             val ipv6 = allAddresses.firstOrNull { it is Inet6Address }?.let {
                 val rawAddress = it.hostAddress
-                // حذف scope id از انتهای آدرس IPv6 (مثال: %wlan0)
                 val scopeIndex = rawAddress.indexOf('%')
                 if (scopeIndex > 0) rawAddress.substring(0, scopeIndex) else rawAddress
-            }?.uppercase() ?: "نامشخص"
+            }?.uppercase() ?: context.getString(R.string.label_undefined)
 
             return ipv4 to ipv6
         } catch (_: Exception) {
-            // در صورت بروز هرگونه خطا، مقادیر پیش‌فرض برگردانده می‌شود
-            return "نامشخص" to "نامشخص"
+            return context.getString(R.string.label_undefined) to context.getString(R.string.label_undefined)
         }
     }
 
@@ -134,31 +117,28 @@ class NetworkDataSource @Inject constructor(@ApplicationContext private val cont
 
     private fun getMobileSignalStrength(): String {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            return "نیازمند مجوز"
+            return context.getString(R.string.label_permission_required)
         }
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val dbm = telephonyManager.signalStrength?.cellSignalStrengths?.firstOrNull()?.dbm ?: "N/A"
-            "$dbm dBm"
+            val dbm = telephonyManager.signalStrength?.cellSignalStrengths?.firstOrNull()?.dbm
+            dbm?.let { "$it dBm" } ?: context.getString(R.string.label_not_available)
         } else {
-            // استفاده از API منسوخ شده برای دستگاه‌های قدیمی‌تر
             try {
                 val signalStrength = telephonyManager.signalStrength
                 val dbm = signalStrength?.let {
                     if (it.isGsm) (it.gsmSignalStrength * 2) - 113 else it.cdmaDbm
-                } ?: "N/A"
-                "$dbm dBm"
+                }
+                dbm?.let { "$it dBm" } ?: context.getString(R.string.label_not_available)
             } catch (_: SecurityException) {
-                "نیازمند مجوز"
+                context.getString(R.string.label_permission_required)
             }
         }
     }
 
     private fun getMobileNetworkType(): String {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            return "نیازمند مجوز"
+            return context.getString(R.string.label_permission_required)
         }
-        // استفاده از API منسوخ شده dataNetworkType چون networkType نیاز به API 24 دارد
-        // و اطلاعات دقیق‌تری در لحظه می‌دهد.
         return when (telephonyManager.dataNetworkType) {
             TelephonyManager.NETWORK_TYPE_GPRS,
             TelephonyManager.NETWORK_TYPE_EDGE,
@@ -176,7 +156,7 @@ class NetworkDataSource @Inject constructor(@ApplicationContext private val cont
             TelephonyManager.NETWORK_TYPE_HSPAP -> "3G"
             TelephonyManager.NETWORK_TYPE_LTE -> "4G"
             TelephonyManager.NETWORK_TYPE_NR -> "5G"
-            else -> "موبایل"
+            else -> context.getString(R.string.category_network) // "Mobile"
         }
     }
 }

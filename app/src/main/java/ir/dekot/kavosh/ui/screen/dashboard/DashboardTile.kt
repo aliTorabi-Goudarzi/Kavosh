@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -33,12 +34,14 @@ fun DashboardTile(item: DashboardItem, onClick: () -> Unit) {
         ) {
             Icon(
                 imageVector = item.icon,
-                contentDescription = item.title,
+                // *** تغییر کلیدی: استفاده از منبع برای محتوای توضیحات (Accessibility) ***
+                contentDescription = stringResource(id = item.titleResId),
                 modifier = Modifier.size(48.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = item.title, fontWeight = FontWeight.Bold)
+            // *** تغییر کلیدی: استفاده از منبع رشته برای نمایش متن ***
+            Text(text = stringResource(id = item.titleResId), fontWeight = FontWeight.Bold)
         }
     }
 }

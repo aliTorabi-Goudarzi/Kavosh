@@ -1,5 +1,6 @@
 package ir.dekot.kavosh.util.report
 
+import android.content.Context
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.text.Spannable
@@ -10,23 +11,23 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
 import androidx.core.graphics.withTranslation
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.BatteryInfo
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
+import ir.dekot.kavosh.ui.viewmodel.getTitle
 import java.io.FileOutputStream
 
-/**
- * یک آبجکت کمکی برای تولید گزارش کامل مشخصات دستگاه در فرمت PDF.
- */
 object PdfGenerator {
 
     /**
+     * *** تغییر کلیدی: این تابع حالا Context را به عنوان اولین پارامتر دریافت می‌کند. ***
      * تابع نهایی برای ساخت PDF استایل‌دار با صفحه‌بندی صحیح.
      */
-    fun writeStyledPdf(fos: FileOutputStream, deviceInfo: DeviceInfo, batteryInfo: BatteryInfo) {
+    fun writeStyledPdf(context: Context, fos: FileOutputStream, deviceInfo: DeviceInfo, batteryInfo: BatteryInfo) {
         val spannableBuilder = SpannableStringBuilder()
 
-        val mainTitle = "گزارش کامل مشخصات دستگاه\n\n"
+        val mainTitle = "${context.getString(R.string.full_report_title)}\n\n"
         spannableBuilder.append(mainTitle)
         spannableBuilder.setSpan(StyleSpan(Typeface.BOLD), 0, mainTitle.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
         spannableBuilder.setSpan(RelativeSizeSpan(1.5f), 0, mainTitle.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
@@ -34,14 +35,14 @@ object PdfGenerator {
 
         InfoCategory.entries.forEach { category ->
             val startSection = spannableBuilder.length
-            val sectionTitle = "--- ${category.title} ---\n"
+            // *** تغییر کلیدی: استفاده از getTitle(context) به جای title ***
+            val sectionTitle = "--- ${category.getTitle(context)} ---\n"
             spannableBuilder.append(sectionTitle)
             spannableBuilder.setSpan(StyleSpan(Typeface.BOLD), startSection, spannableBuilder.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
             spannableBuilder.setSpan(ForegroundColorSpan(android.graphics.Color.rgb(0, 50, 150)), startSection, spannableBuilder.length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
 
-            // --- تغییر کلیدی در این بخش ---
-            // حالا از تابع جدید getCategoryData استفاده کرده و نتیجه را فرمت می‌کنیم
-            val categoryData = ReportFormatter.getCategoryData(category, deviceInfo, batteryInfo)
+            // *** تغییر کلیدی: پاس دادن آرگومان‌ها با ترتیب و نوع صحیح ***
+            val categoryData = ReportFormatter.getCategoryData(context, category, deviceInfo, batteryInfo)
             val contentText = categoryData.joinToString(separator = "\n") { (label, value) ->
                 if (value.isEmpty()) label else "$label: $value"
             }

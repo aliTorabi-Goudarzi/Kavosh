@@ -60,30 +60,32 @@ object AppModule {
     }
 
     /**
-     * این تابع به Hilt یاد می‌دهد که چگونه SocDataSource را بسازد.
-     * از آنجایی که constructor این کلاس دیگر ورودی ندارد، این تابع هم ورودی نیاز ندارد.
+     * *** تغییر کلیدی: ***
+     * این تابع حالا Context را به عنوان ورودی می‌گیرد و به SocDataSource پاس می‌دهد.
      */
     @Provides
     @Singleton
-    fun provideSocDataSource(): SocDataSource {
-        return SocDataSource() // بدون پاس دادن context
+    fun provideSocDataSource(@ApplicationContext context: Context): SocDataSource {
+        return SocDataSource(context)
     }
 
     /**
-     * این تابع به Hilt یاد می‌دهد که چگونه SystemDataSource را بسازد.
-     * از آنجایی که constructor این کلاس دیگر ورودی ندارد، این تابع هم ورودی نیاز ندارد.
+     * *** تغییر کلیدی: ***
+     * این تابع حالا Context را به عنوان ورودی می‌گیرد و به SystemDataSource پاس می‌دهد.
      */
     @Provides
     @Singleton
-    fun provideSystemDataSource(): SystemDataSource {
-        return SystemDataSource() // بدون پاس دادن context
+    fun provideSystemDataSource(@ApplicationContext context: Context): SystemDataSource {
+        return SystemDataSource(context)
     }
 
+    // این تابع قبلا بدون پارامتر بود، حالا context را می‌گیرد
     @Provides
     @Singleton
     fun provideMemoryDataSource(@ApplicationContext context: Context): MemoryDataSource {
         return MemoryDataSource(context)
     }
+
 
     @Provides
     @Singleton

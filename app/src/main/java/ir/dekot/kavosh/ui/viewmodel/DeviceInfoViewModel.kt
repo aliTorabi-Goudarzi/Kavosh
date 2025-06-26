@@ -44,6 +44,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.FileOutputStream
 import javax.inject.Inject
+import ir.dekot.kavosh.R
 
 sealed class ExportResult {
     data class Success(val message: String) : ExportResult()
@@ -56,6 +57,15 @@ class DeviceInfoViewModel @Inject constructor(
     private val repository: DeviceInfoRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    // --- State جدید برای زبان ---
+    private val _language = MutableStateFlow("fa")
+    val language: StateFlow<String> = _language.asStateFlow()
+
+    // --- رویداد جدید برای اطلاع رسانی به Activity ---
+    private val _languageChangeRequest = MutableSharedFlow<Unit>()
+    val languageChangeRequest = _languageChangeRequest.asSharedFlow()
+
 
     // --- یک پرچم برای جلوگیری از بارگذاری مجدد داده‌ها ---
     private var hasLoadedData = false
@@ -126,42 +136,62 @@ class DeviceInfoViewModel @Inject constructor(
         private set
 
     init {
+        // بارگذاری تنظیمات ذخیره شده در شروع
         _themeState.value = repository.getTheme()
         _isReorderingEnabled.value = repository.isReorderingEnabled()
         _isDynamicThemeEnabled.value = repository.isDynamicThemeEnabled()
+        _language.value = repository.getLanguage() // بارگذاری زبان
         loadDashboardItems()
 
-        // اگر اجرای اول باشد، پرچم را ریست می‌کنیم
         if (repository.isFirstLaunch()) {
             hasLoadedData = false
             _currentScreen.value = Screen.Splash
         } else {
-            // در غیر این صورت، نیازی به بارگذاری داده اینجا نیست، به MainActivity سپرده می‌شود
             _currentScreen.value = Screen.Dashboard
+        }
+    }
+
+    // --- متد جدید برای تغییر زبان ---
+    fun onLanguageSelected(lang: String) {
+        // اگر زبان تغییری نکرده، کاری انجام نده
+        if (lang == _language.value) return
+
+        viewModelScope.launch {
+            repository.saveLanguage(lang)
+            _language.value = lang
+            // ارسال رویداد برای بازسازی Activity
+            _languageChangeRequest.emit(Unit)
+        }
+    }
+
+    companion object {
+        // متد استاتیک برای دسترسی به زبان قبل از اینکه ViewModel ساخته شود
+        fun getSavedLanguage(context: Context): String {
+            val prefs = context.getSharedPreferences("device_inspector_prefs", Context.MODE_PRIVATE)
+            // تغییر کلیدی در این خط: مقدار پیش‌فرض به "fa" تغییر کرد
+            return prefs.getString("app_language", "fa") ?: "fa"
         }
     }
 
     // --- افزودن منطق جدید ---
     private fun startNetworkPolling() {
-        stopNetworkPolling() // جلوگیری از اجرای همزمان
+        stopNetworkPolling()
         networkPollingJob = viewModelScope.launch {
             var lastRxBytes = TrafficStats.getTotalRxBytes()
             var lastTxBytes = TrafficStats.getTotalTxBytes()
 
             while (isActive) {
-                delay(2000) // هر ۲ ثانیه یک‌بار چک کن
+                delay(2000)
                 val currentRxBytes = TrafficStats.getTotalRxBytes()
                 val currentTxBytes = TrafficStats.getTotalTxBytes()
 
-                // محاسبه سرعت بر حسب بایت بر ثانیه
                 val rxSpeed = (currentRxBytes - lastRxBytes) / 2
                 val txSpeed = (currentTxBytes - lastTxBytes) / 2
 
-                // آپدیت State ها با مقادیر فرمت شده
-                _downloadSpeed.value = formatSizeOrSpeed(rxSpeed, perSecond = true)
-                _uploadSpeed.value = formatSizeOrSpeed(txSpeed, perSecond = true)
+                // *** تغییر کلیدی: پاس دادن context به تابع ***
+                _downloadSpeed.value = formatSizeOrSpeed(context, rxSpeed, perSecond = true)
+                _uploadSpeed.value = formatSizeOrSpeed(context, txSpeed, perSecond = true)
 
-                // ذخیره مقادیر فعلی برای محاسبه بعدی
                 lastRxBytes = currentRxBytes
                 lastTxBytes = currentTxBytes
             }
@@ -359,17 +389,19 @@ class DeviceInfoViewModel @Inject constructor(
     }
 
     private fun getFullDashboardList(): List<DashboardItem> {
+        // *** تغییر کلیدی: استفاده از شناسه‌های منبع رشته (R.string.*) ***
         return listOf(
-            DashboardItem(InfoCategory.SOC, "پردازنده", Icons.Default.Memory),
-            DashboardItem(InfoCategory.DEVICE, "دستگاه", Icons.Default.PhoneAndroid),
-            DashboardItem(InfoCategory.SYSTEM, "سیستم", Icons.Default.Android),
-            DashboardItem(InfoCategory.BATTERY, "باتری", Icons.Default.BatteryFull),
-            DashboardItem(InfoCategory.SENSORS, "سنسورها", Icons.Default.Sensors),
-            DashboardItem(InfoCategory.THERMAL, "دما", Icons.Default.Thermostat),
-            DashboardItem(InfoCategory.NETWORK, "شبکه", Icons.Default.NetworkWifi),
-            DashboardItem(InfoCategory.CAMERA, "دوربین", Icons.Default.PhotoCamera)
+            DashboardItem(InfoCategory.SOC, R.string.category_soc, Icons.Default.Memory),
+            DashboardItem(InfoCategory.DEVICE, R.string.category_device, Icons.Default.PhoneAndroid),
+            DashboardItem(InfoCategory.SYSTEM, R.string.category_system, Icons.Default.Android),
+            DashboardItem(InfoCategory.BATTERY, R.string.category_battery, Icons.Default.BatteryFull),
+            DashboardItem(InfoCategory.SENSORS, R.string.category_sensors, Icons.Default.Sensors),
+            DashboardItem(InfoCategory.THERMAL, R.string.category_thermal, Icons.Default.Thermostat),
+            DashboardItem(InfoCategory.NETWORK, R.string.category_network, Icons.Default.NetworkWifi),
+            DashboardItem(InfoCategory.CAMERA, R.string.category_camera, Icons.Default.PhotoCamera)
         )
     }
+
 
     fun onDashboardItemVisibilityChanged(category: InfoCategory, isVisible: Boolean) {
         viewModelScope.launch {
@@ -447,19 +479,20 @@ class DeviceInfoViewModel @Inject constructor(
                     FileOutputStream(pfd.fileDescriptor).use { fos ->
                         when (format) {
                             ExportFormat.TXT -> {
-                                val fullReportText = ReportFormatter.formatFullReport(currentDeviceInfo, currentBatteryInfo)
+                                val fullReportText = ReportFormatter.formatFullReport(context, currentDeviceInfo, currentBatteryInfo)
                                 fos.write(fullReportText.toByteArray())
                             }
                             ExportFormat.PDF -> {
-                                PdfGenerator.writeStyledPdf(fos, currentDeviceInfo, currentBatteryInfo)
+                                // *** تغییر کلیدی: پاس دادن context به عنوان اولین آرگومان ***
+                                PdfGenerator.writeStyledPdf(context, fos, currentDeviceInfo, currentBatteryInfo)
                             }
                         }
                     }
                 }
-                _exportResult.emit(ExportResult.Success("فایل با موفقیت در مسیر انتخابی شما ذخیره شد."))
+                _exportResult.emit(ExportResult.Success(context.getString(R.string.file_exported_successfully)))
             } catch (e: Exception) {
                 e.printStackTrace()
-                _exportResult.emit(ExportResult.Failure("خطا در ساخت فایل. لطفاً دوباره تلاش کنید."))
+                _exportResult.emit(ExportResult.Failure(context.getString(R.string.file_export_failed)))
             } finally {
                 pendingExportFormat = null
             }

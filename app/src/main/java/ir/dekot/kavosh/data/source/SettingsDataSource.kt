@@ -20,12 +20,31 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
     private companion object {
         const val KEY_THEME = "app_theme"
         const val KEY_FIRST_LAUNCH = "is_first_launch"
-        // کلیدهای جدید برای شخصی‌سازی داشبورد
         const val KEY_DASHBOARD_ORDER = "dashboard_order"
         const val KEY_HIDDEN_CATEGORIES = "hidden_categories"
         const val KEY_DASHBOARD_REORDER_ENABLED = "dashboard_reorder_enabled"
-        // کلید جدید برای ذخیره وضعیت تم پویا
         const val KEY_DYNAMIC_THEME_ENABLED = "dynamic_theme_enabled"
+        // کلید جدید برای زبان
+        const val KEY_APP_LANGUAGE = "app_language"
+    }
+
+    // ... (متدهای دیگر بدون تغییر) ...
+
+    /**
+     * زبان انتخاب شده توسط کاربر را (به صورت تگ زبان مثل "fa" یا "en") ذخیره می‌کند.
+     */
+    fun saveLanguage(language: String) {
+        prefs.edit {
+            putString(KEY_APP_LANGUAGE, language)
+        }
+    }
+
+    /**
+     * آخرین زبان ذخیره شده را می‌خواند.
+     * @return در صورتی که زبانی ذخیره نشده باشد، زبان پیش‌فرض دستگاه را برمی‌گرداند.
+     */
+    fun getLanguage(): String {
+        return prefs.getString(KEY_APP_LANGUAGE, "fa") ?: "fa"
     }
 
     fun isFirstLaunch(): Boolean {

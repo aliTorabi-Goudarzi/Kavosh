@@ -1,16 +1,12 @@
 package ir.dekot.kavosh.util
 
+import android.content.Context
+import ir.dekot.kavosh.R
 import java.util.Locale
 
-/**
- * یک تابع عمومی و بهینه برای فرمت کردن سایز (بایت) یا سرعت (بایت بر ثانیه).
- *
- * @param number عدد ورودی (سایز یا سرعت).
- * @param perSecond اگر true باشد، واحدهای سرعت (e.g., KB/s) استفاده می‌شود.
- * @return یک رشته فرمت شده.
- */
-fun formatSizeOrSpeed(number: Long, perSecond: Boolean = false): String {
+fun formatSizeOrSpeed(context: Context, number: Long, perSecond: Boolean = false): String {
     if (number < 0) return if (perSecond) "0 B/s" else "0 B"
+
     val baseUnits = arrayOf("B", "KB", "MB", "GB", "TB")
     val units = if (perSecond) baseUnits.map { "$it/s" }.toTypedArray() else baseUnits
 
@@ -20,6 +16,7 @@ fun formatSizeOrSpeed(number: Long, perSecond: Boolean = false): String {
         value /= 1024.0
         unitIndex++
     }
-    // رشته نهایی را با یک رقم اعشار فرمت می‌کند
-    return "%.1f %s".format(Locale.US, value, units[unitIndex])
+
+    val formatString = context.getString(R.string.unit_format_size_or_speed)
+    return String.format(Locale.US, formatString, value, units[unitIndex])
 }

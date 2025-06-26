@@ -1,16 +1,56 @@
 package ir.dekot.kavosh.ui.viewmodel
 
+import android.content.Context
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import ir.dekot.kavosh.R
+
 /**
  * دسته‌بندی‌های اطلاعات
- * عنوان فارسی هر دسته به عنوان یک خصوصیت (property) به خود آن اضافه شده است.
  */
-enum class InfoCategory(val title: String) {
-    SOC("پردازنده مرکزی و حافظه"),
-    DEVICE("مشخصات دستگاه"),
-    SYSTEM("سیستم عامل"),
-    BATTERY("باتری"),
-    SENSORS("سنسورها"),
-    THERMAL("دما (Thermal)"),
-    NETWORK("اطلاعات شبکه"),
-    CAMERA("اطلاعات دوربین")
+enum class InfoCategory {
+    SOC,
+    DEVICE,
+    SYSTEM,
+    BATTERY,
+    SENSORS,
+    THERMAL,
+    NETWORK,
+    CAMERA
+}
+
+/**
+ * یک تابع الحاقی Composable برای گرفتن عنوان محلی‌شده در UI.
+ */
+@Composable
+fun InfoCategory.localizedTitle(): String {
+    val resId = when (this) {
+        InfoCategory.SOC -> R.string.category_soc
+        InfoCategory.DEVICE -> R.string.category_device
+        InfoCategory.SYSTEM -> R.string.category_system
+        InfoCategory.BATTERY -> R.string.category_battery
+        InfoCategory.SENSORS -> R.string.category_sensors
+        InfoCategory.THERMAL -> R.string.category_thermal
+        InfoCategory.NETWORK -> R.string.category_network
+        InfoCategory.CAMERA -> R.string.category_camera
+    }
+    return stringResource(id = resId)
+}
+
+/**
+ * *** تابع جدید: ***
+ * یک تابع الحاقی غیر-Composable برای گرفتن عنوان در خارج از UI (مثلا در ViewModel یا Repository).
+ */
+fun InfoCategory.getTitle(context: Context): String {
+    val resId = when (this) {
+        InfoCategory.SOC -> R.string.category_soc
+        InfoCategory.DEVICE -> R.string.category_device
+        InfoCategory.SYSTEM -> R.string.category_system
+        InfoCategory.BATTERY -> R.string.category_battery
+        InfoCategory.SENSORS -> R.string.category_sensors
+        InfoCategory.THERMAL -> R.string.category_thermal
+        InfoCategory.NETWORK -> R.string.category_network
+        InfoCategory.CAMERA -> R.string.category_camera
+    }
+    return context.getString(resId)
 }

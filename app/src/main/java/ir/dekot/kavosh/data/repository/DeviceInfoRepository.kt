@@ -38,6 +38,10 @@ class DeviceInfoRepository @Inject constructor(
 ) {
 
     // --- SettingsDataSource ---
+
+    // دو متد زیر را اضافه کنید
+    fun saveLanguage(language: String) = settingsDataSource.saveLanguage(language)
+    fun getLanguage(): String = settingsDataSource.getLanguage()
     fun isFirstLaunch(): Boolean = settingsDataSource.isFirstLaunch()
     fun setFirstLaunchCompleted() = settingsDataSource.setFirstLaunchCompleted()
     fun saveTheme(theme: Theme) = settingsDataSource.saveTheme(theme)

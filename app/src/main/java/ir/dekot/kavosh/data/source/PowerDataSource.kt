@@ -6,59 +6,50 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.HardwarePropertiesManager
 import dagger.hilt.android.qualifiers.ApplicationContext
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.components.BatteryInfo
 import ir.dekot.kavosh.data.model.components.ThermalInfo
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * منبع داده برای اطلاعات مربوط به نیرو (باتری و دما).
- * مسئولیت واکشی داده از BatteryManager و HardwarePropertiesManager را بر عهده دارد.
- */
 @Singleton
 class PowerDataSource @Inject constructor(@ApplicationContext private val context: Context) {
 
     private val hardwareService = context.getSystemService(Context.HARDWARE_PROPERTIES_SERVICE) as? HardwarePropertiesManager
 
-    /**
-     * اطلاعات باتری را از یک Intent دریافتی استخراج می‌کند.
-     */
     fun getBatteryInfo(intent: Intent): BatteryInfo {
+        val temperatureValue = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10.0f
+        val voltageValue = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000.0f
+
         return BatteryInfo(
             level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1),
             health = when (intent.getIntExtra(BatteryManager.EXTRA_HEALTH, 0)) {
-                BatteryManager.BATTERY_HEALTH_GOOD -> "خوب"
-                BatteryManager.BATTERY_HEALTH_DEAD -> "خراب"
-                BatteryManager.BATTERY_HEALTH_OVERHEAT -> "بسیار گرم"
-                BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "ولتاژ بالا"
-                BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> "خطای نامشخص"
-                else -> "نامشخص"
+                BatteryManager.BATTERY_HEALTH_GOOD -> context.getString(R.string.battery_health_good)
+                BatteryManager.BATTERY_HEALTH_DEAD -> context.getString(R.string.battery_health_dead)
+                BatteryManager.BATTERY_HEALTH_OVERHEAT -> context.getString(R.string.battery_health_overheat)
+                BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> context.getString(R.string.battery_health_over_voltage)
+                BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> context.getString(R.string.battery_health_unspecified_failure)
+                else -> context.getString(R.string.label_undefined)
             },
             status = when (intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)) {
-                BatteryManager.BATTERY_STATUS_CHARGING -> "در حال شارژ"
-                BatteryManager.BATTERY_STATUS_DISCHARGING -> "در حال تخلیه"
-                BatteryManager.BATTERY_STATUS_FULL -> "کامل"
-                BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "عدم شارژ"
-                else -> "نامشخص"
+                BatteryManager.BATTERY_STATUS_CHARGING -> context.getString(R.string.battery_status_charging)
+                BatteryManager.BATTERY_STATUS_DISCHARGING -> context.getString(R.string.battery_status_discharging)
+                BatteryManager.BATTERY_STATUS_FULL -> context.getString(R.string.battery_status_full)
+                BatteryManager.BATTERY_STATUS_NOT_CHARGING -> context.getString(R.string.battery_status_not_charging)
+                else -> context.getString(R.string.label_undefined)
             },
-            technology = intent.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY) ?: "نامشخص",
-            temperature = "${intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10.0f} °C",
-            voltage = "${intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000.0f} V"
+            technology = intent.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY) ?: context.getString(R.string.label_undefined),
+            temperature = context.getString(R.string.unit_format_celsius, temperatureValue),
+            voltage = context.getString(R.string.unit_format_volt, voltageValue)
         )
     }
 
-    /**
-     * آخرین اطلاعات ثبت شده باتری توسط سیستم را فورا برمی‌گرداند.
-     */
     fun getInitialBatteryInfo(): BatteryInfo? {
         val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         val intent: Intent? = context.registerReceiver(null, filter)
         return intent?.let { getBatteryInfo(it) }
     }
 
-    /**
-     * اطلاعات دمای قطعات مختلف دستگاه را با استفاده از API رسمی برمی‌گرداند.
-     */
     fun getThermalInfo(): List<ThermalInfo> {
         val thermalList = mutableListOf<ThermalInfo>()
         hardwareService ?: return emptyList()
@@ -78,27 +69,23 @@ class PowerDataSource @Inject constructor(@ApplicationContext private val contex
                 )
                 temperatures.firstOrNull { it > 0 }?.let { temp ->
                     val sensorName = getSensorName(sensorType)
-                    val tempFormatted = "%.1f °C".format(temp)
+                    val tempFormatted = context.getString(R.string.unit_format_celsius, temp)
                     thermalList.add(ThermalInfo(type = sensorName, temperature = tempFormatted))
                 }
             } catch (_: Exception) {
-                // اگر سنسوری پشتیبانی نشود، از آن عبور می‌کنیم.
+                // Ignore if a sensor is not supported
             }
         }
         return thermalList
     }
 
-    /**
-     * یک تابع کمکی برای تبدیل ثابت عددی سنسور دما به نام خوانا.
-     */
     private fun getSensorName(sensorType: Int): String {
         return when (sensorType) {
-            HardwarePropertiesManager.DEVICE_TEMPERATURE_CPU -> "پردازنده (CPU)"
-            HardwarePropertiesManager.DEVICE_TEMPERATURE_GPU -> "پردازنده گرافیکی (GPU)"
-            HardwarePropertiesManager.DEVICE_TEMPERATURE_BATTERY -> "باتری"
-            HardwarePropertiesManager.DEVICE_TEMPERATURE_SKIN -> "بدنه دستگاه"
-            else -> "سنسور نامشخص"
+            HardwarePropertiesManager.DEVICE_TEMPERATURE_CPU -> context.getString(R.string.cpu_title)
+            HardwarePropertiesManager.DEVICE_TEMPERATURE_GPU -> context.getString(R.string.gpu_title)
+            HardwarePropertiesManager.DEVICE_TEMPERATURE_BATTERY -> context.getString(R.string.category_battery)
+            HardwarePropertiesManager.DEVICE_TEMPERATURE_SKIN -> context.getString(R.string.category_device) // Assuming "skin" refers to device body
+            else -> context.getString(R.string.label_undefined)
         }
     }
 }
-

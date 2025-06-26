@@ -27,12 +27,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 
 /**
  * این صفحه به کاربر اجازه می‌دهد آیتم‌های داشبورد را مخفی یا نمایان کند.
- * قابلیت جابجایی از این صفحه حذف شده است.
  */
 @RequiresApi(Build.VERSION_CODES.R)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,10 +47,10 @@ fun EditDashboardScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("نمایش/مخفی کردن آیتم‌ها") }, // عنوان واضح‌تر شد
+                title = { Text(stringResource(R.string.edit_dashboard_items)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -78,12 +79,14 @@ fun EditDashboardScreen(
                         ) {
                             Icon(
                                 imageVector = item.icon,
-                                contentDescription = item.title,
+                                // *** تغییر کلیدی: استفاده از منبع رشته ***
+                                contentDescription = stringResource(id = item.titleResId),
                                 modifier = Modifier.size(32.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                            Text(text = item.title, style = MaterialTheme.typography.bodyLarge)
+                            // *** تغییر کلیدی: استفاده از منبع رشته ***
+                            Text(text = stringResource(id = item.titleResId), style = MaterialTheme.typography.bodyLarge)
                         }
 
                         // سوییچ برای مخفی/نمایان کردن

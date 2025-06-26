@@ -31,8 +31,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.BatteryInfo
 import ir.dekot.kavosh.data.model.components.ThermalInfo
@@ -40,6 +42,7 @@ import ir.dekot.kavosh.ui.screen.detail.infoCards.*
 import ir.dekot.kavosh.ui.screen.shared.EmptyStateMessage
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
+import ir.dekot.kavosh.ui.viewmodel.localizedTitle
 import ir.dekot.kavosh.util.report.ReportFormatter
 import ir.dekot.kavosh.util.shareText
 import kotlinx.coroutines.launch
@@ -94,53 +97,48 @@ fun DetailScreen(
     var showCopyDialog by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
 
-    if (showCopyDialog) {
-        val itemsToSelect = ReportFormatter.getCategoryData(category, deviceInfo, batteryInfo)
+    if (showCopyDialog || showShareDialog) {
+        // *** تغییر کلیدی: پاس دادن context ***
+        val itemsToSelect = ReportFormatter.getCategoryData(context, category, deviceInfo, batteryInfo)
+
         InfoSelectionDialog(
-            onDismissRequest = { showCopyDialog = false },
+            onDismissRequest = {
+                showCopyDialog = false
+                showShareDialog = false
+            },
             itemsToSelect = itemsToSelect,
-            title = "انتخاب موارد برای کپی",
-            confirmButtonText = "کپی موارد انتخاب شده",
+            title = if (showCopyDialog) stringResource(R.string.copy_selection_title) else stringResource(R.string.share_selection_title),
+            confirmButtonText = if (showCopyDialog) stringResource(R.string.copy_selection_button) else stringResource(R.string.share_selection_button),
             onConfirm = { selections ->
-                val textToCopy = buildSelectedItemsString(itemsToSelect, selections)
-                if (textToCopy.isNotBlank()) {
-                    clipboardManager.setText(AnnotatedString(textToCopy))
-                    scope.launch {
-                        snackbarHostState.showSnackbar("اطلاعات ${category.title} کپی شد")
+                val text = buildSelectedItemsString(itemsToSelect, selections)
+                if (text.isNotBlank()) {
+                    if (showCopyDialog) {
+                        clipboardManager.setText(AnnotatedString(text))
+                        scope.launch {
+                            snackbarHostState.showSnackbar(context.getString(R.string.copied_to_clipboard))
+                        }
+                    } else {
+                        shareText(context, text)
                     }
                 }
             }
         )
     }
 
-    if (showShareDialog) {
-        val itemsToSelect = ReportFormatter.getCategoryData(category, deviceInfo, batteryInfo)
-        InfoSelectionDialog(
-            onDismissRequest = { showShareDialog = false },
-            itemsToSelect = itemsToSelect,
-            title = "انتخاب موارد برای اشتراک‌گذاری",
-            confirmButtonText = "اشتراک‌گذاری",
-            onConfirm = { selections ->
-                val textToShare = buildSelectedItemsString(itemsToSelect, selections)
-                if (textToShare.isNotBlank()) {
-                    shareText(context, textToShare)
-                }
-            }
-        )
-    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(category.title) },
-                navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } },
+                // *** تغییر کلیدی: استفاده از تابع الحاقی برای عنوان ***
+                title = { Text(category.localizedTitle()) },
+                navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)) } },
                 actions = {
                     IconButton(onClick = { showCopyDialog = true }) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = "کپی")
+                        Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.copy))
                     }
                     IconButton(onClick = { showShareDialog = true }) {
-                        Icon(Icons.Default.Share, contentDescription = "اشتراک‌گذاری")
+                        Icon(Icons.Default.Share, contentDescription = stringResource(R.string.share))
                     }
                 }
             )
@@ -161,7 +159,6 @@ fun DetailScreen(
                 thermalDetails = thermalDetails,
                 liveCpuFrequencies = liveCpuFrequencies,
                 liveGpuLoad = liveGpuLoad,
-                // --- پاس دادن پارامترهای جدید به تابع کمکی ---
                 downloadSpeed = downloadSpeed,
                 uploadSpeed = uploadSpeed
             )
@@ -176,49 +173,10 @@ private fun LazyListScope.CategoryDetailContent(
     thermalDetails: List<ThermalInfo>,
     liveCpuFrequencies: List<String>,
     liveGpuLoad: Int?,
-    // --- افزودن پارامترهای جدید به امضای تابع ---
     downloadSpeed: String,
     uploadSpeed: String
 ) {
     when (category) {
-        InfoCategory.SENSORS -> {
-            if (deviceInfo.sensors.isEmpty()) {
-                item { EmptyStateMessage("هیچ سنسوری در این دستگاه یافت نشد.") }
-            } else {
-                items(deviceInfo.sensors, key = { it.name }) { sensor ->
-                    SensorInfoCard(info = sensor)
-                }
-            }
-        }
-        InfoCategory.THERMAL -> {
-            if (thermalDetails.isEmpty()) {
-                item { EmptyStateMessage("اطلاعات دمای حرارتی برای این دستگاه در دسترس نیست.") }
-            } else {
-                items(thermalDetails, key = { it.type }) { thermalInfo ->
-                    ThermalInfoCard(info = thermalInfo)
-                }
-            }
-        }
-        InfoCategory.CAMERA -> {
-            if (deviceInfo.cameras.isEmpty()) {
-                item { EmptyStateMessage("دوربینی یافت نشد یا دسترسی به آن ممکن نیست.") }
-            } else {
-                items(deviceInfo.cameras, key = { it.id }) { camera ->
-                    CameraInfoCard(info = camera)
-                }
-            }
-        }
-        InfoCategory.NETWORK -> {
-            item {
-                NetworkInfoCard(
-                    info = deviceInfo.network,
-                    // حالا این متغیرها در این حوزه قابل دسترسی هستند
-                    downloadSpeed = downloadSpeed,
-                    uploadSpeed = uploadSpeed
-                )
-            }
-        }
-        // ... سایر case ها بدون تغییر ...
         InfoCategory.SOC -> {
             item { CpuInfoCard(deviceInfo.cpu, liveCpuFrequencies) }
             item { GpuInfoCard(deviceInfo.gpu, liveGpuLoad) }
@@ -233,6 +191,42 @@ private fun LazyListScope.CategoryDetailContent(
         }
         InfoCategory.BATTERY -> {
             item { BatteryInfoCard(batteryInfo) }
+        }
+        InfoCategory.SENSORS -> {
+            if (deviceInfo.sensors.isEmpty()) {
+                item { EmptyStateMessage("No sensors found on this device.") }
+            } else {
+                items(deviceInfo.sensors, key = { it.name }) { sensor ->
+                    SensorInfoCard(info = sensor)
+                }
+            }
+        }
+        InfoCategory.THERMAL -> {
+            if (thermalDetails.isEmpty()) {
+                item { EmptyStateMessage("Thermal information is not available for this device.") }
+            } else {
+                items(thermalDetails, key = { it.type }) { thermalInfo ->
+                    ThermalInfoCard(info = thermalInfo)
+                }
+            }
+        }
+        InfoCategory.CAMERA -> {
+            if (deviceInfo.cameras.isEmpty()) {
+                item { EmptyStateMessage("No cameras found or access is not possible.") }
+            } else {
+                items(deviceInfo.cameras, key = { it.id }) { camera ->
+                    CameraInfoCard(info = camera)
+                }
+            }
+        }
+        InfoCategory.NETWORK -> {
+            item {
+                NetworkInfoCard(
+                    info = deviceInfo.network,
+                    downloadSpeed = downloadSpeed,
+                    uploadSpeed = uploadSpeed
+                )
+            }
         }
     }
 }

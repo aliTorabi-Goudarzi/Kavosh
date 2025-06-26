@@ -24,7 +24,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 
@@ -38,23 +40,65 @@ fun SettingsScreen(
     val currentTheme by viewModel.themeState.collectAsState()
     val isReorderingEnabled by viewModel.isReorderingEnabled.collectAsState()
     val isDynamicThemeEnabled by viewModel.isDynamicThemeEnabled.collectAsState()
-
+    // دریافت زبان فعلی از ViewModel
+    val currentLanguage by viewModel.language.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("تنظیمات") },
+                title = { Text(stringResource(id = R.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(id = R.string.back))
                     }
                 }
             )
         }
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues).padding(16.dp)) {
+
+            // بخش تنظیمات زبان
+            Text(stringResource(R.string.language_settings), style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.choose_language), style = MaterialTheme.typography.bodySmall)
+            // گزینه‌ی زبان فارسی
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { viewModel.onLanguageSelected("fa") }
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = (currentLanguage == "fa"),
+                    onClick = { viewModel.onLanguageSelected("fa") }
+                )
+                Text(
+                    text = stringResource(R.string.persian),
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+            }
+            // گزینه‌ی زبان انگلیسی
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { viewModel.onLanguageSelected("en") }
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = (currentLanguage == "en"),
+                    onClick = { viewModel.onLanguageSelected("en") }
+                )
+                Text(
+                    text = stringResource(R.string.english),
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
             // بخش تنظیمات تم
-            Text("انتخاب تم برنامه", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.choose_app_theme), style = MaterialTheme.typography.titleLarge)
             Theme.entries.forEach { theme ->
                 Row(
                     modifier = Modifier
@@ -69,9 +113,9 @@ fun SettingsScreen(
                     )
                     Text(
                         text = when (theme) {
-                            Theme.SYSTEM -> "پیش‌فرض سیستم"
-                            Theme.LIGHT -> "روشن"
-                            Theme.DARK -> "تاریک"
+                            Theme.SYSTEM -> stringResource(R.string.system_default)
+                            Theme.LIGHT -> stringResource(R.string.light)
+                            Theme.DARK -> stringResource(R.string.dark)
                         },
                         modifier = Modifier.padding(start = 16.dp)
                     )
@@ -88,7 +132,7 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "تم پویا (بر اساس تصویر زمینه)",
+                        text = stringResource(R.string.dynamic_theme),
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 16.dp)
@@ -103,7 +147,7 @@ fun SettingsScreen(
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
             // --- بخش جدید برای تنظیمات داشبورد ---
-            Text("تنظیمات داشبورد", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.dashboard_settings), style = MaterialTheme.typography.titleLarge)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -112,7 +156,7 @@ fun SettingsScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "فعال‌سازی جابجایی آیتم‌ها",
+                    text = stringResource(R.string.enable_item_reordering),
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 16.dp)
