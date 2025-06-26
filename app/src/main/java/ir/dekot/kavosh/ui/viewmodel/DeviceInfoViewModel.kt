@@ -63,6 +63,17 @@ class DeviceInfoViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
+
+    // State های جدید و اختصاصی برای سنسورها
+    private val _accelerometerData = MutableStateFlow(FloatArray(3))
+    val accelerometerData: StateFlow<FloatArray> = _accelerometerData.asStateFlow()
+
+    private val _magnetometerData = MutableStateFlow(FloatArray(3))
+    val magnetometerData: StateFlow<FloatArray> = _magnetometerData.asStateFlow()
+
+    // این State حالا تمام زوایای جهت‌یابی را نگه می‌دارد
+     val orientationAngles = MutableStateFlow(FloatArray(3))
+
     // *** State های جدید برای داده‌های سنسورها ***
     // *** این State حالا داده‌های خام وکتور چرخش را نگه می‌دارد ***
     private val _rotationVectorData = MutableStateFlow(FloatArray(4))
@@ -78,7 +89,6 @@ class DeviceInfoViewModel @Inject constructor(
     private val accelerometerReading = FloatArray(3)
     private val magnetometerReading = FloatArray(3)
     private val rotationMatrix = FloatArray(9)
-    private val orientationAngles = FloatArray(3)
 
     // *** State جدید برای نگهداری داده‌های زنده سنسور ***
     private val _liveSensorData = MutableStateFlow<List<Float>>(emptyList())
@@ -209,36 +219,36 @@ class DeviceInfoViewModel @Inject constructor(
     private fun onSensorChanged(event: SensorEvent?) {
         event ?: return
 
-        _liveSensorData.value = event.values.toList()
-        if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR) {
-            // *** داده‌های خام وکتور چرخش را مستقیماً در State جدید قرار می‌دهیم ***
-            // *** تغییر کلیدی و نهایی در این دو خط ***
-            // ما همیشه یک کپی جدید از داده‌ها را ایجاد می‌کنیم تا StateFlow متوجه تغییر شود
-            _liveSensorData.value = event.values.toList()
+        when (event.sensor.type) {
+            Sensor.TYPE_ACCELEROMETER -> {
+                _accelerometerData.value = event.values.clone()
+                updateOrientation()
+            }
+            Sensor.TYPE_MAGNETIC_FIELD -> {
+                _magnetometerData.value = event.values.clone()
+                updateOrientation()
+            }
+            Sensor.TYPE_ROTATION_VECTOR -> {
+                _rotationVectorData.value = event.values.clone()
+            }
+            else -> {
+                _liveSensorData.value = event.values.toList()
+            }
         }
-        if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR) {
-            _rotationVectorData.value = event.values.clone() // استفاده از clone() برای ساخت آرایه جدید
-        }
-
-        if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-            System.arraycopy(event.values, 0, accelerometerReading, 0, accelerometerReading.size)
-        } else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
-            System.arraycopy(event.values, 0, magnetometerReading, 0, magnetometerReading.size)
-        }
-
-        updateOrientationAngles()
     }
 
     fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         // فعلاً نیازی به این متد نداریم
     }
 
-    private fun updateOrientationAngles() {
-        SensorManager.getRotationMatrix(rotationMatrix, null, accelerometerReading, magnetometerReading)
-        SensorManager.getOrientation(rotationMatrix, orientationAngles)
-
-        val bearing = Math.toDegrees(orientationAngles[0].toDouble()).toFloat()
-        _compassBearing.value = (bearing + 360) % 360
+    /**
+     * تابع جدید برای محاسبه و به‌روزرسانی زوایای جهت‌یابی
+     */
+    private fun updateOrientation() {
+        SensorManager.getRotationMatrix(rotationMatrix, null, _accelerometerData.value, _magnetometerData.value)
+        val newOrientationAngles = FloatArray(3)
+        SensorManager.getOrientation(rotationMatrix, newOrientationAngles)
+        orientationAngles.value = newOrientationAngles
     }
 
     /**
@@ -248,15 +258,11 @@ class DeviceInfoViewModel @Inject constructor(
     fun registerSensorListener(sensorType: Int) {
         unregisterSensorListener()
 
-        // *** ساختن یک آبجکت شنونده جدید و اختصاصی ***
         sensorEventListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent?) {
-                this@DeviceInfoViewModel.onSensorChanged(event) // فراخوانی متد خصوصی ViewModel
+                this@DeviceInfoViewModel.onSensorChanged(event)
             }
-
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                // No-op
-            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) { }
         }
 
         if (sensorType == Sensor.TYPE_MAGNETIC_FIELD) {
@@ -279,13 +285,12 @@ class DeviceInfoViewModel @Inject constructor(
      * شنونده سنسور را غیرفعال می‌کند تا از مصرف باتری و نشت حافظه جلوگیری شود.
      */
     fun unregisterSensorListener() {
-        sensorEventListener?.let {
-            sensorManager.unregisterListener(it)
-        }
+        sensorEventListener?.let { sensorManager.unregisterListener(it) }
         sensorEventListener = null
         _liveSensorData.value = emptyList()
-        _compassBearing.value = 0f
-        // ریست کردن وکتور چرخش
+        _accelerometerData.value = FloatArray(3)
+        _magnetometerData.value = FloatArray(3)
+        orientationAngles.value = FloatArray(3)
         _rotationVectorData.value = FloatArray(4)
     }
 

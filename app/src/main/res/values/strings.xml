@@ -186,4 +186,6 @@
     <string name="rotation_azimuth">Azimuth</string>
     <string name="rotation_pitch">Pitch</string>
     <string name="rotation_roll">Roll</string>
+    <string name="orientation_angles">Orientation Angles</string>
+    <string name="raw_sensor_data">Raw Sensor Data</string>
 </resources>

@@ -1,5 +1,6 @@
 package ir.dekot.kavosh.ui.screen.sensordetail
 
+import android.graphics.Paint
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Build
@@ -20,7 +21,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
@@ -30,6 +33,7 @@ import androidx.compose.material.icons.filled.PhoneIphone
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -54,16 +58,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import ir.dekot.kavosh.R
+import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoCard
+import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoRow
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import kotlinx.coroutines.delay
+import kotlin.math.abs
 import kotlin.math.ln
 
 @RequiresApi(Build.VERSION_CODES.R)
@@ -99,13 +112,15 @@ fun SensorDetailScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        // *** تغییر کلیدی: افزودن قابلیت اسکرول به ستون اصلی ***
+       Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(horizontal = 16.dp) // padding عمودی به آیتم‌ها داده می‌شود
+                .verticalScroll(rememberScrollState()), // قابلیت اسکرول اضافه شد
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top // چینش از بالا
         ) {
             when (sensorType) {
                 Sensor.TYPE_LIGHT -> LightSensorContent(viewModel)
@@ -144,6 +159,9 @@ fun SensorDetailScreen(
                 Sensor.TYPE_SIGNIFICANT_MOTION -> TriggerSensorContent(viewModel = viewModel, titleRes = R.string.significant_motion_title)
                 else -> Text(text = stringResource(R.string.sensor_no_live_view))
             }
+
+            // اضافه کردن یک فاصله در پایین
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -240,35 +258,7 @@ private fun AxisData(label: String, value: Float, maxValue: Float) {
     }
 }
 
-/**
- * *** کامپوننت جدید و اختصاصی برای نمایش قطب‌نما ***
- */
-@RequiresApi(Build.VERSION_CODES.R)
-@Composable
-fun CompassSensorContent(viewModel: DeviceInfoViewModel) {
-    val bearing by viewModel.compassBearing.collectAsState()
-    val animatedBearing by animateFloatAsState(targetValue = bearing, label = "bearingAnim")
 
-    val bearingText = getBearingText(bearing)
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "%.1f° %s".format(bearing, bearingText),
-            style = MaterialTheme.typography.displayMedium,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = stringResource(R.string.compass_bearing),
-            style = MaterialTheme.typography.titleLarge
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // طراحی گرافیکی قطب‌نما
-        Compass(bearing = animatedBearing)
-    }
-}
 
 @Composable
 fun Compass(bearing: Float, modifier: Modifier = Modifier) {
@@ -651,19 +641,64 @@ fun TriggerSensorContent(
 fun RotationVectorSensorContent(viewModel: DeviceInfoViewModel) {
     val rotationVector by viewModel.rotationVectorData.collectAsState()
 
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = stringResource(R.string.rotation_vector_title),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = stringResource(R.string.rotation_vector_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(24.dp))
-
-        // نمایش مکعب سه‌بعدی
         RotatingCube(rotationVector = rotationVector)
+    }
+}
+
+@Composable
+fun AdvancedCompass(rotationDegrees: Float) {
+    val textMeasurer = rememberTextMeasurer()
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+
+    Box(modifier = Modifier.padding(16.dp)) {
+        Canvas(modifier = Modifier.size(300.dp)) {
+            val radius = size.minDimension / 2
+            val center = this.center
+
+            rotate(degrees = rotationDegrees, pivot = center) {
+                for (i in 0 until 360 step 15) {
+                    val lineLength = if (i % 45 == 0) 25f else 15f
+                    rotate(degrees = i.toFloat(), pivot = center) {
+                        drawLine(color = onSurfaceColor, start = Offset(center.x, 0f), end = Offset(center.x, lineLength), strokeWidth = 3f)
+                    }
+                }
+                drawText(textMeasurer, "N", Offset(center.x - textMeasurer.measure("N").size.width / 2, 35f), style = textStyle.copy(color = primaryColor))
+                drawText(textMeasurer, "E", Offset(size.width - 45f, center.y - 15), style = textStyle)
+                drawText(textMeasurer, "S", Offset(center.x - textMeasurer.measure("S").size.width / 2, size.height - 55f), style = textStyle)
+                drawText(textMeasurer, "W", Offset(35f, center.y - 15), style = textStyle)
+            }
+
+            val needlePath = Path().apply {
+                moveTo(center.x, 0f)
+                lineTo(center.x - 20f, 50f)
+                lineTo(center.x + 20f, 50f)
+                close()
+            }
+            drawPath(path = needlePath, color = primaryColor)
+            drawCircle(color = primaryColor, radius = 10f, center = center)
+        }
+    }
+}
+
+@Composable
+private fun AngleIndicator(label: String, angle: Float) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = label, style = MaterialTheme.typography.titleLarge)
+        Text(
+            text = "%.1f°".format(angle),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+        )
     }
 }
 
@@ -735,4 +770,120 @@ private fun DrawScope.drawCubeEdge(start: Offset, end: Offset, color: Color) {
         end = end,
         strokeWidth = 8f
     )
+}
+
+@RequiresApi(Build.VERSION_CODES.R)
+@Composable
+fun CompassSensorContent(viewModel: DeviceInfoViewModel) {
+    val orientationAngles by viewModel.orientationAngles.collectAsState()
+    val accelerometerData by viewModel.accelerometerData.collectAsState()
+    val magnetometerData by viewModel.magnetometerData.collectAsState()
+
+    val bearing = Math.toDegrees(orientationAngles[0].toDouble()).toFloat()
+    val animatedBearing by animateFloatAsState(targetValue = -bearing, label = "bearingAnim")
+    val pitch = Math.toDegrees(orientationAngles[1].toDouble()).toFloat()
+    val roll = Math.toDegrees(orientationAngles[2].toDouble()).toFloat()
+
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        AdvancedCompass(rotationDegrees = animatedBearing)
+        Spacer(modifier = Modifier.height(24.dp))
+        // *** کامپوننت جدید افق مصنوعی اضافه شد ***
+        ArtificialHorizon(pitch = pitch, roll = roll)
+        Spacer(modifier = Modifier.height(24.dp))
+        InfoCard(title = stringResource(R.string.orientation_angles)) {
+            AngleIndicator(label = stringResource(R.string.rotation_pitch), angle = Math.toDegrees(orientationAngles[1].toDouble()).toFloat())
+            AngleIndicator(label = stringResource(R.string.rotation_roll), angle = Math.toDegrees(orientationAngles[2].toDouble()).toFloat())
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        InfoCard(title = stringResource(R.string.raw_sensor_data)) {
+            Text(stringResource(R.string.uncalibrated_accelerometer_title), fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
+            InfoRow(label = "X", value = "%.2f".format(accelerometerData.getOrNull(0) ?: 0f))
+            InfoRow(label = "Y", value = "%.2f".format(accelerometerData.getOrNull(1) ?: 0f))
+            InfoRow(label = "Z", value = "%.2f".format(accelerometerData.getOrNull(2) ?: 0f))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            Text(stringResource(R.string.uncalibrated_magnetometer_title), fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp, bottom = 4.dp))
+            InfoRow(label = "X", value = "%.2f".format(magnetometerData.getOrNull(0) ?: 0f))
+            InfoRow(label = "Y", value = "%.2f".format(magnetometerData.getOrNull(1) ?: 0f))
+            InfoRow(label = "Z", value = "%.2f".format(magnetometerData.getOrNull(2) ?: 0f))
+        }
+    }
+}
+
+
+/**
+ * *** کامپوننت بازنویسی شده و نهایی برای نمایش افق مصنوعی ***
+ */
+/**
+ * *** کامپوننت بازنویسی شده افق مصنوعی با استایل شیشه‌ای ***
+ */
+
+@Composable
+fun ArtificialHorizon(pitch: Float, roll: Float) {
+    val animatedPitch by animateFloatAsState(targetValue = pitch, label = "pitchAnim")
+    val animatedRoll by animateFloatAsState(targetValue = -roll, label = "rollAnim")
+
+    val skyColor = Color(0xFF42A5F5)
+    val groundColor = Color(0xFF6D4C41)
+    val horizonLineColor = Color.White
+    val markingsColor = Color.White.copy(alpha = 0.8f)
+    val planeColor = MaterialTheme.colorScheme.primary
+    // *** متغیر فراموش شده در اینجا تعریف شد ***
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+
+    val textPaint = remember {
+        Paint().apply {
+            isAntiAlias = true
+            textSize = 12.sp.value
+            color = android.graphics.Color.WHITE
+            textAlign = Paint.Align.CENTER
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .size(250.dp)
+            .clip(CircleShape)
+            .background(Color.Black.copy(alpha = 0.7f))
+            .padding(8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val radius = size.minDimension / 2
+            val center = this.center
+
+            clipPath(Path().apply { addOval(androidx.compose.ui.geometry.Rect(center, radius)) }) {
+                rotate(degrees = animatedRoll, pivot = center) {
+                    val pitchTranslation = animatedPitch * (radius / 45f)
+
+                    drawRect(color = skyColor, size = size.copy(height = center.y + pitchTranslation + radius), topLeft = Offset(0f, -radius))
+                    drawRect(color = groundColor, topLeft = Offset(0f, center.y + pitchTranslation))
+                    drawLine(color = horizonLineColor, start = Offset(0f, center.y + pitchTranslation), end = Offset(size.width, center.y + pitchTranslation), strokeWidth = 5f)
+
+                    for (i in -90..90 step 10) {
+                        if (i == 0) continue
+                        val yPos = center.y + pitchTranslation - (i * (radius / 45f))
+                        val lineLength = if (i % 30 == 0) 100.dp.toPx() else 50.dp.toPx()
+                        drawLine(color = markingsColor, start = Offset(center.x - lineLength / 2, yPos), end = Offset(center.x + lineLength / 2, yPos), strokeWidth = 2f)
+
+                        if (i % 30 == 0) {
+                            drawContext.canvas.nativeCanvas.drawText(abs(i).toString(), center.x - lineLength/2 - 20.dp.toPx() , yPos + 5.dp.toPx(), textPaint)
+                            drawContext.canvas.nativeCanvas.drawText(abs(i).toString(), center.x + lineLength/2 + 20.dp.toPx() , yPos + 5.dp.toPx(), textPaint)
+                        }
+                    }
+                }
+            }
+
+            // *** استفاده از متغیر صحیح شده ***
+            drawCircle(color = onSurfaceColor, radius = radius, style = Stroke(width = 8f), center = center)
+
+            val planeWingWidth = 100.dp.toPx()
+            val planeBodyWidth = 40.dp.toPx()
+            val planeStrokeWidth = 8f
+
+            drawLine(planeColor, start = Offset(center.x - planeWingWidth / 2, center.y), end = Offset(center.x + planeWingWidth / 2, center.y), strokeWidth = planeStrokeWidth)
+            drawLine(planeColor, start = Offset(center.x - planeWingWidth / 2, center.y), end = Offset(center.x - planeWingWidth / 2, center.y - 10f), strokeWidth = planeStrokeWidth / 2)
+            drawLine(planeColor, start = Offset(center.x + planeWingWidth / 2, center.y), end = Offset(center.x + planeWingWidth / 2, center.y - 10f), strokeWidth = planeStrokeWidth / 2)
+            drawLine(planeColor, start = Offset(center.x - planeBodyWidth / 2, center.y + 15f), end = Offset(center.x + planeBodyWidth / 2, center.y + 15f), strokeWidth = planeStrokeWidth)
+        }
+    }
 }

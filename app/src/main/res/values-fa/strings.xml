@@ -188,4 +188,6 @@
     <string name="rotation_azimuth">عزیموت (Azimuth)</string>
     <string name="rotation_pitch">پیچ (Pitch)</string>
     <string name="rotation_roll">رول (Roll)</string>
+    <string name="orientation_angles">زوایای جهت‌یابی</string>
+    <string name="raw_sensor_data">داده‌های خام سنسورها</string>
 </resources>

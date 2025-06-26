@@ -1,5 +1,6 @@
 [versions]
 agp = "8.10.1"
+constraintlayoutCompose = "1.1.1"
 kotlin = "2.0.21"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -12,9 +13,12 @@ composeBom = "2025.06.00"
 hilt = "2.51.1" # <-- نسخه Hilt را اضافه کنید
 mockk = "1.13.10"
 mockkAgentJvm = "1.13.10"
+constraintlayout = "2.2.1"
 
 
 [libraries]
+androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
+androidx-constraintlayout-compose-android = { module = "androidx.constraintlayout:constraintlayout-compose-android", version.ref = "constraintlayoutCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 # کتابخانه جدید برای جابجایی آیتم‌ها
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -36,6 +40,7 @@ hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" } # <-- اضافه کنید
 mockk-agent-jvm = { module = "io.mockk:mockk-agent-jvm", version.ref = "mockkAgentJvm" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayoutCompose" }
 
 
 [plugins]
