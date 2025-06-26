@@ -154,6 +154,7 @@ fun DetailScreen(
         ) {
             CategoryDetailContent(
                 category = category,
+                viewModel = viewModel, // پاس دادن viewModel
                 deviceInfo = deviceInfo,
                 batteryInfo = batteryInfo,
                 thermalDetails = thermalDetails,
@@ -166,8 +167,10 @@ fun DetailScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.R)
 private fun LazyListScope.CategoryDetailContent(
     category: InfoCategory,
+    viewModel: DeviceInfoViewModel, // *** پارامتر جدید ***
     deviceInfo: DeviceInfo,
     batteryInfo: BatteryInfo,
     thermalDetails: List<ThermalInfo>,
@@ -185,6 +188,22 @@ private fun LazyListScope.CategoryDetailContent(
         InfoCategory.DEVICE -> {
             item { DisplayInfoCard(deviceInfo.display) }
             item { StorageInfoCard(deviceInfo.storage) }
+            // *** کارت جدید در این بخش اضافه شد ***
+            item {
+                // حالا دسترسی به viewModel صحیح است
+                val isTesting by viewModel.isStorageTesting.collectAsState()
+                val progress by viewModel.storageTestProgress.collectAsState()
+                val writeSpeed by viewModel.writeSpeed.collectAsState()
+                val readSpeed by viewModel.readSpeed.collectAsState()
+
+                StorageSpeedTestCard(
+                    isTesting = isTesting,
+                    progress = progress,
+                    writeSpeed = writeSpeed,
+                    readSpeed = readSpeed,
+                    onStartTest = { viewModel.startStorageSpeedTest() }
+                )
+            }
         }
         InfoCategory.SYSTEM -> {
             item { SystemInfoCard(deviceInfo.system) }

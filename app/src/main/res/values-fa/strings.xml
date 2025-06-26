@@ -133,4 +133,11 @@
     <string name="about_version">نسخه %s</string>
     <string name="about_description">کاوش یک اپلیکیشن متن-باز است که برای نمایش اطلاعات دقیق سخت‌افزاری و نرم‌افزاری دستگاه شما طراحی شده است.</string>
     <string name="about_developer">توسعه داده شده توسط %s</string>
+    <string name="storage_speed_test_title">تست سرعت حافظه</string>
+    <string name="storage_speed_test_description">این تست با ایجاد و سپس حذف یک فایل موقت ۱۰۰ مگابایتی، سرعت خواندن و نوشتن ترتیبی حافظه داخلی شما را اندازه‌گیری می‌کند.</string>
+    <string name="storage_speed_write">سرعت نوشتن</string>
+    <string name="storage_speed_read">سرعت خواندن</string>
+    <string name="storage_speed_test_button">شروع تست</string>
+    <string name="testing">در حال تست…</string>
+    <string name="label_error">خطا</string>
 </resources>

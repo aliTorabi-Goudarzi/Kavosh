@@ -131,4 +131,11 @@
     <string name="about_version">Version %s</string>
     <string name="about_description">Kavosh is an open-source application designed to provide detailed hardware and software information about your device.</string>
     <string name="about_developer">Developed by %s</string>
+    <string name="storage_speed_test_title">Storage Speed Test</string>
+    <string name="storage_speed_test_description">This test measures the sequential read and write speed of your internal storage by creating and then deleting a temporary 100MB file.</string>
+    <string name="storage_speed_write">Write Speed</string>
+    <string name="storage_speed_read">Read Speed</string>
+    <string name="storage_speed_test_button">Start Test</string>
+    <string name="testing">Testing…</string>
+    <string name="label_error">Error</string>
 </resources>

@@ -78,6 +78,11 @@ class DeviceInfoRepository @Inject constructor(
     // --- MemoryDataSource ---
     fun getRamInfo(): RamInfo = memoryDataSource.getRamInfo()
     fun getStorageInfo(): StorageInfo = memoryDataSource.getStorageInfo()
+    /**
+     * *** تابع جدید برای اتصال به DataSource ***
+     */
+    fun performStorageSpeedTest(onProgress: (Float) -> Unit): Pair<String, String> =
+        memoryDataSource.performStorageSpeedTest(onProgress)
 
     // --- NetworkDataSource ---
     fun getNetworkInfo(): NetworkInfo = networkDataSource.getNetworkInfo()

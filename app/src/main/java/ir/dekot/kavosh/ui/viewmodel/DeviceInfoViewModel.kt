@@ -58,6 +58,19 @@ class DeviceInfoViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
+    // State های جدید برای تست سرعت حافظه
+    private val _isStorageTesting = MutableStateFlow(false)
+    val isStorageTesting: StateFlow<Boolean> = _isStorageTesting.asStateFlow()
+
+    private val _storageTestProgress = MutableStateFlow(0f)
+    val storageTestProgress: StateFlow<Float> = _storageTestProgress.asStateFlow()
+
+    private val _writeSpeed = MutableStateFlow("N/A")
+    val writeSpeed: StateFlow<String> = _writeSpeed.asStateFlow()
+
+    private val _readSpeed = MutableStateFlow("N/A")
+    val readSpeed: StateFlow<String> = _readSpeed.asStateFlow()
+
     // --- State جدید برای نسخه برنامه ---
     private val _appVersion = MutableStateFlow("")
     val appVersion: StateFlow<String> = _appVersion.asStateFlow()
@@ -153,6 +166,38 @@ class DeviceInfoViewModel @Inject constructor(
             _currentScreen.value = Screen.Splash
         } else {
             _currentScreen.value = Screen.Dashboard
+        }
+    }
+
+    /**
+     * *** تابع جدید برای شروع تست سرعت ***
+     */
+    fun startStorageSpeedTest() {
+        if (_isStorageTesting.value) return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            _isStorageTesting.value = true
+            _writeSpeed.value = context.getString(R.string.testing) // "Testing..."
+            _readSpeed.value = context.getString(R.string.testing) // "Testing..."
+            _storageTestProgress.value = 0f
+
+            try {
+                // حالا این فراخوانی بدون خطا خواهد بود
+                val result = repository.performStorageSpeedTest { progress ->
+                    viewModelScope.launch(Dispatchers.Main) {
+                        _storageTestProgress.value = progress
+                    }
+                }
+                _writeSpeed.value = result.first
+                _readSpeed.value = result.second
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _writeSpeed.value = context.getString(R.string.label_error)
+                _readSpeed.value = context.getString(R.string.label_error)
+            } finally {
+                _isStorageTesting.value = false
+                _storageTestProgress.value = 0f
+            }
         }
     }
 
