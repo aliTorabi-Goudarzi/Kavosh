@@ -154,4 +154,17 @@
     <string name="compass_sw">SW</string>
     <string name="compass_w">W</string>
     <string name="compass_nw">NW</string>
+    <string name="gyroscope_title">Rate of Rotation</string>
+    <string name="gyroscope_unit">(in rad/s)</string>
+    <string name="proximity_near">Object is Near</string>
+    <string name="proximity_far">Object is Far</string>
+    <string name="unit_format_cm">%.1f cm</string>
+    <string name="barometer_title">Atmospheric Pressure</string>
+    <string name="unit_format_hpa">%.2f hPa</string>
+    <string name="gravity_title">Gravity Force</string>
+    <string name="linear_acceleration_title">Linear Acceleration</string>
+    <string name="step_counter_title">Steps Since Reboot</string>
+    <string name="ambient_temperature_title">Ambient Temperature</string>
+    <string name="relative_humidity_title">Relative Humidity</string>
+    <string name="unit_format_percent_relative">%.1f %%</string>
 </resources>

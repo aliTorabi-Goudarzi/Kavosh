@@ -22,11 +22,20 @@ import androidx.compose.ui.unit.sp
 import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.components.SensorInfo
 
-// یک لیست از سنسورهایی که قابلیت تست دارند
+// *** سنسور مجاورت به لیست اضافه شد ***
+// *** لیست نهایی سنسورهای قابل تست ***
 val testableSensors = listOf(
     Sensor.TYPE_LIGHT,
     Sensor.TYPE_ACCELEROMETER,
-    Sensor.TYPE_MAGNETIC_FIELD
+    Sensor.TYPE_MAGNETIC_FIELD,
+    Sensor.TYPE_GYROSCOPE,
+    Sensor.TYPE_PROXIMITY,
+    Sensor.TYPE_PRESSURE,
+    Sensor.TYPE_GRAVITY,
+    Sensor.TYPE_LINEAR_ACCELERATION,
+    Sensor.TYPE_STEP_COUNTER,
+    Sensor.TYPE_AMBIENT_TEMPERATURE,
+    Sensor.TYPE_RELATIVE_HUMIDITY
 )
 
 @Composable

@@ -156,4 +156,17 @@
     <string name="compass_sw">جنوب غربی</string>
     <string name="compass_w">غرب</string>
     <string name="compass_nw">شمال غربی</string>
+    <string name="gyroscope_title">سرعت چرخش</string>
+    <string name="gyroscope_unit">(به رادیان بر ثانیه)</string>
+    <string name="proximity_near">جسم نزدیک است</string>
+    <string name="proximity_far">جسم دور است</string>
+    <string name="unit_format_cm">%.1f سانتی‌متر</string>
+    <string name="barometer_title">فشار هوا</string>
+    <string name="unit_format_hpa">%.2f هکتوپاسکال</string>
+    <string name="gravity_title">نیروی گرانش</string>
+    <string name="linear_acceleration_title">شتاب خطی</string>
+    <string name="step_counter_title">تعداد گام از راه‌اندازی مجدد</string>
+    <string name="ambient_temperature_title">دمای محیط</string>
+    <string name="relative_humidity_title">رطوبت نسبی</string>
+    <string name="unit_format_percent_relative">%% %.1f</string>
 </resources>

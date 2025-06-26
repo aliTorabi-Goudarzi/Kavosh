@@ -5,6 +5,7 @@ import android.hardware.SensorManager
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -21,6 +22,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
+import androidx.compose.material.icons.filled.PhoneInTalk
+import androidx.compose.material.icons.filled.PhoneIphone
+import androidx.compose.material.icons.filled.Thermostat
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -95,6 +102,14 @@ fun SensorDetailScreen(
                 Sensor.TYPE_ACCELEROMETER -> AccelerometerSensorContent(viewModel)
                 // *** کیس جدید برای قطب‌نما ***
                 Sensor.TYPE_MAGNETIC_FIELD -> CompassSensorContent(viewModel)
+                Sensor.TYPE_GYROSCOPE -> GyroscopeSensorContent(viewModel)
+                Sensor.TYPE_PROXIMITY -> ProximitySensorContent(viewModel)
+                Sensor.TYPE_PRESSURE -> BarometerSensorContent(viewModel)
+                Sensor.TYPE_GRAVITY -> GravitySensorContent(viewModel)
+                Sensor.TYPE_LINEAR_ACCELERATION -> LinearAccelerationSensorContent(viewModel)
+                Sensor.TYPE_STEP_COUNTER -> StepCounterSensorContent(viewModel)
+                Sensor.TYPE_AMBIENT_TEMPERATURE -> AmbientTemperatureSensorContent(viewModel)
+                Sensor.TYPE_RELATIVE_HUMIDITY -> RelativeHumiditySensorContent(viewModel)
                 else -> Text(text = stringResource(R.string.sensor_no_live_view))
             }
         }
@@ -266,15 +281,219 @@ fun Compass(bearing: Float, modifier: Modifier = Modifier) {
 // تابع کمکی برای تبدیل درجه به جهت متنی
 @Composable
 private fun getBearingText(bearing: Float): String {
-    return when {
-        bearing in 337.5..360.0 || bearing in 0.0..22.5 -> stringResource(R.string.compass_n)
-        bearing in 22.5..67.5 -> stringResource(R.string.compass_ne)
-        bearing in 67.5..112.5 -> stringResource(R.string.compass_e)
-        bearing in 112.5..157.5 -> stringResource(R.string.compass_se)
-        bearing in 157.5..202.5 -> stringResource(R.string.compass_s)
-        bearing in 202.5..247.5 -> stringResource(R.string.compass_sw)
-        bearing in 247.5..292.5 -> stringResource(R.string.compass_w)
-        bearing in 292.5..337.5 -> stringResource(R.string.compass_nw)
+    return when (bearing) {
+        in 337.5..360.0, in 0.0..22.5 -> stringResource(R.string.compass_n)
+        in 22.5..67.5 -> stringResource(R.string.compass_ne)
+        in 67.5..112.5 -> stringResource(R.string.compass_e)
+        in 112.5..157.5 -> stringResource(R.string.compass_se)
+        in 157.5..202.5 -> stringResource(R.string.compass_s)
+        in 202.5..247.5 -> stringResource(R.string.compass_sw)
+        in 247.5..292.5 -> stringResource(R.string.compass_w)
+        in 292.5..337.5 -> stringResource(R.string.compass_nw)
         else -> ""
+    }
+}
+
+/**
+ * *** کامپوننت جدید و اختصاصی برای نمایش داده‌های ژیروسکوپ ***
+ */
+@RequiresApi(Build.VERSION_CODES.R)
+@Composable
+fun GyroscopeSensorContent(viewModel: DeviceInfoViewModel) {
+    val liveData by viewModel.liveSensorData.collectAsState()
+    val xValue = liveData.getOrNull(0) ?: 0f
+    val yValue = liveData.getOrNull(1) ?: 0f
+    val zValue = liveData.getOrNull(2) ?: 0f
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = stringResource(R.string.gyroscope_title),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = stringResource(R.string.gyroscope_unit),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // استفاده مجدد از کامپوننت AxisData برای نمایش داده‌ها
+        AxisData(label = "X", value = xValue, maxValue = 10f) // محدوده معمول ژیروسکوپ
+        Spacer(modifier = Modifier.height(16.dp))
+        AxisData(label = "Y", value = yValue, maxValue = 10f)
+        Spacer(modifier = Modifier.height(16.dp))
+        AxisData(label = "Z", value = zValue, maxValue = 10f)
+    }
+}
+
+/**
+ * *** کامپوننت جدید و اختصاصی برای نمایش داده‌های سنسور مجاورت ***
+ */
+@RequiresApi(Build.VERSION_CODES.R)
+@Composable
+fun ProximitySensorContent(viewModel: DeviceInfoViewModel) {
+    val liveData by viewModel.liveSensorData.collectAsState()
+    // مقدار این سنسور معمولاً فاصله به سانتی‌متر است. مقدار 0 به معنی بسیار نزدیک است.
+    val distance = liveData.firstOrNull() ?: 5f
+    val isNear = distance < 5f // اکثر سنسورها یک آستانه حدود 5 سانتی‌متر دارند
+
+    val iconSize by animateDpAsState(targetValue = if (isNear) 150.dp else 100.dp, label = "iconSizeAnim")
+    val text = if (isNear) stringResource(R.string.proximity_near) else stringResource(R.string.proximity_far)
+    val icon = if (isNear) Icons.Default.PhoneInTalk else Icons.Default.PhoneIphone
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = text,
+            modifier = Modifier.size(iconSize),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = stringResource(R.string.unit_format_cm, distance),
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+
+/**
+ * *** کامپوننت جدید و اختصاصی برای نمایش داده‌های فشارسنج ***
+ */
+@Composable
+fun BarometerSensorContent(viewModel: DeviceInfoViewModel) {
+    val liveData by viewModel.liveSensorData.collectAsState()
+    // مقدار این سنسور فشار هوا به هکتوپاسکال (hPa) یا میلی‌بار (mbar) است
+    val pressureValue = liveData.firstOrNull() ?: 0f
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_barometer), // یک آیکون مناسب نیاز داریم
+            contentDescription = stringResource(R.string.barometer_title),
+            modifier = Modifier.size(120.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = stringResource(R.string.unit_format_hpa, pressureValue),
+            style = MaterialTheme.typography.displayMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = stringResource(R.string.barometer_title),
+            style = MaterialTheme.typography.titleLarge
+        )
+    }
+}
+
+/**
+ * کامپوننت برای سنسور گرانش
+ */
+@Composable
+fun GravitySensorContent(viewModel: DeviceInfoViewModel) {
+    val liveData by viewModel.liveSensorData.collectAsState()
+    val xValue = liveData.getOrNull(0) ?: 0f
+    val yValue = liveData.getOrNull(1) ?: 0f
+    val zValue = liveData.getOrNull(2) ?: 0f
+
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = stringResource(R.string.gravity_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(text = stringResource(R.string.accelerometer_unit), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(modifier = Modifier.height(24.dp))
+        AxisData(label = "X", value = xValue, maxValue = SensorManager.GRAVITY_EARTH)
+        Spacer(modifier = Modifier.height(16.dp))
+        AxisData(label = "Y", value = yValue, maxValue = SensorManager.GRAVITY_EARTH)
+        Spacer(modifier = Modifier.height(16.dp))
+        AxisData(label = "Z", value = zValue, maxValue = SensorManager.GRAVITY_EARTH)
+    }
+}
+
+/**
+ * کامپوننت برای سنسور شتاب خطی
+ */
+@RequiresApi(Build.VERSION_CODES.R)
+@Composable
+fun LinearAccelerationSensorContent(viewModel: DeviceInfoViewModel) {
+    val liveData by viewModel.liveSensorData.collectAsState()
+    val xValue = liveData.getOrNull(0) ?: 0f
+    val yValue = liveData.getOrNull(1) ?: 0f
+    val zValue = liveData.getOrNull(2) ?: 0f
+
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = stringResource(R.string.linear_acceleration_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(text = stringResource(R.string.accelerometer_unit), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(modifier = Modifier.height(24.dp))
+        AxisData(label = "X", value = xValue, maxValue = 10f)
+        Spacer(modifier = Modifier.height(16.dp))
+        AxisData(label = "Y", value = yValue, maxValue = 10f)
+        Spacer(modifier = Modifier.height(16.dp))
+        AxisData(label = "Z", value = zValue, maxValue = 10f)
+    }
+}
+
+/**
+ * کامپوننت برای سنسور گام‌شمار
+ */
+@RequiresApi(Build.VERSION_CODES.R)
+@Composable
+fun StepCounterSensorContent(viewModel: DeviceInfoViewModel) {
+    val liveData by viewModel.liveSensorData.collectAsState()
+    val steps = liveData.firstOrNull()?.toInt() ?: 0
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Icon(imageVector = Icons.AutoMirrored.Filled.DirectionsWalk, contentDescription = stringResource(R.string.step_counter_title), modifier = Modifier.size(120.dp), tint = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(text = steps.toString(), style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold)
+        Text(text = stringResource(R.string.step_counter_title), style = MaterialTheme.typography.titleLarge)
+    }
+}
+
+/**
+ * کامپوننت برای سنسور دمای محیط
+ */
+@RequiresApi(Build.VERSION_CODES.R)
+@Composable
+fun AmbientTemperatureSensorContent(viewModel: DeviceInfoViewModel) {
+    val liveData by viewModel.liveSensorData.collectAsState()
+    val tempValue = liveData.firstOrNull() ?: 0f
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Icon(imageVector = Icons.Default.Thermostat, contentDescription = stringResource(R.string.ambient_temperature_title), modifier = Modifier.size(120.dp), tint = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(text = stringResource(R.string.unit_format_celsius, tempValue), style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold)
+        Text(text = stringResource(R.string.ambient_temperature_title), style = MaterialTheme.typography.titleLarge)
+    }
+}
+
+/**
+ * کامپوننت برای سنسور رطوبت نسبی
+ */
+@RequiresApi(Build.VERSION_CODES.R)
+@Composable
+fun RelativeHumiditySensorContent(viewModel: DeviceInfoViewModel) {
+    val liveData by viewModel.liveSensorData.collectAsState()
+    val humidityValue = liveData.firstOrNull() ?: 0f
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Icon(imageVector = Icons.Default.WaterDrop, contentDescription = stringResource(R.string.relative_humidity_title), modifier = Modifier.size(120.dp), tint = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(text = stringResource(R.string.unit_format_percent_relative, humidityValue), style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold)
+        Text(text = stringResource(R.string.relative_humidity_title), style = MaterialTheme.typography.titleLarge)
     }
 }
