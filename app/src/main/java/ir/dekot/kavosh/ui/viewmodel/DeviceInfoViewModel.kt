@@ -5,6 +5,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.net.TrafficStats
 import android.net.Uri
 import android.os.Build
@@ -45,6 +49,7 @@ import kotlinx.coroutines.launch
 import java.io.FileOutputStream
 import javax.inject.Inject
 import ir.dekot.kavosh.R
+import kotlin.getValue
 
 sealed class ExportResult {
     data class Success(val message: String) : ExportResult()
@@ -57,6 +62,30 @@ class DeviceInfoViewModel @Inject constructor(
     private val repository: DeviceInfoRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    // *** State های جدید برای داده‌های سنسورها ***
+
+
+    // ... (سایر State ها)
+
+    private val _compassBearing = MutableStateFlow(0f)
+    val compassBearing: StateFlow<Float> = _compassBearing.asStateFlow()
+
+
+    private val accelerometerReading = FloatArray(3)
+    private val magnetometerReading = FloatArray(3)
+    private val rotationMatrix = FloatArray(9)
+    private val orientationAngles = FloatArray(3)
+
+    // *** State جدید برای نگهداری داده‌های زنده سنسور ***
+    private val _liveSensorData = MutableStateFlow<List<Float>>(emptyList())
+    val liveSensorData: StateFlow<List<Float>> = _liveSensorData.asStateFlow()
+
+    private val sensorManager by lazy {
+        context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    }
+
+    private var sensorEventListener: SensorEventListener? = null
 
     // State های جدید برای تست سرعت حافظه
     private val _isStorageTesting = MutableStateFlow(false)
@@ -152,6 +181,8 @@ class DeviceInfoViewModel @Inject constructor(
     var pendingExportFormat: ExportFormat? = null
         private set
 
+
+
     init {
         // بارگذاری تنظیمات ذخیره شده در شروع
         _themeState.value = repository.getTheme()
@@ -168,6 +199,82 @@ class DeviceInfoViewModel @Inject constructor(
             _currentScreen.value = Screen.Dashboard
         }
     }
+
+    /**
+     * این متد حالا خصوصی است و فقط توسط شنونده داخلی فراخوانی می‌شود.
+     */
+    private fun onSensorChanged(event: SensorEvent?) {
+        event ?: return
+
+        _liveSensorData.value = event.values.toList()
+
+        if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+            System.arraycopy(event.values, 0, accelerometerReading, 0, accelerometerReading.size)
+        } else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
+            System.arraycopy(event.values, 0, magnetometerReading, 0, magnetometerReading.size)
+        }
+
+        updateOrientationAngles()
+    }
+
+    fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // فعلاً نیازی به این متد نداریم
+    }
+
+    private fun updateOrientationAngles() {
+        SensorManager.getRotationMatrix(rotationMatrix, null, accelerometerReading, magnetometerReading)
+        SensorManager.getOrientation(rotationMatrix, orientationAngles)
+
+        val bearing = Math.toDegrees(orientationAngles[0].toDouble()).toFloat()
+        _compassBearing.value = (bearing + 360) % 360
+    }
+
+    /**
+     * *** تابع جدید: ***
+     * یک شنونده برای سنسور مشخص شده ثبت می‌کند.
+     */
+    fun registerSensorListener(sensorType: Int) {
+        unregisterSensorListener()
+
+        // *** ساختن یک آبجکت شنونده جدید و اختصاصی ***
+        sensorEventListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                this@DeviceInfoViewModel.onSensorChanged(event) // فراخوانی متد خصوصی ViewModel
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                // No-op
+            }
+        }
+
+        if (sensorType == Sensor.TYPE_MAGNETIC_FIELD) {
+            sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also { accelerometer ->
+                sensorManager.registerListener(sensorEventListener, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
+            }
+            sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also { magneticField ->
+                sensorManager.registerListener(sensorEventListener, magneticField, SensorManager.SENSOR_DELAY_NORMAL)
+            }
+        } else {
+            sensorManager.getDefaultSensor(sensorType)?.also { sensor ->
+                sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+            }
+        }
+    }
+
+
+    /**
+     * *** تابع جدید: ***
+     * شنونده سنسور را غیرفعال می‌کند تا از مصرف باتری و نشت حافظه جلوگیری شود.
+     */
+    fun unregisterSensorListener() {
+        sensorEventListener?.let {
+            sensorManager.unregisterListener(it)
+        }
+        sensorEventListener = null
+        _liveSensorData.value = emptyList()
+        _compassBearing.value = 0f
+    }
+
 
     /**
      * *** تابع جدید برای شروع تست سرعت ***
@@ -207,6 +314,14 @@ class DeviceInfoViewModel @Inject constructor(
      */
     fun navigateToAbout() {
         _currentScreen.value = Screen.About
+    }
+
+    /**
+     * *** تابع جدید: ***
+     * برای ناوبری به صفحه جزئیات یک سنسور خاص.
+     */
+    fun navigateToSensorDetail(sensorType: Int) {
+        _currentScreen.value = Screen.SensorDetail(sensorType)
     }
 
     // --- متد جدید برای تغییر زبان ---
@@ -572,4 +687,6 @@ class DeviceInfoViewModel @Inject constructor(
         combinedList.addAll(deviceInfo.value.thermal)
         _thermalDetails.value = combinedList
     }
+
+
 }

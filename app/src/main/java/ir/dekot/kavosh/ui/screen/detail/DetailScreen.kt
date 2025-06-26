@@ -216,7 +216,13 @@ private fun LazyListScope.CategoryDetailContent(
                 item { EmptyStateMessage("No sensors found on this device.") }
             } else {
                 items(deviceInfo.sensors, key = { it.name }) { sensor ->
-                    SensorInfoCard(info = sensor)
+                    // *** پاس دادن رویداد کلیک به کارت ***
+                    SensorInfoCard(
+                        info = sensor,
+                        onTestClick = { sensorType ->
+                            viewModel.navigateToSensorDetail(sensorType)
+                        }
+                    )
                 }
             }
         }

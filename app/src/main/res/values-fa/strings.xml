@@ -25,7 +25,7 @@
     <string name="copy_selection_button">کپی موارد منتخب</string>
     <string name="share_selection_title">انتخاب موارد برای اشتراک‌گذاری</string>
     <string name="share_selection_button">اشتراک‌گذاری موارد منتخب</string>
-    <string name="share_via">اشتراک‌گذاری از طریق...</string>
+    <string name="share_via">اشتراک‌گذاری از طریق…</string>
     <string name="full_report_title">گزارش کامل مشخصات دستگاه</string>
     <string name="file_exported_successfully">فایل با موفقیت در مسیر انتخابی شما ذخیره شد.</string>
     <string name="file_export_failed">خطا در ساخت فایل. لطفاً دوباره تلاش کنید.</string>
@@ -140,4 +140,20 @@
     <string name="storage_speed_test_button">شروع تست</string>
     <string name="testing">در حال تست…</string>
     <string name="label_error">خطا</string>
+    <string name="sensor_test_button">تست</string>
+    <string name="unknown_sensor">سنسور ناشناس</string>
+    <string name="sensor_no_live_view">نمایش زنده برای این سنسور در دسترس نیست.</string>
+    <string name="illuminance">میزان روشنایی</string>
+    <string name="unit_format_lux">%.1f لوکس</string>
+    <string name="accelerometer_title">نیروی شتاب</string>
+    <string name="accelerometer_unit">(شامل نیروی جاذبه) به m/s²</string>
+    <string name="compass_bearing">جهت نسبت به شمال</string>
+    <string name="compass_n">شمال</string>
+    <string name="compass_ne">شمال شرقی</string>
+    <string name="compass_e">شرق</string>
+    <string name="compass_se">جنوب شرقی</string>
+    <string name="compass_s">جنوب</string>
+    <string name="compass_sw">جنوب غربی</string>
+    <string name="compass_w">غرب</string>
+    <string name="compass_nw">شمال غربی</string>
 </resources>

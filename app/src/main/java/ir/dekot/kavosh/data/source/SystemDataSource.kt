@@ -44,7 +44,8 @@ class SystemDataSource @Inject constructor(@ApplicationContext private val conte
     fun getSensorInfo(activity: Activity): List<SensorInfo> {
         val sensorManager = activity.getSystemService(Activity.SENSOR_SERVICE) as SensorManager
         return sensorManager.getSensorList(Sensor.TYPE_ALL).map {
-            SensorInfo(name = it.name, vendor = it.vendor)
+            // *** تغییر کلیدی: پاس دادن نوع سنسور به مدل ***
+            SensorInfo(name = it.name, vendor = it.vendor, type = it.type)
         }
     }
 

@@ -12,6 +12,7 @@ import ir.dekot.kavosh.ui.screen.about.AboutScreen
 import ir.dekot.kavosh.ui.screen.dashboard.DashboardScreen
 import ir.dekot.kavosh.ui.screen.dashboard.EditDashboardScreen
 import ir.dekot.kavosh.ui.screen.detail.DetailScreen
+import ir.dekot.kavosh.ui.screen.sensordetail.SensorDetailScreen
 import ir.dekot.kavosh.ui.screen.settings.SettingsScreen
 import ir.dekot.kavosh.ui.screen.splash.SplashScreen
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
@@ -83,6 +84,16 @@ fun DeviceInspectorApp(
                     onBackClick = { deviceInfoViewModel.navigateBack() }
                 )
             }
+            // *** کیس جدید برای صفحه جزئیات سنسور ***
+            is Screen.SensorDetail -> {
+                BackHandler { deviceInfoViewModel.navigateBack() }
+                SensorDetailScreen(
+                    viewModel = deviceInfoViewModel,
+                    sensorType = screen.sensorType,
+                    onBackClick = { deviceInfoViewModel.navigateBack() }
+                )
+            }
         }
     }
 }
+
