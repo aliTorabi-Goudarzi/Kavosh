@@ -166,6 +166,16 @@ fun SettingsScreen(
                     onCheckedChange = { viewModel.onReorderingToggled(it) }
                 )
             }
+
+            // *** بخش جدید "درباره" اضافه شد ***
+            Text(
+                text = stringResource(R.string.about_title),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { viewModel.navigateToAbout() } // تابع ناوبری جدید
+                    .padding(vertical = 12.dp)
+            )
         }
     }
 }

@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import ir.dekot.kavosh.data.model.settings.Theme
+import ir.dekot.kavosh.ui.screen.about.AboutScreen
 import ir.dekot.kavosh.ui.screen.dashboard.DashboardScreen
 import ir.dekot.kavosh.ui.screen.dashboard.EditDashboardScreen
 import ir.dekot.kavosh.ui.screen.detail.DetailScreen
@@ -33,7 +34,7 @@ fun DeviceInspectorApp(
         Theme.DARK -> true
     }
 
-    ir.dekot.kavosh.ui.theme.KavoshTheme(darkTheme = useDarkTheme,dynamicColor = dynamicColor) {
+    ir.dekot.kavosh.ui.theme.KavoshTheme(darkTheme = useDarkTheme, dynamicColor = dynamicColor) {
         when (val screen = currentScreen) {
             is Screen.Splash -> SplashScreen(
                 onStartScan = onStartScan,
@@ -70,6 +71,14 @@ fun DeviceInspectorApp(
             is Screen.EditDashboard -> {
                 BackHandler { deviceInfoViewModel.navigateBack() }
                 EditDashboardScreen(
+                    viewModel = deviceInfoViewModel,
+                    onBackClick = { deviceInfoViewModel.navigateBack() }
+                )
+            }
+            // *** کیس جدید برای صفحه درباره ما ***
+            is Screen.About -> {
+                BackHandler { deviceInfoViewModel.navigateBack() }
+                AboutScreen(
                     viewModel = deviceInfoViewModel,
                     onBackClick = { deviceInfoViewModel.navigateBack() }
                 )

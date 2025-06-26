@@ -89,5 +89,8 @@ class DeviceInfoRepository @Inject constructor(
     fun setDynamicThemeEnabled(enabled: Boolean) = settingsDataSource.setDynamicThemeEnabled(enabled)
     fun isDynamicThemeEnabled(): Boolean = settingsDataSource.isDynamicThemeEnabled()
 
+    // ... (سایر توابع SystemDataSource)
+    fun getAppVersion(): String = systemDataSource.getAppVersion()
+
 
 }

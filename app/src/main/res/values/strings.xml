@@ -25,7 +25,7 @@
     <string name="copy_selection_button">Copy Selected</string>
     <string name="share_selection_title">Select items to share</string>
     <string name="share_selection_button">Share Selected</string>
-    <string name="share_via">Share via...</string>
+    <string name="share_via">Share via…</string>
     <string name="full_report_title">Full Device Specification Report</string>
     <string name="file_exported_successfully">File saved successfully to your chosen path.</string>
     <string name="file_export_failed">Error creating file. Please try again.</string>
@@ -127,4 +127,8 @@
     <string name="camera_facing_external">External Camera</string>
     <string name="camera_facing_unknown">Unknown Camera</string>
     <string name="sensor_vendor">Vendor: %s</string>
+    <string name="about_title">About</string>
+    <string name="about_version">Version %s</string>
+    <string name="about_description">Kavosh is an open-source application designed to provide detailed hardware and software information about your device.</string>
+    <string name="about_developer">Developed by %s</string>
 </resources>

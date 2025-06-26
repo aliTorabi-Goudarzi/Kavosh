@@ -5,6 +5,8 @@ sealed class Screen {
     object Splash : Screen()
     object Dashboard : Screen()
     object Settings : Screen()
-    object EditDashboard : Screen() // <-- صفحه جدید برای ویرایش داشبورد
+    object EditDashboard : Screen()
     data class Detail(val category: InfoCategory) : Screen()
+    // *** صفحه جدید اضافه شد ***
+    object About : Screen()
 }

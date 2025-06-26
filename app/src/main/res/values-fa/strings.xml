@@ -129,4 +129,8 @@
     <string name="camera_facing_unknown">دوربین نامشخص</string>
     <string name="camera_facing_external">دوربین خارجی</string>
     <string name="sensor_vendor">سازنده: %s</string>
+    <string name="about_title">درباره کاوش</string>
+    <string name="about_version">نسخه %s</string>
+    <string name="about_description">کاوش یک اپلیکیشن متن-باز است که برای نمایش اطلاعات دقیق سخت‌افزاری و نرم‌افزاری دستگاه شما طراحی شده است.</string>
+    <string name="about_developer">توسعه داده شده توسط %s</string>
 </resources>

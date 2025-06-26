@@ -58,6 +58,10 @@ class DeviceInfoViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
+    // --- State جدید برای نسخه برنامه ---
+    private val _appVersion = MutableStateFlow("")
+    val appVersion: StateFlow<String> = _appVersion.asStateFlow()
+
     // --- State جدید برای زبان ---
     private val _language = MutableStateFlow("fa")
     val language: StateFlow<String> = _language.asStateFlow()
@@ -141,6 +145,7 @@ class DeviceInfoViewModel @Inject constructor(
         _isReorderingEnabled.value = repository.isReorderingEnabled()
         _isDynamicThemeEnabled.value = repository.isDynamicThemeEnabled()
         _language.value = repository.getLanguage() // بارگذاری زبان
+        _appVersion.value = repository.getAppVersion() // دریافت نسخه برنامه در شروع
         loadDashboardItems()
 
         if (repository.isFirstLaunch()) {
@@ -149,6 +154,14 @@ class DeviceInfoViewModel @Inject constructor(
         } else {
             _currentScreen.value = Screen.Dashboard
         }
+    }
+
+    /**
+     * *** تابع جدید: ***
+     * برای ناوبری به صفحه "درباره ما".
+     */
+    fun navigateToAbout() {
+        _currentScreen.value = Screen.About
     }
 
     // --- متد جدید برای تغییر زبان ---

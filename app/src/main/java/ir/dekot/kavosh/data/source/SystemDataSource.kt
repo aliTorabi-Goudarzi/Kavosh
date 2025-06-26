@@ -59,4 +59,18 @@ class SystemDataSource @Inject constructor(@ApplicationContext private val conte
         }
         return false
     }
+
+    /**
+     * *** تابع جدید: ***
+     * اطلاعات نسخه برنامه را از پکیج منیجر دریافت می‌کند.
+     */
+    fun getAppVersion(): String {
+        return try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            "${packageInfo.versionName} (${packageInfo.versionCode})"
+        } catch (_: Exception) {
+            "N/A"
+        }
+    }
+
 }
