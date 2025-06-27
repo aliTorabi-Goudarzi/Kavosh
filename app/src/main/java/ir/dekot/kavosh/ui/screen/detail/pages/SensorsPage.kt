@@ -9,7 +9,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.ui.screen.detail.infoCards.SensorInfoCard
-import ir.dekot.kavosh.ui.screen.shared.EmptyStateMessage
+import ir.dekot.kavosh.ui.composables.EmptyStateMessage
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.NavigationViewModel
 

@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.components.SystemInfo
-import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoCard
-import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoRow
+import ir.dekot.kavosh.ui.composables.InfoCard
+import ir.dekot.kavosh.ui.composables.InfoRow
 
 @Composable
 fun SystemInfoCard(info: SystemInfo) {

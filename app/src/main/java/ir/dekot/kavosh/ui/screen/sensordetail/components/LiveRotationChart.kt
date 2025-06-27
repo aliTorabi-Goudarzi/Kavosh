@@ -27,7 +27,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ir.dekot.kavosh.R
-import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoCard
+import ir.dekot.kavosh.ui.composables.InfoCard
 
 /**
  * *** کامپوننت جدید برای رسم نمودار زنده ***

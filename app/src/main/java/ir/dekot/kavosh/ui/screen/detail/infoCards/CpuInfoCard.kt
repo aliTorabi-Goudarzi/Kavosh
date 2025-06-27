@@ -15,9 +15,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.components.CpuInfo
-import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoCard
-import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoRow
-import ir.dekot.kavosh.ui.screen.shared.SectionTitleInCard
+import ir.dekot.kavosh.ui.composables.InfoCard
+import ir.dekot.kavosh.ui.composables.InfoRow
+import ir.dekot.kavosh.ui.composables.SectionTitleInCard
 
 @Composable
 fun CpuInfoCard(info: CpuInfo, liveFrequencies: List<String>) {

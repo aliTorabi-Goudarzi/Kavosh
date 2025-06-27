@@ -1,4 +1,4 @@
-package ir.dekot.kavosh.ui.screen.shared // <-- تغییر در این خط
+package ir.dekot.kavosh.ui.composables // <-- تغییر در این خط
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth

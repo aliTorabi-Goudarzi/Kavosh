@@ -1,4 +1,4 @@
-package ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose
+package ir.dekot.kavosh.ui.composables
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope

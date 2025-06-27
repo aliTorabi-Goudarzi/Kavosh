@@ -17,8 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.R
 import ir.dekot.kavosh.domain.sensor.SensorState
-import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoCard
-import ir.dekot.kavosh.ui.screen.detail.infoCards.used_compose.InfoRow
+import ir.dekot.kavosh.ui.composables.InfoCard
+import ir.dekot.kavosh.ui.composables.InfoRow
 import ir.dekot.kavosh.ui.screen.sensordetail.components.AdvancedCompass
 import ir.dekot.kavosh.ui.screen.sensordetail.components.AngleIndicator
 import ir.dekot.kavosh.ui.screen.sensordetail.components.ArtificialHorizon
