@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.BatteryInfo
@@ -42,6 +43,7 @@ import ir.dekot.kavosh.ui.screen.detail.infoCards.*
 import ir.dekot.kavosh.ui.screen.shared.EmptyStateMessage
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
+import ir.dekot.kavosh.ui.viewmodel.StorageViewModel
 import ir.dekot.kavosh.ui.viewmodel.localizedTitle
 import ir.dekot.kavosh.util.report.ReportFormatter
 import ir.dekot.kavosh.util.shareText
@@ -79,7 +81,9 @@ private fun buildSelectedItemsString(
 fun DetailScreen(
     category: InfoCategory,
     viewModel: DeviceInfoViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    // **اصلاح کلیدی: دریافت مستقیم StorageViewModel با Hilt**
+    storageViewModel: StorageViewModel = hiltViewModel()
 ) {
     val deviceInfo by viewModel.deviceInfo.collectAsState()
     val batteryInfo by viewModel.batteryInfo.collectAsState()
@@ -155,6 +159,7 @@ fun DetailScreen(
             CategoryDetailContent(
                 category = category,
                 viewModel = viewModel, // پاس دادن viewModel
+                storageViewModel = storageViewModel, // <-- پاس دادن ViewModel جدید
                 deviceInfo = deviceInfo,
                 batteryInfo = batteryInfo,
                 thermalDetails = thermalDetails,
@@ -171,6 +176,7 @@ fun DetailScreen(
 private fun LazyListScope.CategoryDetailContent(
     category: InfoCategory,
     viewModel: DeviceInfoViewModel, // *** پارامتر جدید ***
+    storageViewModel: StorageViewModel, // <-- پارامتر جدید
     deviceInfo: DeviceInfo,
     batteryInfo: BatteryInfo,
     thermalDetails: List<ThermalInfo>,
@@ -190,18 +196,19 @@ private fun LazyListScope.CategoryDetailContent(
             item { StorageInfoCard(deviceInfo.storage) }
             // *** کارت جدید در این بخش اضافه شد ***
             item {
-                // حالا دسترسی به viewModel صحیح است
-                val isTesting by viewModel.isStorageTesting.collectAsState()
-                val progress by viewModel.storageTestProgress.collectAsState()
-                val writeSpeed by viewModel.writeSpeed.collectAsState()
-                val readSpeed by viewModel.readSpeed.collectAsState()
+                // **اصلاح کلیدی: خواندن State ها از storageViewModel**
+                val isTesting by storageViewModel.isStorageTesting.collectAsState()
+                val progress by storageViewModel.storageTestProgress.collectAsState()
+                val writeSpeed by storageViewModel.writeSpeed.collectAsState()
+                val readSpeed by storageViewModel.readSpeed.collectAsState()
 
                 StorageSpeedTestCard(
                     isTesting = isTesting,
                     progress = progress,
                     writeSpeed = writeSpeed,
                     readSpeed = readSpeed,
-                    onStartTest = { viewModel.startStorageSpeedTest() }
+                    // فراخوانی متد از ViewModel صحیح
+                    onStartTest = { storageViewModel.startStorageSpeedTest() }
                 )
             }
         }

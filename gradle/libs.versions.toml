@@ -12,6 +12,7 @@ composeBom = "2025.06.01"
 hilt = "2.56.2" # <-- نسخه Hilt را اضافه کنید
 mockk = "1.14.4"
 mockkAgentJvm = "1.14.4"
+hiltNavigationCompose = "1.2.0" # <-- این خط را اضافه کنید
 
 
 [libraries]
@@ -36,6 +37,7 @@ hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" } # <-- اضافه کنید
 mockk-agent-jvm = { module = "io.mockk:mockk-agent-jvm", version.ref = "mockkAgentJvm" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" } # <-- این خط را اضافه کنید
 
 
 [plugins]

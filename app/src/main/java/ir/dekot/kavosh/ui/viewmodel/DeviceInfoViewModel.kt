@@ -21,7 +21,6 @@ import ir.dekot.kavosh.domain.sensor.SensorHandler
 import ir.dekot.kavosh.domain.sensor.SensorState
 import ir.dekot.kavosh.ui.navigation.Screen
 import ir.dekot.kavosh.util.formatSizeOrSpeed
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -81,15 +80,6 @@ class DeviceInfoViewModel @Inject constructor(
     private var socPollingJob: Job? = null
     private var batteryReceiver: BroadcastReceiver? = null
     private var networkPollingJob: Job? = null
-
-    private val _isStorageTesting = MutableStateFlow(false)
-    val isStorageTesting: StateFlow<Boolean> = _isStorageTesting.asStateFlow()
-    private val _storageTestProgress = MutableStateFlow(0f)
-    val storageTestProgress: StateFlow<Float> = _storageTestProgress.asStateFlow()
-    private val _writeSpeed = MutableStateFlow("N/A")
-    val writeSpeed: StateFlow<String> = _writeSpeed.asStateFlow()
-    private val _readSpeed = MutableStateFlow("N/A")
-    val readSpeed: StateFlow<String> = _readSpeed.asStateFlow()
 
 
     init {
@@ -320,34 +310,6 @@ class DeviceInfoViewModel @Inject constructor(
     }
 
     // --- سایر توابع ---
-
-    fun startStorageSpeedTest() {
-        if (_isStorageTesting.value) return
-
-        viewModelScope.launch(Dispatchers.IO) {
-            _isStorageTesting.value = true
-            _writeSpeed.value = context.getString(R.string.testing)
-            _readSpeed.value = context.getString(R.string.testing)
-            _storageTestProgress.value = 0f
-
-            try {
-                val result = repository.performStorageSpeedTest { progress ->
-                    viewModelScope.launch(Dispatchers.Main) {
-                        _storageTestProgress.value = progress
-                    }
-                }
-                _writeSpeed.value = result.first
-                _readSpeed.value = result.second
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _writeSpeed.value = context.getString(R.string.label_error)
-                _readSpeed.value = context.getString(R.string.label_error)
-            } finally {
-                _isStorageTesting.value = false
-                _storageTestProgress.value = 0f
-            }
-        }
-    }
 
     private fun prepareThermalDetails() {
         val combinedList = mutableListOf<ThermalInfo>()

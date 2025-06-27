@@ -16,7 +16,7 @@ android {
         minSdk = 28
         targetSdk = 35
         versionCode = 1
-        versionName = "3.4.0beta"
+        versionName = "3.5.0beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -74,5 +74,6 @@ dependencies {
     kapt(libs.hilt.compiler)
     testImplementation(libs.mockk)
     testImplementation(libs.mockk.agent.jvm)
+    implementation(libs.hilt.navigation.compose)
 
 }
