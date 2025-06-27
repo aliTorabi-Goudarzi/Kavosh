@@ -29,6 +29,7 @@ import ir.dekot.kavosh.ui.screen.DeviceInspectorApp
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel // <-- ایمپورت جدید
 import ir.dekot.kavosh.ui.theme.KavoshTheme // <-- ایمپورت اصلاح شده
+import ir.dekot.kavosh.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -39,6 +40,7 @@ class MainActivity : ComponentActivity() {
     private val deviceInfoViewModel: DeviceInfoViewModel by viewModels()
     // ViewModel جدید را هم از طریق Hilt دریافت می‌کنیم
     private val settingsViewModel: SettingsViewModel by viewModels()
+    private val dashboardViewModel: DashboardViewModel by viewModels() // <-- اضافه کردن ViewModel جدید
 
     @RequiresApi(Build.VERSION_CODES.R)
     private val createFileLauncher = registerForActivityResult(
@@ -114,6 +116,7 @@ class MainActivity : ComponentActivity() {
                             // هر دو ViewModel را به تابع اصلی پاس می‌دهیم
                             deviceInfoViewModel = deviceInfoViewModel,
                             settingsViewModel = settingsViewModel,
+                            dashboardViewModel = dashboardViewModel, // <-- پاس دادن ViewModel جدید
                             onStartScan = { deviceInfoViewModel.startScan(this) }
                         )
                     }

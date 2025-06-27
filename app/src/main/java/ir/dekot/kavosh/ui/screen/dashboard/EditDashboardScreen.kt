@@ -23,6 +23,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -30,19 +31,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.R
-import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
+import ir.dekot.kavosh.ui.viewmodel.DashboardViewModel // <-- ایمپورت ViewModel جدید
 
-/**
- * این صفحه به کاربر اجازه می‌دهد آیتم‌های داشبورد را مخفی یا نمایان کند.
- */
 @RequiresApi(Build.VERSION_CODES.R)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditDashboardScreen(
-    viewModel: DeviceInfoViewModel,
+    viewModel: DashboardViewModel, // <-- استفاده از ViewModel جدید
     onBackClick: () -> Unit
 ) {
     val dashboardItems by viewModel.dashboardItems.collectAsState()
+
+    // وقتی از این صفحه خارج میشیم، ترتیب جدید باید ذخیره بشه
+    // که این کار به صورت خودکار در onDashboardItemVisibilityChanged انجام میشه.
 
     Scaffold(
         topBar = {
@@ -72,27 +73,23 @@ fun EditDashboardScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // آیکون و نام آیتم
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(
                                 imageVector = item.icon,
-                                // *** تغییر کلیدی: استفاده از منبع رشته ***
                                 contentDescription = stringResource(id = item.titleResId),
                                 modifier = Modifier.size(32.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                            // *** تغییر کلیدی: استفاده از منبع رشته ***
                             Text(text = stringResource(id = item.titleResId), style = MaterialTheme.typography.bodyLarge)
                         }
-
-                        // سوییچ برای مخفی/نمایان کردن
                         Switch(
                             checked = item.isVisible,
                             onCheckedChange = { isChecked ->
+                                // فراخوانی متد از ViewModel صحیح
                                 viewModel.onDashboardItemVisibilityChanged(item.category, isChecked)
                             }
                         )

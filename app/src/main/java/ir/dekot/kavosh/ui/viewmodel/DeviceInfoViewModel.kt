@@ -9,15 +9,6 @@ import android.net.TrafficStats
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Android
-import androidx.compose.material.icons.filled.BatteryFull
-import androidx.compose.material.icons.filled.Memory
-import androidx.compose.material.icons.filled.NetworkWifi
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.filled.Sensors
-import androidx.compose.material.icons.filled.Thermostat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,7 +21,6 @@ import ir.dekot.kavosh.data.repository.DeviceInfoRepository
 import ir.dekot.kavosh.domain.sensor.SensorHandler
 import ir.dekot.kavosh.domain.sensor.SensorState
 import ir.dekot.kavosh.ui.navigation.Screen
-import ir.dekot.kavosh.ui.screen.dashboard.DashboardItem
 import ir.dekot.kavosh.util.formatSizeOrSpeed
 import ir.dekot.kavosh.util.report.PdfGenerator
 import ir.dekot.kavosh.util.report.ReportFormatter
@@ -48,6 +38,7 @@ import kotlinx.coroutines.launch
 import java.io.FileOutputStream
 import javax.inject.Inject
 
+// کلاس‌های ExportResult حذف نشده‌اند چون هنوز اینجا استفاده می‌شوند
 sealed class ExportResult {
     data class Success(val message: String) : ExportResult()
     data class Failure(val message: String) : ExportResult()
@@ -63,10 +54,8 @@ class DeviceInfoViewModel @Inject constructor(
 
     val sensorState: StateFlow<SensorState> = sensorHandler.sensorState
 
-    // --- یک پرچم برای جلوگیری از بارگذاری مجدد داده‌ها ---
+    // --- State های اصلی و مربوط به داده‌های دستگاه ---
     private var hasLoadedData = false
-
-    // --- State های اصلی ---
     private val _deviceInfo = MutableStateFlow(DeviceInfo())
     val deviceInfo = _deviceInfo.asStateFlow()
 
@@ -86,60 +75,43 @@ class DeviceInfoViewModel @Inject constructor(
     private val _scanStatusText = MutableStateFlow("آماده برای اسکن...")
     val scanStatusText = _scanStatusText.asStateFlow()
 
-    // --- State های مربوط به داشبورد ---
-    private val _dashboardItems = MutableStateFlow<List<DashboardItem>>(emptyList())
-    val dashboardItems: StateFlow<List<DashboardItem>> = _dashboardItems.asStateFlow()
-
-
-    // --- State های مربوط به داده‌های زنده ---
+    // --- State های داده‌های زنده ---
     private val _batteryInfo = MutableStateFlow(BatteryInfo())
     val batteryInfo = _batteryInfo.asStateFlow()
-
     private val _liveCpuFrequencies = MutableStateFlow<List<String>>(emptyList())
     val liveCpuFrequencies = _liveCpuFrequencies.asStateFlow()
-
     private val _liveGpuLoad = MutableStateFlow<Int?>(null)
     val liveGpuLoad = _liveGpuLoad.asStateFlow()
-
-    private var socPollingJob: Job? = null
-    private var batteryReceiver: BroadcastReceiver? = null
-
-    // --- State های سرعت شبکه ---
     private val _downloadSpeed = MutableStateFlow("0.0 KB/s")
     val downloadSpeed = _downloadSpeed.asStateFlow()
-
     private val _uploadSpeed = MutableStateFlow("0.0 KB/s")
     val uploadSpeed = _uploadSpeed.asStateFlow()
 
+    // --- Job های مربوط به Polling ---
+    private var socPollingJob: Job? = null
+    private var batteryReceiver: BroadcastReceiver? = null
     private var networkPollingJob: Job? = null
 
     // --- State های تست سرعت حافظه ---
     private val _isStorageTesting = MutableStateFlow(false)
     val isStorageTesting: StateFlow<Boolean> = _isStorageTesting.asStateFlow()
-
     private val _storageTestProgress = MutableStateFlow(0f)
     val storageTestProgress: StateFlow<Float> = _storageTestProgress.asStateFlow()
-
     private val _writeSpeed = MutableStateFlow("N/A")
     val writeSpeed: StateFlow<String> = _writeSpeed.asStateFlow()
-
     private val _readSpeed = MutableStateFlow("N/A")
     val readSpeed: StateFlow<String> = _readSpeed.asStateFlow()
 
     // --- State های مربوط به خروجی گرفتن ---
     private val _exportResult = MutableSharedFlow<ExportResult>()
     val exportResult = _exportResult.asSharedFlow()
-
     private val _exportRequest = MutableSharedFlow<ExportFormat>()
     val exportRequest = _exportRequest.asSharedFlow()
-
     var pendingExportFormat: ExportFormat? = null
         private set
 
-
     init {
-        loadDashboardItems()
-
+        // منطق داشبورد از اینجا حذف شد
         if (repository.isFirstLaunch()) {
             hasLoadedData = false
             _currentScreen.value = Screen.Splash
@@ -147,7 +119,6 @@ class DeviceInfoViewModel @Inject constructor(
             _currentScreen.value = Screen.Dashboard
         }
     }
-
 
     override fun onCleared() {
         super.onCleared()
@@ -157,7 +128,8 @@ class DeviceInfoViewModel @Inject constructor(
         sensorHandler.stopListening()
     }
 
-    // --- توابع ناوبری ---
+    // --- تمام توابع دیگر (ناوبری، اسکن، داده‌های زنده و ...) بدون تغییر باقی می‌مانند ---
+    // ... (کدهای مربوط به ناوبری، اسکن، start/stop polling و غیره را اینجا کپی کنید)
     fun navigateToDetail(category: InfoCategory) {
         stopSocPolling()
         unregisterBatteryReceiver()
@@ -179,9 +151,7 @@ class DeviceInfoViewModel @Inject constructor(
         unregisterBatteryReceiver()
         stopNetworkPolling()
 
-        if (_currentScreen.value is Screen.EditDashboard) {
-            loadDashboardItems()
-        }
+        // هنگام بازگشت از صفحه ویرایش، دیگر نیازی به بارگذاری مجدد آیتم‌ها در این ViewModel نیست
         _currentScreen.value = Screen.Dashboard
     }
 
@@ -365,67 +335,6 @@ class DeviceInfoViewModel @Inject constructor(
 
     fun unregisterSensorListener() {
         sensorHandler.stopListening()
-    }
-
-
-    // --- توابع مربوط به داشبورد ---
-    private fun loadDashboardItems() {
-        viewModelScope.launch {
-            val orderedCategories = repository.getDashboardOrder()
-            val hiddenCategories = repository.getHiddenCategories()
-            val allPossibleItems = getFullDashboardList()
-
-            val loadedItems = orderedCategories.mapNotNull { category ->
-                allPossibleItems.find { it.category == category }?.copy(
-                    isVisible = !hiddenCategories.contains(category)
-                )
-            }
-            val newItems = allPossibleItems.filter { item -> loadedItems.none { it.category == item.category } }
-            _dashboardItems.value = loadedItems + newItems
-        }
-    }
-
-    private fun getFullDashboardList(): List<DashboardItem> {
-        return listOf(
-            DashboardItem(InfoCategory.SOC, R.string.category_soc, Icons.Default.Memory),
-            DashboardItem(InfoCategory.DEVICE, R.string.category_device, Icons.Default.PhoneAndroid),
-            DashboardItem(InfoCategory.SYSTEM, R.string.category_system, Icons.Default.Android),
-            DashboardItem(InfoCategory.BATTERY, R.string.category_battery, Icons.Default.BatteryFull),
-            DashboardItem(InfoCategory.SENSORS, R.string.category_sensors, Icons.Default.Sensors),
-            DashboardItem(InfoCategory.THERMAL, R.string.category_thermal, Icons.Default.Thermostat),
-            DashboardItem(InfoCategory.NETWORK, R.string.category_network, Icons.Default.NetworkWifi),
-            DashboardItem(InfoCategory.CAMERA, R.string.category_camera, Icons.Default.PhotoCamera)
-        )
-    }
-
-    fun onDashboardItemVisibilityChanged(category: InfoCategory, isVisible: Boolean) {
-        viewModelScope.launch {
-            val currentItems = _dashboardItems.value.toMutableList()
-            val itemIndex = currentItems.indexOfFirst { it.category == category }
-            if (itemIndex != -1) {
-                currentItems[itemIndex] = currentItems[itemIndex].copy(isVisible = isVisible)
-                _dashboardItems.value = currentItems
-                saveDashboardChanges()
-            }
-        }
-    }
-
-    fun saveDashboardOrder(orderedCategories: List<InfoCategory>) {
-        viewModelScope.launch {
-            val currentItems = _dashboardItems.value
-            val hiddenCategories = currentItems.filter { !it.isVisible }.map { it.category }
-            val newFullOrder = orderedCategories + hiddenCategories
-            repository.saveDashboardOrder(newFullOrder)
-            loadDashboardItems()
-        }
-    }
-
-    private fun saveDashboardChanges() {
-        val currentItems = _dashboardItems.value
-        val newOrder = currentItems.map { it.category }
-        val newHiddenSet = currentItems.filter { !it.isVisible }.map { it.category }.toSet()
-        repository.saveDashboardOrder(newOrder)
-        repository.saveHiddenCategories(newHiddenSet)
     }
 
     // --- سایر توابع ---

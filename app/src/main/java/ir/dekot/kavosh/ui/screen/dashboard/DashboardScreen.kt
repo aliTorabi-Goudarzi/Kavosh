@@ -41,11 +41,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import ir.dekot.kavosh.ui.viewmodel.DashboardViewModel
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.ExportFormat
 import ir.dekot.kavosh.ui.viewmodel.ExportResult
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
-import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel // <-- ایمپورت جدید
+import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -53,8 +54,9 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun DashboardScreen(
-    deviceInfoViewModel: DeviceInfoViewModel,
-    settingsViewModel: SettingsViewModel, // <-- پارامتر جدید
+    deviceInfoViewModel: DeviceInfoViewModel, // برای خروجی گرفتن و ...
+    settingsViewModel: SettingsViewModel,     // برای خواندن تنظیمات
+    dashboardViewModel: DashboardViewModel,   // برای آیتم‌های داشبورد
     onCategoryClick: (InfoCategory, Context) -> Unit,
     onSettingsClick: () -> Unit,
     onEditDashboardClick: () -> Unit
@@ -63,15 +65,15 @@ fun DashboardScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val dashboardItems by deviceInfoViewModel.dashboardItems.collectAsState()
-    // *** اصلاح کلیدی: خواندن مقدار از ViewModel صحیح ***
+    // خواندن داده‌ها از ViewModel های مربوطه
+    val dashboardItems by dashboardViewModel.dashboardItems.collectAsState()
     val isReorderingEnabled by settingsViewModel.isReorderingEnabled.collectAsState()
 
     val gridState = rememberLazyGridState()
-
     val dragState = rememberDashboardDragState(
         gridState = gridState,
-        onOrderChanged = { newOrder -> deviceInfoViewModel.saveDashboardOrder(newOrder) }
+        // پاس دادن رویداد به ViewModel صحیح
+        onOrderChanged = { newOrder -> dashboardViewModel.saveDashboardOrder(newOrder) }
     )
 
     LaunchedEffect(dashboardItems) {
@@ -92,6 +94,7 @@ fun DashboardScreen(
         }
     }
 
+    // بقیه کد UI بدون تغییر باقی می‌ماند
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
