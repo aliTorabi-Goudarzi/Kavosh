@@ -24,18 +24,19 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.R
-import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
+import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel // <-- ایمپورت ViewModel جدید
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
-    viewModel: DeviceInfoViewModel,
+    viewModel: SettingsViewModel, // <-- استفاده از ViewModel جدید
     onBackClick: () -> Unit
 ) {
     val appVersion by viewModel.appVersion.collectAsState()
@@ -61,12 +62,10 @@ fun AboutScreen(
             verticalArrangement = Arrangement.Top
         ) {
             Image(
-                // *** تغییر کلیدی و نهایی در این خط ***
                 painter = painterResource(id = R.drawable.ic_launcher_foreground),
                 contentDescription = "App Logo",
                 modifier = Modifier.size(100.dp),
-                // برای اینکه رنگ آیکون با تم برنامه هماهنگ باشد
-                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary)
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(

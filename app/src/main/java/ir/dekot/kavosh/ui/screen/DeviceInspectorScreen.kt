@@ -3,11 +3,10 @@ package ir.dekot.kavosh.ui.screen
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import ir.dekot.kavosh.data.model.settings.Theme
+import ir.dekot.kavosh.ui.navigation.Screen
 import ir.dekot.kavosh.ui.screen.about.AboutScreen
 import ir.dekot.kavosh.ui.screen.dashboard.DashboardScreen
 import ir.dekot.kavosh.ui.screen.dashboard.EditDashboardScreen
@@ -16,84 +15,74 @@ import ir.dekot.kavosh.ui.screen.sensordetail.SensorDetailScreen
 import ir.dekot.kavosh.ui.screen.settings.SettingsScreen
 import ir.dekot.kavosh.ui.screen.splash.SplashScreen
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
-import ir.dekot.kavosh.ui.viewmodel.Screen
+import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel
 
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
 fun DeviceInspectorApp(
     deviceInfoViewModel: DeviceInfoViewModel,
+    settingsViewModel: SettingsViewModel,
     onStartScan: () -> Unit
 ) {
     val currentScreen by deviceInfoViewModel.currentScreen.collectAsState()
-    val currentTheme by deviceInfoViewModel.themeState.collectAsState()
-    val dynamicColor by deviceInfoViewModel.isDynamicThemeEnabled.collectAsState()
 
+    when (val screen = currentScreen) {
+        is Screen.Splash -> SplashScreen(
+            onStartScan = onStartScan,
+            viewModel = deviceInfoViewModel
+        )
 
-    val useDarkTheme = when (currentTheme) {
-        Theme.SYSTEM -> isSystemInDarkTheme()
-        Theme.LIGHT -> false
-        Theme.DARK -> true
-    }
+        is Screen.Dashboard -> DashboardScreen(
+            deviceInfoViewModel = deviceInfoViewModel,
+            settingsViewModel = settingsViewModel, // <-- پاس دادن ViewModel به داشبورد
+            onCategoryClick = { category, _ ->
+                deviceInfoViewModel.navigateToDetail(category)
+            },
+            onSettingsClick = { deviceInfoViewModel.navigateToSettings() },
+            onEditDashboardClick = { deviceInfoViewModel.navigateToEditDashboard() }
+        )
 
-    ir.dekot.kavosh.ui.theme.KavoshTheme(darkTheme = useDarkTheme, dynamicColor = dynamicColor) {
-        when (val screen = currentScreen) {
-            is Screen.Splash -> SplashScreen(
-                onStartScan = onStartScan,
-                viewModel = deviceInfoViewModel
+        is Screen.Settings -> {
+            BackHandler { deviceInfoViewModel.navigateBack() }
+            SettingsScreen(
+                viewModel = settingsViewModel,
+                onNavigateToAbout = { deviceInfoViewModel.navigateToAbout() },
+                onBackClick = { deviceInfoViewModel.navigateBack() }
             )
+        }
 
-            is Screen.Dashboard -> DashboardScreen(
-                deviceInfoViewModel = deviceInfoViewModel,
-                onCategoryClick = { category, _ ->
-                    deviceInfoViewModel.navigateToDetail(category)
-                },
-                onSettingsClick = { deviceInfoViewModel.navigateToSettings() },
-                onEditDashboardClick = { deviceInfoViewModel.navigateToEditDashboard() }
+        is Screen.Detail -> {
+            BackHandler { deviceInfoViewModel.navigateBack() }
+            DetailScreen(
+                category = screen.category,
+                viewModel = deviceInfoViewModel,
+                onBackClick = { deviceInfoViewModel.navigateBack() }
             )
+        }
 
-            is Screen.Settings -> {
-                BackHandler { deviceInfoViewModel.navigateBack() }
-                SettingsScreen(
-                    viewModel = deviceInfoViewModel,
-                    onBackClick = { deviceInfoViewModel.navigateBack() }
-                )
-            }
+        is Screen.EditDashboard -> {
+            BackHandler { deviceInfoViewModel.navigateBack() }
+            EditDashboardScreen(
+                viewModel = deviceInfoViewModel,
+                onBackClick = { deviceInfoViewModel.navigateBack() }
+            )
+        }
 
-            is Screen.Detail -> {
-                BackHandler { deviceInfoViewModel.navigateBack() }
-                // فراخوانی DetailScreen با پارامترهای جدید و ساده‌تر
-                DetailScreen(
-                    category = screen.category,
-                    viewModel = deviceInfoViewModel, // فقط یک ViewModel پاس داده می‌شود
-                    onBackClick = { deviceInfoViewModel.navigateBack() }
-                )
-            }
+        is Screen.About -> {
+            BackHandler { deviceInfoViewModel.navigateBack() }
+            AboutScreen(
+                viewModel = settingsViewModel,
+                onBackClick = { deviceInfoViewModel.navigateBack() }
+            )
+        }
 
-            is Screen.EditDashboard -> {
-                BackHandler { deviceInfoViewModel.navigateBack() }
-                EditDashboardScreen(
-                    viewModel = deviceInfoViewModel,
-                    onBackClick = { deviceInfoViewModel.navigateBack() }
-                )
-            }
-            // *** کیس جدید برای صفحه درباره ما ***
-            is Screen.About -> {
-                BackHandler { deviceInfoViewModel.navigateBack() }
-                AboutScreen(
-                    viewModel = deviceInfoViewModel,
-                    onBackClick = { deviceInfoViewModel.navigateBack() }
-                )
-            }
-            // *** کیس جدید برای صفحه جزئیات سنسور ***
-            is Screen.SensorDetail -> {
-                BackHandler { deviceInfoViewModel.navigateBack() }
-                SensorDetailScreen(
-                    viewModel = deviceInfoViewModel,
-                    sensorType = screen.sensorType,
-                    onBackClick = { deviceInfoViewModel.navigateBack() }
-                )
-            }
+        is Screen.SensorDetail -> {
+            BackHandler { deviceInfoViewModel.navigateBack() }
+            SensorDetailScreen(
+                viewModel = deviceInfoViewModel,
+                sensorType = screen.sensorType,
+                onBackClick = { deviceInfoViewModel.navigateBack() }
+            )
         }
     }
 }
-

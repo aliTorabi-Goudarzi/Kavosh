@@ -28,19 +28,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.settings.Theme
-import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
+import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel // <-- ایمپورت ViewModel جدید
 
 @RequiresApi(Build.VERSION_CODES.R)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    viewModel: DeviceInfoViewModel, // دریافت کل ViewModel برای دسترسی آسان
+    viewModel: SettingsViewModel, // <-- استفاده از ViewModel جدید
+    onNavigateToAbout: () -> Unit, // <-- تابع جدید برای ناوبری
     onBackClick: () -> Unit
 ) {
     val currentTheme by viewModel.themeState.collectAsState()
     val isReorderingEnabled by viewModel.isReorderingEnabled.collectAsState()
     val isDynamicThemeEnabled by viewModel.isDynamicThemeEnabled.collectAsState()
-    // دریافت زبان فعلی از ViewModel
     val currentLanguage by viewModel.language.collectAsState()
 
     Scaffold(
@@ -60,7 +60,6 @@ fun SettingsScreen(
             // بخش تنظیمات زبان
             Text(stringResource(R.string.language_settings), style = MaterialTheme.typography.titleLarge)
             Text(stringResource(R.string.choose_language), style = MaterialTheme.typography.bodySmall)
-            // گزینه‌ی زبان فارسی
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -77,7 +76,6 @@ fun SettingsScreen(
                     modifier = Modifier.padding(start = 16.dp)
                 )
             }
-            // گزینه‌ی زبان انگلیسی
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -122,7 +120,6 @@ fun SettingsScreen(
                 }
             }
 
-            // --- سوییچ جدید برای تم پویا (فقط در اندروید ۱۲+) ---
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 Row(
                     modifier = Modifier
@@ -146,7 +143,7 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
-            // --- بخش جدید برای تنظیمات داشبورد ---
+            // بخش تنظیمات داشبورد
             Text(stringResource(R.string.dashboard_settings), style = MaterialTheme.typography.titleLarge)
             Row(
                 modifier = Modifier
@@ -167,13 +164,13 @@ fun SettingsScreen(
                 )
             }
 
-            // *** بخش جدید "درباره" اضافه شد ***
+            // بخش "درباره"
             Text(
                 text = stringResource(R.string.about_title),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { viewModel.navigateToAbout() } // تابع ناوبری جدید
+                    .clickable { onNavigateToAbout() } // <-- استفاده از تابع جدید
                     .padding(vertical = 12.dp)
             )
         }

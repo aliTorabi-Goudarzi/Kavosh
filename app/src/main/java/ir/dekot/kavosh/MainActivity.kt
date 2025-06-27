@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -23,8 +24,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.ui.screen.DeviceInspectorApp
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
+import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel // <-- ایمپورت جدید
+import ir.dekot.kavosh.ui.theme.KavoshTheme // <-- ایمپورت اصلاح شده
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -33,6 +37,8 @@ import java.util.Locale
 class MainActivity : ComponentActivity() {
 
     private val deviceInfoViewModel: DeviceInfoViewModel by viewModels()
+    // ViewModel جدید را هم از طریق Hilt دریافت می‌کنیم
+    private val settingsViewModel: SettingsViewModel by viewModels()
 
     @RequiresApi(Build.VERSION_CODES.R)
     private val createFileLauncher = registerForActivityResult(
@@ -48,10 +54,10 @@ class MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun attachBaseContext(newBase: Context) {
-        // این متد زبان را قبل از ساخت Activity تنظیم می‌کند
-        val lang = DeviceInfoViewModel.getSavedLanguage(newBase)
+        // از متد استاتیک ViewModel جدید استفاده می‌کنیم
+        val lang = SettingsViewModel.getSavedLanguage(newBase)
         val locale = Locale(lang)
-        Locale.setDefault(locale) // تنظیم زبان پیش‌فرض برای کل برنامه
+        Locale.setDefault(locale)
         val config = Configuration(newBase.resources.configuration)
         config.setLocale(locale)
         val context = newBase.createConfigurationContext(config)
@@ -62,10 +68,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // مشاهده رویداد تغییر زبان از ViewModel
         lifecycleScope.launch {
-            deviceInfoViewModel.languageChangeRequest.collectLatest {
-                // Activity را از نو بساز تا زبان جدید اعمال شود
+            // به رویداد تغییر زبان از ViewModel جدید گوش می‌دهیم
+            settingsViewModel.languageChangeRequest.collectLatest {
                 recreate()
             }
         }
@@ -85,20 +90,33 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            // زبان فعلی را مستقیماً از ViewModel می‌خوانیم
-            val language by deviceInfoViewModel.language.collectAsState()
-            // تعیین چیدمان بر اساس زبان
+            // زبان و تم را از ViewModel جدید می‌خوانیم
+            val language by settingsViewModel.language.collectAsState()
+            val currentTheme by settingsViewModel.themeState.collectAsState()
+            val dynamicColor by settingsViewModel.isDynamicThemeEnabled.collectAsState()
+
+            val useDarkTheme = when (currentTheme) {
+                Theme.SYSTEM -> isSystemInDarkTheme()
+                Theme.LIGHT -> false
+                Theme.DARK -> true
+            }
+
             val layoutDirection = if (language == "fa") LayoutDirection.Rtl else LayoutDirection.Ltr
 
             CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    DeviceInspectorApp(
-                        deviceInfoViewModel = deviceInfoViewModel,
-                        onStartScan = { deviceInfoViewModel.startScan(this) }
-                    )
+                // تم را اینجا بر اساس داده‌های SettingsViewModel تنظیم می‌کنیم
+                KavoshTheme(darkTheme = useDarkTheme, dynamicColor = dynamicColor) {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        DeviceInspectorApp(
+                            // هر دو ViewModel را به تابع اصلی پاس می‌دهیم
+                            deviceInfoViewModel = deviceInfoViewModel,
+                            settingsViewModel = settingsViewModel,
+                            onStartScan = { deviceInfoViewModel.startScan(this) }
+                        )
+                    }
                 }
             }
         }

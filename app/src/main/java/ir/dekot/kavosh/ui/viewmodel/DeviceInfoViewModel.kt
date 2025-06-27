@@ -5,10 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.net.TrafficStats
 import android.net.Uri
 import android.os.Build
@@ -26,11 +22,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.BatteryInfo
 import ir.dekot.kavosh.data.model.components.ThermalInfo
-import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
+import ir.dekot.kavosh.domain.sensor.SensorHandler
+import ir.dekot.kavosh.domain.sensor.SensorState
+import ir.dekot.kavosh.ui.navigation.Screen
 import ir.dekot.kavosh.ui.screen.dashboard.DashboardItem
 import ir.dekot.kavosh.util.formatSizeOrSpeed
 import ir.dekot.kavosh.util.report.PdfGenerator
@@ -48,10 +47,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.FileOutputStream
 import javax.inject.Inject
-import ir.dekot.kavosh.R
-import kotlin.getValue
-import ir.dekot.kavosh.domain.sensor.SensorHandler
-import ir.dekot.kavosh.domain.sensor.SensorState
 
 sealed class ExportResult {
     data class Success(val message: String) : ExportResult()
@@ -62,57 +57,11 @@ sealed class ExportResult {
 @RequiresApi(Build.VERSION_CODES.R)
 class DeviceInfoViewModel @Inject constructor(
     private val repository: DeviceInfoRepository,
-    private val sensorHandler: SensorHandler, // <<< تزریق Handler جدید
+    private val sensorHandler: SensorHandler,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     val sensorState: StateFlow<SensorState> = sensorHandler.sensorState
-
-
-    // *** تغییر State برای نگهداری تاریخچه ***
-    private val _rotationVectorHistory = MutableStateFlow<List<FloatArray>>(emptyList())
-
-
-
-    // State های جدید و اختصاصی برای سنسورها
-    private val _accelerometerData = MutableStateFlow(FloatArray(3))
-
-    private val _magnetometerData = MutableStateFlow(FloatArray(3))
-
-    // این State حالا تمام زوایای جهت‌یابی را نگه می‌دارد
-     val orientationAngles = MutableStateFlow(FloatArray(3))
-
-    private val rotationMatrix = FloatArray(9)
-
-    // *** State جدید برای نگهداری داده‌های زنده سنسور ***
-    private val _liveSensorData = MutableStateFlow<List<Float>>(emptyList())
-
-
-    // State های جدید برای تست سرعت حافظه
-    private val _isStorageTesting = MutableStateFlow(false)
-    val isStorageTesting: StateFlow<Boolean> = _isStorageTesting.asStateFlow()
-
-    private val _storageTestProgress = MutableStateFlow(0f)
-    val storageTestProgress: StateFlow<Float> = _storageTestProgress.asStateFlow()
-
-    private val _writeSpeed = MutableStateFlow("N/A")
-    val writeSpeed: StateFlow<String> = _writeSpeed.asStateFlow()
-
-    private val _readSpeed = MutableStateFlow("N/A")
-    val readSpeed: StateFlow<String> = _readSpeed.asStateFlow()
-
-    // --- State جدید برای نسخه برنامه ---
-    private val _appVersion = MutableStateFlow("")
-    val appVersion: StateFlow<String> = _appVersion.asStateFlow()
-
-    // --- State جدید برای زبان ---
-    private val _language = MutableStateFlow("fa")
-    val language: StateFlow<String> = _language.asStateFlow()
-
-    // --- رویداد جدید برای اطلاع رسانی به Activity ---
-    private val _languageChangeRequest = MutableSharedFlow<Unit>()
-    val languageChangeRequest = _languageChangeRequest.asSharedFlow()
-
 
     // --- یک پرچم برای جلوگیری از بارگذاری مجدد داده‌ها ---
     private var hasLoadedData = false
@@ -137,20 +86,12 @@ class DeviceInfoViewModel @Inject constructor(
     private val _scanStatusText = MutableStateFlow("آماده برای اسکن...")
     val scanStatusText = _scanStatusText.asStateFlow()
 
-    // --- State های مربوط به تنظیمات ---
-    private val _themeState = MutableStateFlow(Theme.SYSTEM)
-    val themeState: StateFlow<Theme> = _themeState.asStateFlow()
-
+    // --- State های مربوط به داشبورد ---
     private val _dashboardItems = MutableStateFlow<List<DashboardItem>>(emptyList())
     val dashboardItems: StateFlow<List<DashboardItem>> = _dashboardItems.asStateFlow()
 
-    private val _isReorderingEnabled = MutableStateFlow(true)
-    val isReorderingEnabled: StateFlow<Boolean> = _isReorderingEnabled.asStateFlow()
 
-    private val _isDynamicThemeEnabled = MutableStateFlow(true)
-    val isDynamicThemeEnabled: StateFlow<Boolean> = _isDynamicThemeEnabled.asStateFlow()
-
-    // --- State ها و منطق‌های ادغام شده از ViewModel های دیگر ---
+    // --- State های مربوط به داده‌های زنده ---
     private val _batteryInfo = MutableStateFlow(BatteryInfo())
     val batteryInfo = _batteryInfo.asStateFlow()
 
@@ -163,7 +104,7 @@ class DeviceInfoViewModel @Inject constructor(
     private var socPollingJob: Job? = null
     private var batteryReceiver: BroadcastReceiver? = null
 
-    // --- State های جدید برای سرعت شبکه ---
+    // --- State های سرعت شبکه ---
     private val _downloadSpeed = MutableStateFlow("0.0 KB/s")
     val downloadSpeed = _downloadSpeed.asStateFlow()
 
@@ -171,6 +112,19 @@ class DeviceInfoViewModel @Inject constructor(
     val uploadSpeed = _uploadSpeed.asStateFlow()
 
     private var networkPollingJob: Job? = null
+
+    // --- State های تست سرعت حافظه ---
+    private val _isStorageTesting = MutableStateFlow(false)
+    val isStorageTesting: StateFlow<Boolean> = _isStorageTesting.asStateFlow()
+
+    private val _storageTestProgress = MutableStateFlow(0f)
+    val storageTestProgress: StateFlow<Float> = _storageTestProgress.asStateFlow()
+
+    private val _writeSpeed = MutableStateFlow("N/A")
+    val writeSpeed: StateFlow<String> = _writeSpeed.asStateFlow()
+
+    private val _readSpeed = MutableStateFlow("N/A")
+    val readSpeed: StateFlow<String> = _readSpeed.asStateFlow()
 
     // --- State های مربوط به خروجی گرفتن ---
     private val _exportResult = MutableSharedFlow<ExportResult>()
@@ -183,14 +137,7 @@ class DeviceInfoViewModel @Inject constructor(
         private set
 
 
-
     init {
-        // بارگذاری تنظیمات ذخیره شده در شروع
-        _themeState.value = repository.getTheme()
-        _isReorderingEnabled.value = repository.isReorderingEnabled()
-        _isDynamicThemeEnabled.value = repository.isDynamicThemeEnabled()
-        _language.value = repository.getLanguage() // بارگذاری زبان
-        _appVersion.value = repository.getAppVersion() // دریافت نسخه برنامه در شروع
         loadDashboardItems()
 
         if (repository.isFirstLaunch()) {
@@ -201,230 +148,72 @@ class DeviceInfoViewModel @Inject constructor(
         }
     }
 
-    /**
-     * این متد حالا خصوصی است و فقط توسط شنونده داخلی فراخوانی می‌شود.
-     */
-    private fun onSensorChanged(event: SensorEvent?) {
-        event ?: return
-
-        when (event.sensor.type) {
-            Sensor.TYPE_ACCELEROMETER -> {
-                _accelerometerData.value = event.values.clone()
-                updateOrientation()
-            }
-            Sensor.TYPE_MAGNETIC_FIELD -> {
-                _magnetometerData.value = event.values.clone()
-                updateOrientation()
-            }
-            Sensor.TYPE_ROTATION_VECTOR -> {
-                val newValues = event.values.clone()
-                // افزودن مقدار جدید و حذف مقادیر قدیمی برای نگه داشتن تاریخچه
-                val history = (_rotationVectorHistory.value + listOf(newValues)).takeLast(100) // نگه داشتن ۱۰۰ مقدار آخر
-                _rotationVectorHistory.value = history
-            }
-            else -> {
-                _liveSensorData.value = event.values.toList()
-            }
-        }
-    }
-
-    fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // فعلاً نیازی به این متد نداریم
-    }
-
-    /**
-     * تابع جدید برای محاسبه و به‌روزرسانی زوایای جهت‌یابی
-     */
-    private fun updateOrientation() {
-        SensorManager.getRotationMatrix(rotationMatrix, null, _accelerometerData.value, _magnetometerData.value)
-        val newOrientationAngles = FloatArray(3)
-        SensorManager.getOrientation(rotationMatrix, newOrientationAngles)
-        orientationAngles.value = newOrientationAngles
-    }
-
-    /**
-     * *** تابع جدید: ***
-     * یک شنونده برای سنسور مشخص شده ثبت می‌کند.
-     */
-    fun registerSensorListener(sensorType: Int) {
-        sensorHandler.startListening(sensorType)
-    }
-//    fun registerSensorListener(sensorType: Int) {
-//        unregisterSensorListener()
-//
-//        sensorEventListener = object : SensorEventListener {
-//            override fun onSensorChanged(event: SensorEvent?) {
-//                this@DeviceInfoViewModel.onSensorChanged(event)
-//            }
-//            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) { }
-//        }
-//        // *** تغییر کلیدی: تعیین سرعت بر اساس نوع سنسور ***
-//        val delay = if (sensorType == Sensor.TYPE_ROTATION_VECTOR) {
-//            SensorManager.SENSOR_DELAY_UI // سرعت بالا برای انیمیشن روان
-//        } else {
-//            SensorManager.SENSOR_DELAY_NORMAL // سرعت عادی برای سایر سنسورها
-//        }
-//
-//        if (sensorType == Sensor.TYPE_MAGNETIC_FIELD) {
-//            sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also { accelerometer ->
-//                sensorManager.registerListener(sensorEventListener, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
-//            }
-//            sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also { magneticField ->
-//                sensorManager.registerListener(sensorEventListener, magneticField, SensorManager.SENSOR_DELAY_NORMAL)
-//            }
-//        } else {
-//            sensorManager.getDefaultSensor(sensorType)?.also { sensor ->
-//                sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
-//            }
-//        }
-//    }
-
-
-    /**
-     * *** تابع جدید: ***
-     * شنونده سنسور را غیرفعال می‌کند تا از مصرف باتری و نشت حافظه جلوگیری شود.
-     */
-    fun unregisterSensorListener() {
-        sensorHandler.stopListening()
-    }
-//    fun unregisterSensorListener() {
-//        sensorEventListener?.let { sensorManager.unregisterListener(it) }
-//        sensorEventListener = null
-//        _liveSensorData.value = emptyList()
-//        _accelerometerData.value = FloatArray(3)
-//        _magnetometerData.value = FloatArray(3)
-//        orientationAngles.value = FloatArray(3)
-////        _rotationVectorData.value = FloatArray(4)
-//        _rotationVectorHistory.value = emptyList() // ریست کردن تاریخچه
-//    }
-
-
-    /**
-     * *** تابع جدید برای شروع تست سرعت ***
-     */
-    fun startStorageSpeedTest() {
-        if (_isStorageTesting.value) return
-
-        viewModelScope.launch(Dispatchers.IO) {
-            _isStorageTesting.value = true
-            _writeSpeed.value = context.getString(R.string.testing) // "Testing..."
-            _readSpeed.value = context.getString(R.string.testing) // "Testing..."
-            _storageTestProgress.value = 0f
-
-            try {
-                // حالا این فراخوانی بدون خطا خواهد بود
-                val result = repository.performStorageSpeedTest { progress ->
-                    viewModelScope.launch(Dispatchers.Main) {
-                        _storageTestProgress.value = progress
-                    }
-                }
-                _writeSpeed.value = result.first
-                _readSpeed.value = result.second
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _writeSpeed.value = context.getString(R.string.label_error)
-                _readSpeed.value = context.getString(R.string.label_error)
-            } finally {
-                _isStorageTesting.value = false
-                _storageTestProgress.value = 0f
-            }
-        }
-    }
-
-    /**
-     * *** تابع جدید: ***
-     * برای ناوبری به صفحه "درباره ما".
-     */
-    fun navigateToAbout() {
-        _currentScreen.value = Screen.About
-    }
-
-    /**
-     * *** تابع جدید: ***
-     * برای ناوبری به صفحه جزئیات یک سنسور خاص.
-     */
-    fun navigateToSensorDetail(sensorType: Int) {
-        _currentScreen.value = Screen.SensorDetail(sensorType)
-    }
-
-    // --- متد جدید برای تغییر زبان ---
-    fun onLanguageSelected(lang: String) {
-        // اگر زبان تغییری نکرده، کاری انجام نده
-        if (lang == _language.value) return
-
-        viewModelScope.launch {
-            repository.saveLanguage(lang)
-            _language.value = lang
-            // ارسال رویداد برای بازسازی Activity
-            _languageChangeRequest.emit(Unit)
-        }
-    }
-
-    companion object {
-        // متد استاتیک برای دسترسی به زبان قبل از اینکه ViewModel ساخته شود
-        fun getSavedLanguage(context: Context): String {
-            val prefs = context.getSharedPreferences("device_inspector_prefs", Context.MODE_PRIVATE)
-            // تغییر کلیدی در این خط: مقدار پیش‌فرض به "fa" تغییر کرد
-            return prefs.getString("app_language", "fa") ?: "fa"
-        }
-    }
-
-    // --- افزودن منطق جدید ---
-    private fun startNetworkPolling() {
-        stopNetworkPolling()
-        networkPollingJob = viewModelScope.launch {
-            var lastRxBytes = TrafficStats.getTotalRxBytes()
-            var lastTxBytes = TrafficStats.getTotalTxBytes()
-
-            while (isActive) {
-                delay(2000)
-                val currentRxBytes = TrafficStats.getTotalRxBytes()
-                val currentTxBytes = TrafficStats.getTotalTxBytes()
-
-                val rxSpeed = (currentRxBytes - lastRxBytes) / 2
-                val txSpeed = (currentTxBytes - lastTxBytes) / 2
-
-                // *** تغییر کلیدی: پاس دادن context به تابع ***
-                _downloadSpeed.value = formatSizeOrSpeed(context, rxSpeed, perSecond = true)
-                _uploadSpeed.value = formatSizeOrSpeed(context, txSpeed, perSecond = true)
-
-                lastRxBytes = currentRxBytes
-                lastTxBytes = currentTxBytes
-            }
-        }
-    }
-
-    private fun stopNetworkPolling() {
-        networkPollingJob?.cancel()
-        networkPollingJob = null
-    }
 
     override fun onCleared() {
         super.onCleared()
         stopSocPolling()
         unregisterBatteryReceiver()
         stopNetworkPolling()
-        sensorHandler.stopListening() // <<< توقف شنونده هنگام بسته شدن ViewModel
+        sensorHandler.stopListening()
     }
 
-    // --- منطق اسکن و بارگذاری داده ---
+    // --- توابع ناوبری ---
+    fun navigateToDetail(category: InfoCategory) {
+        stopSocPolling()
+        unregisterBatteryReceiver()
+        stopNetworkPolling()
+        when (category) {
+            InfoCategory.THERMAL -> prepareThermalDetails()
+            InfoCategory.SOC -> startSocPolling()
+            InfoCategory.BATTERY -> registerBatteryReceiver()
+            InfoCategory.NETWORK -> startNetworkPolling()
+            else -> {
+            }
+        }
+        _currentScreen.value = Screen.Detail(category)
+    }
+
+    fun navigateBack() {
+        // توقف polling ها هنگام بازگشت به داشبورد
+        stopSocPolling()
+        unregisterBatteryReceiver()
+        stopNetworkPolling()
+
+        if (_currentScreen.value is Screen.EditDashboard) {
+            loadDashboardItems()
+        }
+        _currentScreen.value = Screen.Dashboard
+    }
+
+    fun navigateToSettings() {
+        _currentScreen.value = Screen.Settings
+    }
+
+    fun navigateToAbout() {
+        _currentScreen.value = Screen.About
+    }
+
+    fun navigateToEditDashboard() {
+        _currentScreen.value = Screen.EditDashboard
+    }
+
+    fun navigateToSensorDetail(sensorType: Int) {
+        _currentScreen.value = Screen.SensorDetail(sensorType)
+    }
+
+    // --- توابع مربوط به اسکن و بارگذاری داده ---
 
     fun loadDataForNonFirstLaunch(activity: Activity) {
-        // اگر اجرای اول است یا داده‌ها قبلا بارگذاری شده‌اند، خارج شو
         if (repository.isFirstLaunch() || hasLoadedData) return
 
         viewModelScope.launch {
             _isScanning.value = true
             try {
-                // عملیات اصلی واکشی داده حالا در یک بلاک try-catch قرار دارد
                 _deviceInfo.value = fetchAllDeviceInfo(activity)
             } catch (e: Exception) {
-                // در صورت بروز خطا، آن را لاگ می‌کنیم تا در آینده بررسی شود
                 e.printStackTrace()
-                // می‌توان یک پیام خطا به کاربر نمایش داد
             } finally {
                 _isScanning.value = false
-                // پرچم را تنظیم می‌کنیم تا این عملیات دوباره اجرا نشود
                 hasLoadedData = true
             }
         }
@@ -485,16 +274,14 @@ class DeviceInfoViewModel @Inject constructor(
             animationJob.join()
             dataLoadingJob.join()
             repository.setFirstLaunchCompleted()
-            hasLoadedData = true // پس از اسکن موفق، پرچم را تنظیم کن
+            hasLoadedData = true
 
             _currentScreen.value = Screen.Dashboard
             _isScanning.value = false
         }
     }
 
-    // --- سایر توابع ViewModel بدون تغییر باقی می‌مانند ---
-    // (توابع مربوط به داده‌های زنده، ناوبری، داشبورد، تنظیمات و خروجی)
-
+    // --- توابع مربوط به داده‌های زنده ---
     private fun startSocPolling() {
         stopSocPolling()
         socPollingJob = viewModelScope.launch {
@@ -509,6 +296,34 @@ class DeviceInfoViewModel @Inject constructor(
     private fun stopSocPolling() {
         socPollingJob?.cancel()
         socPollingJob = null
+    }
+
+    private fun startNetworkPolling() {
+        stopNetworkPolling()
+        networkPollingJob = viewModelScope.launch {
+            var lastRxBytes = TrafficStats.getTotalRxBytes()
+            var lastTxBytes = TrafficStats.getTotalTxBytes()
+
+            while (isActive) {
+                delay(2000)
+                val currentRxBytes = TrafficStats.getTotalRxBytes()
+                val currentTxBytes = TrafficStats.getTotalTxBytes()
+
+                val rxSpeed = (currentRxBytes - lastRxBytes) / 2
+                val txSpeed = (currentTxBytes - lastTxBytes) / 2
+
+                _downloadSpeed.value = formatSizeOrSpeed(context, rxSpeed, perSecond = true)
+                _uploadSpeed.value = formatSizeOrSpeed(context, txSpeed, perSecond = true)
+
+                lastRxBytes = currentRxBytes
+                lastTxBytes = currentTxBytes
+            }
+        }
+    }
+
+    private fun stopNetworkPolling() {
+        networkPollingJob?.cancel()
+        networkPollingJob = null
     }
 
     private fun registerBatteryReceiver() {
@@ -542,33 +357,18 @@ class DeviceInfoViewModel @Inject constructor(
         }
     }
 
-    fun navigateToDetail(category: InfoCategory) {
-        stopSocPolling()
-        unregisterBatteryReceiver()
-        stopNetworkPolling() // --- توقف polling قبلی ---
-        when (category) {
-            InfoCategory.THERMAL -> prepareThermalDetails()
-            InfoCategory.SOC -> startSocPolling()
-            InfoCategory.BATTERY -> registerBatteryReceiver()
-            InfoCategory.NETWORK -> startNetworkPolling() // --- شروع polling جدید ---
-            else -> { }
-        }
-        _currentScreen.value = Screen.Detail(category)
 
+    // --- توابع مربوط به سنسور ---
+    fun registerSensorListener(sensorType: Int) {
+        sensorHandler.startListening(sensorType)
     }
 
-    fun navigateBack() {
-        stopSocPolling()
-        unregisterBatteryReceiver()
-
-        if (_currentScreen.value is Screen.EditDashboard) {
-            loadDashboardItems()
-        }
-        stopNetworkPolling() // --- توقف polling قبلی ---
-        _currentScreen.value = Screen.Dashboard
-
+    fun unregisterSensorListener() {
+        sensorHandler.stopListening()
     }
 
+
+    // --- توابع مربوط به داشبورد ---
     private fun loadDashboardItems() {
         viewModelScope.launch {
             val orderedCategories = repository.getDashboardOrder()
@@ -586,7 +386,6 @@ class DeviceInfoViewModel @Inject constructor(
     }
 
     private fun getFullDashboardList(): List<DashboardItem> {
-        // *** تغییر کلیدی: استفاده از شناسه‌های منبع رشته (R.string.*) ***
         return listOf(
             DashboardItem(InfoCategory.SOC, R.string.category_soc, Icons.Default.Memory),
             DashboardItem(InfoCategory.DEVICE, R.string.category_device, Icons.Default.PhoneAndroid),
@@ -598,7 +397,6 @@ class DeviceInfoViewModel @Inject constructor(
             DashboardItem(InfoCategory.CAMERA, R.string.category_camera, Icons.Default.PhotoCamera)
         )
     }
-
 
     fun onDashboardItemVisibilityChanged(category: InfoCategory, isVisible: Boolean) {
         viewModelScope.launch {
@@ -630,33 +428,50 @@ class DeviceInfoViewModel @Inject constructor(
         repository.saveHiddenCategories(newHiddenSet)
     }
 
-    fun navigateToSettings() {
-        _currentScreen.value = Screen.Settings
-    }
+    // --- سایر توابع ---
 
-    fun navigateToEditDashboard() {
-        _currentScreen.value = Screen.EditDashboard
-    }
+    fun startStorageSpeedTest() {
+        if (_isStorageTesting.value) return
 
-    fun onThemeSelected(theme: Theme) {
-        _themeState.value = theme
-        viewModelScope.launch {
-            repository.saveTheme(theme)
+        viewModelScope.launch(Dispatchers.IO) {
+            _isStorageTesting.value = true
+            _writeSpeed.value = context.getString(R.string.testing)
+            _readSpeed.value = context.getString(R.string.testing)
+            _storageTestProgress.value = 0f
+
+            try {
+                val result = repository.performStorageSpeedTest { progress ->
+                    viewModelScope.launch(Dispatchers.Main) {
+                        _storageTestProgress.value = progress
+                    }
+                }
+                _writeSpeed.value = result.first
+                _readSpeed.value = result.second
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _writeSpeed.value = context.getString(R.string.label_error)
+                _readSpeed.value = context.getString(R.string.label_error)
+            } finally {
+                _isStorageTesting.value = false
+                _storageTestProgress.value = 0f
+            }
         }
     }
 
-    fun onDynamicThemeToggled(enabled: Boolean) {
-        _isDynamicThemeEnabled.value = enabled
-        viewModelScope.launch {
-            repository.setDynamicThemeEnabled(enabled)
+    private fun prepareThermalDetails() {
+        val combinedList = mutableListOf<ThermalInfo>()
+        repository.getInitialBatteryInfo()?.let { batteryData ->
+            if (batteryData.temperature.isNotBlank()) {
+                combinedList.add(
+                    ThermalInfo(
+                        type = context.getString(R.string.category_battery), // استفاده از منبع رشته
+                        temperature = batteryData.temperature
+                    )
+                )
+            }
         }
-    }
-
-    fun onReorderingToggled(enabled: Boolean) {
-        _isReorderingEnabled.value = enabled
-        viewModelScope.launch {
-            repository.setReorderingEnabled(enabled)
-        }
+        combinedList.addAll(deviceInfo.value.thermal)
+        _thermalDetails.value = combinedList
     }
 
     fun onExportRequested(format: ExportFormat) {
@@ -680,7 +495,6 @@ class DeviceInfoViewModel @Inject constructor(
                                 fos.write(fullReportText.toByteArray())
                             }
                             ExportFormat.PDF -> {
-                                // *** تغییر کلیدی: پاس دادن context به عنوان اولین آرگومان ***
                                 PdfGenerator.writeStyledPdf(context, fos, currentDeviceInfo, currentBatteryInfo)
                             }
                         }
@@ -695,22 +509,4 @@ class DeviceInfoViewModel @Inject constructor(
             }
         }
     }
-
-    private fun prepareThermalDetails() {
-        val combinedList = mutableListOf<ThermalInfo>()
-        repository.getInitialBatteryInfo()?.let { batteryData ->
-            if (batteryData.temperature.isNotBlank()) {
-                combinedList.add(
-                    ThermalInfo(
-                        type = "باتری (Battery)",
-                        temperature = batteryData.temperature
-                    )
-                )
-            }
-        }
-        combinedList.addAll(deviceInfo.value.thermal)
-        _thermalDetails.value = combinedList
-    }
-
-
 }

@@ -45,6 +45,7 @@ import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.ExportFormat
 import ir.dekot.kavosh.ui.viewmodel.ExportResult
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
+import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel // <-- ایمپورت جدید
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -53,6 +54,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun DashboardScreen(
     deviceInfoViewModel: DeviceInfoViewModel,
+    settingsViewModel: SettingsViewModel, // <-- پارامتر جدید
     onCategoryClick: (InfoCategory, Context) -> Unit,
     onSettingsClick: () -> Unit,
     onEditDashboardClick: () -> Unit
@@ -62,7 +64,8 @@ fun DashboardScreen(
     val context = LocalContext.current
 
     val dashboardItems by deviceInfoViewModel.dashboardItems.collectAsState()
-    val isReorderingEnabled by deviceInfoViewModel.isReorderingEnabled.collectAsState()
+    // *** اصلاح کلیدی: خواندن مقدار از ViewModel صحیح ***
+    val isReorderingEnabled by settingsViewModel.isReorderingEnabled.collectAsState()
 
     val gridState = rememberLazyGridState()
 
@@ -139,7 +142,6 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(dragState.localItems, key = { it.category.name }) { item ->
-                // دسترسی مستقیم به خصوصیت برای بررسی وضعیت جابجایی
                 val isDragging = dragState.draggedItemKey == item.category.name
                 val scale by animateFloatAsState(if (isDragging) 1.1f else 1f, label = "scale")
                 val elevation by animateFloatAsState(if (isDragging) 12.dp.value else 1.dp.value, label = "elevation")
@@ -153,7 +155,6 @@ fun DashboardScreen(
                             scaleY = scale
                             shadowElevation = elevation
                             if (isDragging) {
-                                // دسترسی مستقیم به خصوصیت برای مقدار جابجایی
                                 translationX = dragState.dragOffset.x
                                 translationY = dragState.dragOffset.y
                             }
