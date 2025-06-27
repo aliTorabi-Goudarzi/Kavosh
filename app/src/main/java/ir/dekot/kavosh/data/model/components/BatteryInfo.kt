@@ -1,7 +1,9 @@
 package ir.dekot.kavosh.data.model.components
 
 import androidx.compose.runtime.Immutable
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Immutable
 data class BatteryInfo(
     val health: String = "نامشخص",

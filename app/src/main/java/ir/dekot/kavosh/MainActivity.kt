@@ -101,20 +101,26 @@ class MainActivity : ComponentActivity() {
         setContent {
             // زبان و تم را از ViewModel جدید می‌خوانیم
             val language by settingsViewModel.language.collectAsState()
-            val currentTheme by settingsViewModel.themeState.collectAsState()
+            val currentTheme by settingsViewModel.themeState.collectAsState() // <-- خواندن تم
             val dynamicColor by settingsViewModel.isDynamicThemeEnabled.collectAsState()
+
 
             val useDarkTheme = when (currentTheme) {
                 Theme.SYSTEM -> isSystemInDarkTheme()
                 Theme.LIGHT -> false
                 Theme.DARK -> true
+                Theme.AMOLED -> true // تم AMOLED هم تم تاریک محسوب می‌شود
             }
 
             val layoutDirection = if (language == "fa") LayoutDirection.Rtl else LayoutDirection.Ltr
 
             CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
                 // تم را اینجا بر اساس داده‌های SettingsViewModel تنظیم می‌کنیم
-                KavoshTheme(darkTheme = useDarkTheme, dynamicColor = dynamicColor) {
+                KavoshTheme(
+                    darkTheme = useDarkTheme,
+                    dynamicColor = dynamicColor,
+                    theme = currentTheme
+                ) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background

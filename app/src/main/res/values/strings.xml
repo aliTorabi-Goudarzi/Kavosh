@@ -190,4 +190,5 @@
     <string name="raw_sensor_data">Raw Sensor Data</string>
     <string name="live_chart_title">Live Data Chart</string>
     <string name="live_values_title">Live Vector Values</string>
+    <string name="amoled">AMOLED (Pure Black)</string>
 </resources>

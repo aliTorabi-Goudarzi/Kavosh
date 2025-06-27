@@ -84,9 +84,16 @@ class DeviceInfoViewModel @Inject constructor(
 
 
     init {
-        // بررسی اجرای اول برنامه دیگر به ناوبری وابسته نیست
+        // **اصلاح کلیدی در init**
         if (repository.isFirstLaunch()) {
             hasLoadedData = false
+        } else {
+            // اگر اجرای اول نیست، سعی کن از کش بخونی
+            val cachedInfo = repository.getDeviceInfoCache()
+            if (cachedInfo != null) {
+                _deviceInfo.value = cachedInfo
+                hasLoadedData = true
+            }
         }
     }
 
@@ -125,12 +132,15 @@ class DeviceInfoViewModel @Inject constructor(
     // --- توابع مربوط به اسکن و بارگذاری داده ---
 
     fun loadDataForNonFirstLaunch(activity: Activity) {
+        // اگر کش داریم، این متد نباید دوباره اسکن کند
         if (repository.isFirstLaunch() || hasLoadedData) return
 
         viewModelScope.launch {
             _isScanning.value = true
             try {
                 _deviceInfo.value = fetchAllDeviceInfo(activity)
+                // **اصلاح کلیدی: ذخیره اطلاعات در کش**
+                repository.saveDeviceInfoCache(_deviceInfo.value)
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
@@ -183,7 +193,11 @@ class DeviceInfoViewModel @Inject constructor(
                 _scanStatusText.value = "ثبت اطلاعات..."
             }
 
-            val dataLoadingJob = launch { _deviceInfo.value = fetchAllDeviceInfo(activity) }
+            val dataLoadingJob = launch {
+                _deviceInfo.value = fetchAllDeviceInfo(activity)
+                // **اصلاح کلیدی: ذخیره اطلاعات در کش پس از اسکن موفق**
+                repository.saveDeviceInfoCache(_deviceInfo.value)
+            }
 
             animationJob.join()
             dataLoadingJob.join()

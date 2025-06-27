@@ -114,6 +114,7 @@ fun SettingsScreen(
                             Theme.SYSTEM -> stringResource(R.string.system_default)
                             Theme.LIGHT -> stringResource(R.string.light)
                             Theme.DARK -> stringResource(R.string.dark)
+                            Theme.AMOLED -> stringResource(R.string.amoled) // <-- گزینه جدید
                         },
                         modifier = Modifier.padding(start = 16.dp)
                     )

@@ -3,6 +3,7 @@ package ir.dekot.kavosh.data.repository
 import android.app.Activity
 import android.content.Intent
 import androidx.annotation.RequiresApi
+import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.BatteryInfo
 import ir.dekot.kavosh.data.model.components.CameraInfo
 import ir.dekot.kavosh.data.model.components.CpuInfo
@@ -96,6 +97,10 @@ class DeviceInfoRepository @Inject constructor(
 
     // ... (سایر توابع SystemDataSource)
     fun getAppVersion(): String = systemDataSource.getAppVersion()
+
+    // --- متدهای جدید برای کش ---
+    fun saveDeviceInfoCache(deviceInfo: DeviceInfo) = settingsDataSource.saveDeviceInfoCache(deviceInfo)
+    fun getDeviceInfoCache(): DeviceInfo? = settingsDataSource.getDeviceInfoCache()
 
 
 }

@@ -1,10 +1,12 @@
 package ir.dekot.kavosh.data.model.components
 
 import androidx.compose.runtime.Immutable
+import kotlinx.serialization.Serializable
 
 @Immutable /**
  * مدل داده برای نگهداری اطلاعات شبکه.
  */
+@Serializable
 data class NetworkInfo(
     val networkType: String = "متصل نیست",
     val ipAddressV4: String = "نامشخص", // نام را برای وضوح بیشتر تغییر دادیم

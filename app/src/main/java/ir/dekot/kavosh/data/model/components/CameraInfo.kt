@@ -1,7 +1,9 @@
 package ir.dekot.kavosh.data.model.components
 
 import androidx.compose.runtime.Immutable
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Immutable /**
  * مدل داده برای نگهداری مشخصات یک دوربین.
  */

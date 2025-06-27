@@ -11,7 +11,9 @@ import ir.dekot.kavosh.data.model.components.ThermalInfo
 import ir.dekot.kavosh.data.model.components.CameraInfo // <-- ایمپورت جدید
 // ... (imports)
 import ir.dekot.kavosh.data.model.components.NetworkInfo // <-- ایمپورت جدید
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class DeviceInfo(
     val cpu: CpuInfo = CpuInfo(),
     val gpu: GpuInfo = GpuInfo(),

@@ -4,8 +4,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
+import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,6 +20,7 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
 
     // کلیدهای SharedPreferences
     private companion object {
+        const val KEY_DEVICE_INFO_CACHE = "device_info_cache"
         const val KEY_THEME = "app_theme"
         const val KEY_FIRST_LAUNCH = "is_first_launch"
         const val KEY_DASHBOARD_ORDER = "dashboard_order"
@@ -26,6 +29,32 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
         const val KEY_DYNAMIC_THEME_ENABLED = "dynamic_theme_enabled"
         // کلید جدید برای زبان
         const val KEY_APP_LANGUAGE = "app_language"
+    }
+
+    // **متدهای جدید برای مدیریت کش**
+    fun saveDeviceInfoCache(deviceInfo: DeviceInfo) {
+        val jsonString = Json.encodeToString(deviceInfo)
+        prefs.edit {
+            putString(KEY_DEVICE_INFO_CACHE, jsonString)
+        }
+    }
+
+    fun getDeviceInfoCache(): DeviceInfo? {
+        val jsonString = prefs.getString(KEY_DEVICE_INFO_CACHE, null)
+        return jsonString?.let {
+            try {
+                Json.decodeFromString<DeviceInfo>(it)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null // در صورت خطا در پارس کردن، کش را نادیده بگیر
+            }
+        }
+    }
+
+    fun clearDeviceInfoCache() {
+        prefs.edit {
+            remove(KEY_DEVICE_INFO_CACHE)
+        }
     }
 
     // ... (متدهای دیگر بدون تغییر) ...

@@ -6,6 +6,7 @@ package ir.dekot.kavosh.data.model.settings
 enum class Theme {
     SYSTEM, // پیروی از تنظیمات سیستم
     LIGHT,  // همیشه روشن
-    DARK    // همیشه تاریک
+    DARK,   // همیشه تاریک
+    AMOLED  // **گزینه جدید: همیشه مشکی خالص**
 }
 

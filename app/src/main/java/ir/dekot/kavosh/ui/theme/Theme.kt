@@ -25,6 +25,20 @@ private val DarkColorScheme = darkColorScheme(
     onSurfaceVariant = Color(0xFFCCCCCC)
 )
 
+// **اصلاح ۱: تعریف پالت رنگی جدید برای تم AMOLED**
+private val AmoledColorScheme = darkColorScheme(
+    primary = Color(0xFFBB86FC),
+    secondary = Color(0xFF03DAC6),
+    background = Color.Black, // <-- پس‌زمینه کاملاً مشکی
+    surface = Color.Black,    // <-- سطح کاملاً مشکی
+    surfaceVariant = Color(0xFF1A1A1A), // کمی روشن‌تر برای تمایز جزئی
+    onPrimary = Color.Black,
+    onSecondary = Color.Black,
+    onBackground = Color.White,
+    onSurface = Color.White,
+    onSurfaceVariant = Color(0xFFCCCCCC)
+)
+
 // پالت رنگی ثابت برای حالت روشن (برای اندرویدهای قدیمی‌تر)
 private val LightColorScheme = lightColorScheme(
     primary = Color(0xFF6200EE),
@@ -43,13 +57,16 @@ private val LightColorScheme = lightColorScheme(
 fun KavoshTheme(
     darkTheme: Boolean = true,
     dynamicColor: Boolean = true, // پارامتر جدید برای کنترل تم پویا
+    // **اصلاح ۲: پارامتر جدید برای دریافت نوع تم**
+    theme: ir.dekot.kavosh.data.model.settings.Theme = ir.dekot.kavosh.data.model.settings.Theme.SYSTEM,
     content: @Composable () -> Unit
 ) {
     val supportsDynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val context = LocalContext.current
 
     val colorScheme = when {
-        // شرط جدید: فقط در صورت فعال بودن تنظیمات، از رنگ پویا استفاده کن
+        // **اصلاح ۳: منطق انتخاب پالت رنگی**
+        theme == ir.dekot.kavosh.data.model.settings.Theme.AMOLED -> AmoledColorScheme
         dynamicColor && supportsDynamicColor && darkTheme -> dynamicDarkColorScheme(context)
         dynamicColor && supportsDynamicColor && !darkTheme -> dynamicLightColorScheme(context)
         darkTheme -> DarkColorScheme

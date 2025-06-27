@@ -192,4 +192,5 @@
     <string name="raw_sensor_data">داده‌های خام سنسورها</string>
     <string name="live_chart_title">نمودار داده‌های زنده</string>
     <string name="live_values_title">مقادیر زنده وکتور</string>
+    <string name="amoled">مشکی خالص (AMOLED)</string>
 </resources>
