@@ -50,6 +50,8 @@ import java.io.FileOutputStream
 import javax.inject.Inject
 import ir.dekot.kavosh.R
 import kotlin.getValue
+import ir.dekot.kavosh.domain.sensor.SensorHandler
+import ir.dekot.kavosh.domain.sensor.SensorState
 
 sealed class ExportResult {
     data class Success(val message: String) : ExportResult()
@@ -60,50 +62,31 @@ sealed class ExportResult {
 @RequiresApi(Build.VERSION_CODES.R)
 class DeviceInfoViewModel @Inject constructor(
     private val repository: DeviceInfoRepository,
+    private val sensorHandler: SensorHandler, // <<< تزریق Handler جدید
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
+    val sensorState: StateFlow<SensorState> = sensorHandler.sensorState
+
+
     // *** تغییر State برای نگهداری تاریخچه ***
     private val _rotationVectorHistory = MutableStateFlow<List<FloatArray>>(emptyList())
-    val rotationVectorHistory: StateFlow<List<FloatArray>> = _rotationVectorHistory.asStateFlow()
 
 
 
     // State های جدید و اختصاصی برای سنسورها
     private val _accelerometerData = MutableStateFlow(FloatArray(3))
-    val accelerometerData: StateFlow<FloatArray> = _accelerometerData.asStateFlow()
 
     private val _magnetometerData = MutableStateFlow(FloatArray(3))
-    val magnetometerData: StateFlow<FloatArray> = _magnetometerData.asStateFlow()
 
     // این State حالا تمام زوایای جهت‌یابی را نگه می‌دارد
      val orientationAngles = MutableStateFlow(FloatArray(3))
 
-    // *** State های جدید برای داده‌های سنسورها ***
-    // *** این State حالا داده‌های خام وکتور چرخش را نگه می‌دارد ***
-//    private val _rotationVectorData = MutableStateFlow(FloatArray(4))
-//    val rotationVectorData: StateFlow<FloatArray> = _rotationVectorData.asStateFlow()
-
-
-    // ... (سایر State ها)
-
-    private val _compassBearing = MutableStateFlow(0f)
-    val compassBearing: StateFlow<Float> = _compassBearing.asStateFlow()
-
-
-    private val accelerometerReading = FloatArray(3)
-    private val magnetometerReading = FloatArray(3)
     private val rotationMatrix = FloatArray(9)
 
     // *** State جدید برای نگهداری داده‌های زنده سنسور ***
     private val _liveSensorData = MutableStateFlow<List<Float>>(emptyList())
-    val liveSensorData: StateFlow<List<Float>> = _liveSensorData.asStateFlow()
 
-    private val sensorManager by lazy {
-        context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    }
-
-    private var sensorEventListener: SensorEventListener? = null
 
     // State های جدید برای تست سرعت حافظه
     private val _isStorageTesting = MutableStateFlow(false)
@@ -264,34 +247,37 @@ class DeviceInfoViewModel @Inject constructor(
      * یک شنونده برای سنسور مشخص شده ثبت می‌کند.
      */
     fun registerSensorListener(sensorType: Int) {
-        unregisterSensorListener()
-
-        sensorEventListener = object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent?) {
-                this@DeviceInfoViewModel.onSensorChanged(event)
-            }
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) { }
-        }
-        // *** تغییر کلیدی: تعیین سرعت بر اساس نوع سنسور ***
-        val delay = if (sensorType == Sensor.TYPE_ROTATION_VECTOR) {
-            SensorManager.SENSOR_DELAY_UI // سرعت بالا برای انیمیشن روان
-        } else {
-            SensorManager.SENSOR_DELAY_NORMAL // سرعت عادی برای سایر سنسورها
-        }
-
-        if (sensorType == Sensor.TYPE_MAGNETIC_FIELD) {
-            sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also { accelerometer ->
-                sensorManager.registerListener(sensorEventListener, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
-            }
-            sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also { magneticField ->
-                sensorManager.registerListener(sensorEventListener, magneticField, SensorManager.SENSOR_DELAY_NORMAL)
-            }
-        } else {
-            sensorManager.getDefaultSensor(sensorType)?.also { sensor ->
-                sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
-            }
-        }
+        sensorHandler.startListening(sensorType)
     }
+//    fun registerSensorListener(sensorType: Int) {
+//        unregisterSensorListener()
+//
+//        sensorEventListener = object : SensorEventListener {
+//            override fun onSensorChanged(event: SensorEvent?) {
+//                this@DeviceInfoViewModel.onSensorChanged(event)
+//            }
+//            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) { }
+//        }
+//        // *** تغییر کلیدی: تعیین سرعت بر اساس نوع سنسور ***
+//        val delay = if (sensorType == Sensor.TYPE_ROTATION_VECTOR) {
+//            SensorManager.SENSOR_DELAY_UI // سرعت بالا برای انیمیشن روان
+//        } else {
+//            SensorManager.SENSOR_DELAY_NORMAL // سرعت عادی برای سایر سنسورها
+//        }
+//
+//        if (sensorType == Sensor.TYPE_MAGNETIC_FIELD) {
+//            sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also { accelerometer ->
+//                sensorManager.registerListener(sensorEventListener, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
+//            }
+//            sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also { magneticField ->
+//                sensorManager.registerListener(sensorEventListener, magneticField, SensorManager.SENSOR_DELAY_NORMAL)
+//            }
+//        } else {
+//            sensorManager.getDefaultSensor(sensorType)?.also { sensor ->
+//                sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+//            }
+//        }
+//    }
 
 
     /**
@@ -299,15 +285,18 @@ class DeviceInfoViewModel @Inject constructor(
      * شنونده سنسور را غیرفعال می‌کند تا از مصرف باتری و نشت حافظه جلوگیری شود.
      */
     fun unregisterSensorListener() {
-        sensorEventListener?.let { sensorManager.unregisterListener(it) }
-        sensorEventListener = null
-        _liveSensorData.value = emptyList()
-        _accelerometerData.value = FloatArray(3)
-        _magnetometerData.value = FloatArray(3)
-        orientationAngles.value = FloatArray(3)
-//        _rotationVectorData.value = FloatArray(4)
-        _rotationVectorHistory.value = emptyList() // ریست کردن تاریخچه
+        sensorHandler.stopListening()
     }
+//    fun unregisterSensorListener() {
+//        sensorEventListener?.let { sensorManager.unregisterListener(it) }
+//        sensorEventListener = null
+//        _liveSensorData.value = emptyList()
+//        _accelerometerData.value = FloatArray(3)
+//        _magnetometerData.value = FloatArray(3)
+//        orientationAngles.value = FloatArray(3)
+////        _rotationVectorData.value = FloatArray(4)
+//        _rotationVectorHistory.value = emptyList() // ریست کردن تاریخچه
+//    }
 
 
     /**
@@ -414,7 +403,8 @@ class DeviceInfoViewModel @Inject constructor(
         super.onCleared()
         stopSocPolling()
         unregisterBatteryReceiver()
-        stopNetworkPolling() // --- توقف در اینجا ---
+        stopNetworkPolling()
+        sensorHandler.stopListening() // <<< توقف شنونده هنگام بسته شدن ViewModel
     }
 
     // --- منطق اسکن و بارگذاری داده ---

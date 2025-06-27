@@ -8,6 +8,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
 import ir.dekot.kavosh.data.source.*
+import ir.dekot.kavosh.domain.sensor.SensorHandler
 import javax.inject.Singleton
 
 @Module
@@ -91,6 +92,16 @@ object AppModule {
     @Singleton
     fun provideSettingsDataSource(@ApplicationContext context: Context): SettingsDataSource {
         return SettingsDataSource(context)
+    }
+
+    /**
+     * این تابع به Hilt یاد می‌دهد که چگونه یک نمونه از SensorHandler بسازد.
+     * چون SensorHandler خودش با @Inject مشخص شده، این متد ساده است.
+     */
+    @Provides
+    @Singleton
+    fun provideSensorHandler(@ApplicationContext context: Context): SensorHandler {
+        return SensorHandler(context)
     }
 }
 
