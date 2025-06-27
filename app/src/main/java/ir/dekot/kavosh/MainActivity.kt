@@ -31,6 +31,7 @@ import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel // <-- ایمپورت جد
 import ir.dekot.kavosh.ui.theme.KavoshTheme // <-- ایمپورت اصلاح شده
 import ir.dekot.kavosh.ui.viewmodel.DashboardViewModel
 import ir.dekot.kavosh.ui.viewmodel.ExportViewModel
+import ir.dekot.kavosh.ui.viewmodel.NavigationViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -42,6 +43,8 @@ class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val dashboardViewModel: DashboardViewModel by viewModels()
     private val exportViewModel: ExportViewModel by viewModels() // <-- اضافه کردن ViewModel جدید
+    private val navigationViewModel: NavigationViewModel by viewModels() // <-- اضافه کردن ViewModel جدید
+
 
     @RequiresApi(Build.VERSION_CODES.R)
     private val createFileLauncher = registerForActivityResult(
@@ -122,7 +125,13 @@ class MainActivity : ComponentActivity() {
                             settingsViewModel = settingsViewModel,
                             dashboardViewModel = dashboardViewModel, // <-- پاس دادن ViewModel جدید
                             exportViewModel = exportViewModel, // <-- پاس دادن ViewModel جدید
-                            onStartScan = { deviceInfoViewModel.startScan(this) }
+                            navigationViewModel = navigationViewModel, // <-- پاس دادن ViewModel جدید
+                            onStartScan = {
+                                deviceInfoViewModel.startScan(this) {
+                                    // بعد از اتمام اسکن، به ViewModel ناوبری اطلاع می‌دهیم
+                                    navigationViewModel.onScanCompleted()
+                                }
+                            }
                         )
                     }
                 }

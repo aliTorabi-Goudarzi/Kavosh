@@ -54,9 +54,6 @@ class DeviceInfoViewModel @Inject constructor(
     private val _thermalDetails = MutableStateFlow<List<ThermalInfo>>(emptyList())
     val thermalDetails = _thermalDetails.asStateFlow()
 
-    private val _currentScreen = MutableStateFlow<Screen>(Screen.Splash)
-    val currentScreen = _currentScreen.asStateFlow()
-
     private val _isScanning = MutableStateFlow(false)
     val isScanning = _isScanning.asStateFlow()
 
@@ -68,12 +65,16 @@ class DeviceInfoViewModel @Inject constructor(
 
     private val _batteryInfo = MutableStateFlow(BatteryInfo())
     val batteryInfo = _batteryInfo.asStateFlow()
+
     private val _liveCpuFrequencies = MutableStateFlow<List<String>>(emptyList())
     val liveCpuFrequencies = _liveCpuFrequencies.asStateFlow()
+
     private val _liveGpuLoad = MutableStateFlow<Int?>(null)
     val liveGpuLoad = _liveGpuLoad.asStateFlow()
+
     private val _downloadSpeed = MutableStateFlow("0.0 KB/s")
     val downloadSpeed = _downloadSpeed.asStateFlow()
+
     private val _uploadSpeed = MutableStateFlow("0.0 KB/s")
     val uploadSpeed = _uploadSpeed.asStateFlow()
 
@@ -83,64 +84,42 @@ class DeviceInfoViewModel @Inject constructor(
 
 
     init {
-        // منطق داشبورد از اینجا حذف شد
+        // بررسی اجرای اول برنامه دیگر به ناوبری وابسته نیست
         if (repository.isFirstLaunch()) {
             hasLoadedData = false
-            _currentScreen.value = Screen.Splash
-        } else {
-            _currentScreen.value = Screen.Dashboard
         }
     }
 
     override fun onCleared() {
         super.onCleared()
-        stopSocPolling()
-        unregisterBatteryReceiver()
-        stopNetworkPolling()
+        stopAllPolling()
         sensorHandler.stopListening()
     }
 
-    // --- تمام توابع دیگر (ناوبری، اسکن، داده‌های زنده و ...) بدون تغییر باقی می‌مانند ---
-    // ... (کدهای مربوط به ناوبری، اسکن، start/stop polling و غیره را اینجا کپی کنید)
-    fun navigateToDetail(category: InfoCategory) {
-        stopSocPolling()
+    /**
+     * این تابع تمام کارهای زمان‌بر (polling) را متوقف می‌کند.
+     * حالا از بیرون (توسط لایه UI) فراخوانی می‌شود.
+     */
+    fun stopAllPolling() {
+        socPollingJob?.cancel()
+        socPollingJob = null
+        networkPollingJob?.cancel()
+        networkPollingJob = null
         unregisterBatteryReceiver()
-        stopNetworkPolling()
+    }
+
+    /**
+     * این تابع بر اساس دسته‌بندی، polling مربوطه را شروع می‌کند.
+     */
+    fun startPollingForCategory(category: InfoCategory) {
+        stopAllPolling() // ابتدا همه را متوقف کن
         when (category) {
             InfoCategory.THERMAL -> prepareThermalDetails()
             InfoCategory.SOC -> startSocPolling()
             InfoCategory.BATTERY -> registerBatteryReceiver()
             InfoCategory.NETWORK -> startNetworkPolling()
-            else -> {
-            }
+            else -> { /* نیازی به polling نیست */ }
         }
-        _currentScreen.value = Screen.Detail(category)
-    }
-
-    fun navigateBack() {
-        // توقف polling ها هنگام بازگشت به داشبورد
-        stopSocPolling()
-        unregisterBatteryReceiver()
-        stopNetworkPolling()
-
-        // هنگام بازگشت از صفحه ویرایش، دیگر نیازی به بارگذاری مجدد آیتم‌ها در این ViewModel نیست
-        _currentScreen.value = Screen.Dashboard
-    }
-
-    fun navigateToSettings() {
-        _currentScreen.value = Screen.Settings
-    }
-
-    fun navigateToAbout() {
-        _currentScreen.value = Screen.About
-    }
-
-    fun navigateToEditDashboard() {
-        _currentScreen.value = Screen.EditDashboard
-    }
-
-    fun navigateToSensorDetail(sensorType: Int) {
-        _currentScreen.value = Screen.SensorDetail(sensorType)
     }
 
     // --- توابع مربوط به اسکن و بارگذاری داده ---
@@ -188,7 +167,7 @@ class DeviceInfoViewModel @Inject constructor(
         )
     }
 
-    fun startScan(activity: Activity) {
+    fun startScan(activity: Activity, onScanComplete: () -> Unit) {
         if (_isScanning.value) return
 
         viewModelScope.launch {
@@ -196,12 +175,7 @@ class DeviceInfoViewModel @Inject constructor(
             _scanProgress.value = 0f
 
             val animationJob = launch {
-                launch {
-                    for (i in 1..100) {
-                        delay(150)
-                        _scanProgress.value = i / 100f
-                    }
-                }
+                launch { for (i in 1..100) { delay(150); _scanProgress.value = i / 100f } }
                 _scanStatusText.value = "در حال خواندن مشخصات دستگاه..."
                 delay(5000)
                 _scanStatusText.value = "دریافت اطلاعات از درایور ها..."
@@ -209,16 +183,14 @@ class DeviceInfoViewModel @Inject constructor(
                 _scanStatusText.value = "ثبت اطلاعات..."
             }
 
-            val dataLoadingJob = launch {
-                _deviceInfo.value = fetchAllDeviceInfo(activity)
-            }
+            val dataLoadingJob = launch { _deviceInfo.value = fetchAllDeviceInfo(activity) }
 
             animationJob.join()
             dataLoadingJob.join()
             repository.setFirstLaunchCompleted()
             hasLoadedData = true
 
-            _currentScreen.value = Screen.Dashboard
+            onScanComplete() // به لایه ناوبری اطلاع می‌دهیم که اسکن تمام شد
             _isScanning.value = false
         }
     }

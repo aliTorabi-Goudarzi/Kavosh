@@ -43,6 +43,7 @@ import ir.dekot.kavosh.ui.screen.detail.infoCards.*
 import ir.dekot.kavosh.ui.screen.shared.EmptyStateMessage
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
+import ir.dekot.kavosh.ui.viewmodel.NavigationViewModel
 import ir.dekot.kavosh.ui.viewmodel.StorageViewModel
 import ir.dekot.kavosh.ui.viewmodel.localizedTitle
 import ir.dekot.kavosh.util.report.ReportFormatter
@@ -81,6 +82,7 @@ private fun buildSelectedItemsString(
 fun DetailScreen(
     category: InfoCategory,
     viewModel: DeviceInfoViewModel,
+    navigationViewModel: NavigationViewModel, // <-- پارامتر جدید
     onBackClick: () -> Unit,
     // **اصلاح کلیدی: دریافت مستقیم StorageViewModel با Hilt**
     storageViewModel: StorageViewModel = hiltViewModel()
@@ -160,6 +162,7 @@ fun DetailScreen(
                 category = category,
                 viewModel = viewModel, // پاس دادن viewModel
                 storageViewModel = storageViewModel, // <-- پاس دادن ViewModel جدید
+                navigationViewModel = navigationViewModel, // <-- پاس دادن ViewModel
                 deviceInfo = deviceInfo,
                 batteryInfo = batteryInfo,
                 thermalDetails = thermalDetails,
@@ -177,6 +180,7 @@ private fun LazyListScope.CategoryDetailContent(
     category: InfoCategory,
     viewModel: DeviceInfoViewModel, // *** پارامتر جدید ***
     storageViewModel: StorageViewModel, // <-- پارامتر جدید
+    navigationViewModel: NavigationViewModel, // <-- پارامتر جدید
     deviceInfo: DeviceInfo,
     batteryInfo: BatteryInfo,
     thermalDetails: List<ThermalInfo>,
@@ -227,7 +231,8 @@ private fun LazyListScope.CategoryDetailContent(
                     SensorInfoCard(
                         info = sensor,
                         onTestClick = { sensorType ->
-                            viewModel.navigateToSensorDetail(sensorType)
+                            // **اصلاح کلیدی: فراخوانی از ViewModel صحیح**
+                            navigationViewModel.navigateToSensorDetail(sensorType)
                         }
                     )
                 }
