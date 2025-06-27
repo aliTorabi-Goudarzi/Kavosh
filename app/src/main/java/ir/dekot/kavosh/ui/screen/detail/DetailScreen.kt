@@ -159,7 +159,11 @@ fun DetailScreen(
         ) {
             item {
                 when (category) {
-                    InfoCategory.SOC -> SocPage(viewModel = viewModel)
+                    InfoCategory.SOC -> SocPage(
+                        viewModel = viewModel,
+                        // **پاس دادن رویداد کلیک**
+                        onNavigateToStressTest = { navigationViewModel.navigateToCpuStressTest() }
+                    )
                     InfoCategory.DEVICE -> DevicePage(deviceInfoViewModel = viewModel, storageViewModel = storageViewModel)
                     InfoCategory.SYSTEM -> SystemPage(viewModel = viewModel)
                     InfoCategory.BATTERY -> BatteryPage(viewModel = viewModel)

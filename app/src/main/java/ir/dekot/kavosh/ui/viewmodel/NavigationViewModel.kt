@@ -1,5 +1,7 @@
 package ir.dekot.kavosh.ui.viewmodel
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
@@ -41,6 +43,7 @@ class NavigationViewModel @Inject constructor(
     }
 
     // **اصلاح ۳: بازنویسی تابع بازگشت**
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun navigateBack() {
         // اگر پشته خالی نباشد، به آخرین صفحه برمی‌گردیم
         if (_backStack.isNotEmpty()) {
@@ -88,5 +91,9 @@ class NavigationViewModel @Inject constructor(
         // پس از اسکن، تاریخچه باید پاک شود
         _backStack.clear()
         _currentScreen.value = Screen.Dashboard
+    }
+
+    fun navigateToCpuStressTest() {
+        navigateTo(Screen.CpuStressTest)
     }
 }

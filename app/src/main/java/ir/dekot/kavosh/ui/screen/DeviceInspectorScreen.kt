@@ -1,5 +1,6 @@
 package ir.dekot.kavosh.ui.screen
 
+import android.annotation.SuppressLint
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
@@ -15,8 +16,10 @@ import ir.dekot.kavosh.ui.screen.detail.DetailScreen
 import ir.dekot.kavosh.ui.screen.sensordetail.SensorDetailScreen
 import ir.dekot.kavosh.ui.screen.settings.SettingsScreen
 import ir.dekot.kavosh.ui.screen.splash.SplashScreen
+import ir.dekot.kavosh.ui.screen.stresstest.CpuStressTestScreen
 import ir.dekot.kavosh.ui.viewmodel.*
 
+@SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
 fun DeviceInspectorApp(
@@ -42,9 +45,11 @@ fun DeviceInspectorApp(
 
     // **اصلاح کلیدی در منطق BackHandler ها**
     when (val screen = currentScreen) {
-        is Screen.Splash -> { /* دکمه بازگشت در اسپلش غیرفعال است */ }
+        is Screen.Splash -> { /* دکمه بازگشت در اسپلش غیرفعال است */
+        }
 
-        is Screen.Dashboard -> { /* در داشبورد، بازگشت به معنی خروج از برنامه است */ }
+        is Screen.Dashboard -> { /* در داشبورد، بازگشت به معنی خروج از برنامه است */
+        }
 
         is Screen.Detail, is Screen.Settings, is Screen.About, is Screen.SensorDetail -> {
             // برای تمام این صفحات، رفتار بازگشت یکسان است
@@ -57,6 +62,11 @@ fun DeviceInspectorApp(
                 dashboardViewModel.loadDashboardItems() // آیتم‌ها را قبل از بازگشت رفرش کن
                 navigationViewModel.navigateBack()
             }
+        }
+
+        is Screen.CpuStressTest -> {
+            BackHandler { navigationViewModel.navigateBack() }
+            CpuStressTestScreen(onBackClick = { navigationViewModel.navigateBack() })
         }
     }
 
@@ -104,5 +114,10 @@ fun DeviceInspectorApp(
             sensorType = screen.sensorType,
             onBackClick = { navigationViewModel.navigateBack() }
         )
+
+        is Screen.CpuStressTest -> {
+            BackHandler { navigationViewModel.navigateBack() }
+            CpuStressTestScreen(onBackClick = { navigationViewModel.navigateBack() })
+        }
     }
 }

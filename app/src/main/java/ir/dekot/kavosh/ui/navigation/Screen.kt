@@ -10,4 +10,6 @@ sealed class Screen {
     data object About : Screen()
     data class Detail(val category: InfoCategory) : Screen()
     data class SensorDetail(val sensorType: Int) : Screen()
+
+    data object CpuStressTest : Screen() // <-- صفحه جدید
 }
