@@ -38,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -54,13 +55,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -220,7 +225,7 @@ fun AccelerometerSensorContent(viewModel: DeviceInfoViewModel) {
         Text(
             text = stringResource(R.string.accelerometer_unit),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -262,8 +267,8 @@ private fun AxisData(label: String, value: Float, maxValue: Float) {
 
 @Composable
 fun Compass(bearing: Float, modifier: Modifier = Modifier) {
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val primaryColor = colorScheme.primary
+    val onSurfaceColor = colorScheme.onSurface
 
     Box(modifier = modifier.size(300.dp)) {
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -339,7 +344,7 @@ fun GyroscopeSensorContent(viewModel: DeviceInfoViewModel) {
         Text(
             text = stringResource(R.string.gyroscope_unit),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -375,7 +380,7 @@ fun ProximitySensorContent(viewModel: DeviceInfoViewModel) {
             imageVector = icon,
             contentDescription = text,
             modifier = Modifier.size(iconSize),
-            tint = MaterialTheme.colorScheme.primary
+            tint = colorScheme.primary
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
@@ -386,7 +391,7 @@ fun ProximitySensorContent(viewModel: DeviceInfoViewModel) {
         Text(
             text = stringResource(R.string.unit_format_cm, distance),
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = colorScheme.onSurfaceVariant
         )
     }
 }
@@ -410,7 +415,7 @@ fun BarometerSensorContent(viewModel: DeviceInfoViewModel) {
             painter = painterResource(id = R.drawable.ic_barometer), // یک آیکون مناسب نیاز داریم
             contentDescription = stringResource(R.string.barometer_title),
             modifier = Modifier.size(120.dp),
-            tint = MaterialTheme.colorScheme.primary
+            tint = colorScheme.primary
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
@@ -438,7 +443,7 @@ fun GravitySensorContent(viewModel: DeviceInfoViewModel) {
 
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = stringResource(R.string.gravity_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text(text = stringResource(R.string.accelerometer_unit), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = stringResource(R.string.accelerometer_unit), style = MaterialTheme.typography.bodyMedium, color = colorScheme.onSurfaceVariant)
         Spacer(modifier = Modifier.height(24.dp))
         AxisData(label = "X", value = xValue, maxValue = SensorManager.GRAVITY_EARTH)
         Spacer(modifier = Modifier.height(16.dp))
@@ -461,7 +466,7 @@ fun LinearAccelerationSensorContent(viewModel: DeviceInfoViewModel) {
 
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = stringResource(R.string.linear_acceleration_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text(text = stringResource(R.string.accelerometer_unit), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = stringResource(R.string.accelerometer_unit), style = MaterialTheme.typography.bodyMedium, color = colorScheme.onSurfaceVariant)
         Spacer(modifier = Modifier.height(24.dp))
         AxisData(label = "X", value = xValue, maxValue = 10f)
         Spacer(modifier = Modifier.height(16.dp))
@@ -481,7 +486,7 @@ fun StepCounterSensorContent(viewModel: DeviceInfoViewModel) {
     val steps = liveData.firstOrNull()?.toInt() ?: 0
 
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Icon(imageVector = Icons.AutoMirrored.Filled.DirectionsWalk, contentDescription = stringResource(R.string.step_counter_title), modifier = Modifier.size(120.dp), tint = MaterialTheme.colorScheme.primary)
+        Icon(imageVector = Icons.AutoMirrored.Filled.DirectionsWalk, contentDescription = stringResource(R.string.step_counter_title), modifier = Modifier.size(120.dp), tint = colorScheme.primary)
         Spacer(modifier = Modifier.height(24.dp))
         Text(text = steps.toString(), style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold)
         Text(text = stringResource(R.string.step_counter_title), style = MaterialTheme.typography.titleLarge)
@@ -498,7 +503,7 @@ fun AmbientTemperatureSensorContent(viewModel: DeviceInfoViewModel) {
     val tempValue = liveData.firstOrNull() ?: 0f
 
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Icon(imageVector = Icons.Default.Thermostat, contentDescription = stringResource(R.string.ambient_temperature_title), modifier = Modifier.size(120.dp), tint = MaterialTheme.colorScheme.primary)
+        Icon(imageVector = Icons.Default.Thermostat, contentDescription = stringResource(R.string.ambient_temperature_title), modifier = Modifier.size(120.dp), tint = colorScheme.primary)
         Spacer(modifier = Modifier.height(24.dp))
         Text(text = stringResource(R.string.unit_format_celsius, tempValue), style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold)
         Text(text = stringResource(R.string.ambient_temperature_title), style = MaterialTheme.typography.titleLarge)
@@ -515,7 +520,7 @@ fun RelativeHumiditySensorContent(viewModel: DeviceInfoViewModel) {
     val humidityValue = liveData.firstOrNull() ?: 0f
 
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Icon(imageVector = Icons.Default.WaterDrop, contentDescription = stringResource(R.string.relative_humidity_title), modifier = Modifier.size(120.dp), tint = MaterialTheme.colorScheme.primary)
+        Icon(imageVector = Icons.Default.WaterDrop, contentDescription = stringResource(R.string.relative_humidity_title), modifier = Modifier.size(120.dp), tint = colorScheme.primary)
         Spacer(modifier = Modifier.height(24.dp))
         Text(text = stringResource(R.string.unit_format_percent_relative, humidityValue), style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold)
         Text(text = stringResource(R.string.relative_humidity_title), style = MaterialTheme.typography.titleLarge)
@@ -543,7 +548,7 @@ fun UncalibratedSensorContent(viewModel: DeviceInfoViewModel, title: String, uni
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text(text = unit, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = unit, style = MaterialTheme.typography.bodyMedium, color = colorScheme.onSurfaceVariant)
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -584,7 +589,7 @@ fun StepDetectorContent(viewModel: DeviceInfoViewModel) { // *** پارامتر 
     }
 
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Icon(imageVector = Icons.AutoMirrored.Filled.DirectionsWalk, contentDescription = stringResource(R.string.step_detector_title), modifier = Modifier.size(120.dp), tint = MaterialTheme.colorScheme.primary)
+        Icon(imageVector = Icons.AutoMirrored.Filled.DirectionsWalk, contentDescription = stringResource(R.string.step_detector_title), modifier = Modifier.size(120.dp), tint = colorScheme.primary)
         Spacer(modifier = Modifier.height(24.dp))
         Text(text = stepEvents.toString(), style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold)
         Text(text = stringResource(R.string.step_detector_title), style = MaterialTheme.typography.titleLarge)
@@ -614,7 +619,7 @@ fun TriggerSensorContent(
     }
 
     val textToShow = if (eventDetected) stringResource(R.string.trigger_sensor_detected) else stringResource(R.string.trigger_sensor_waiting)
-    val color by animateColorAsState(targetValue = if (eventDetected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface, label = "triggerColorAnim")
+    val color by animateColorAsState(targetValue = if (eventDetected) colorScheme.primaryContainer else colorScheme.surface, label = "triggerColorAnim")
     val iconToShow = if (eventDetected) Icons.Default.CheckCircle else icon
 
     Box(
@@ -624,7 +629,7 @@ fun TriggerSensorContent(
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(imageVector = iconToShow, contentDescription = null, modifier = Modifier.size(120.dp), tint = MaterialTheme.colorScheme.primary)
+            Icon(imageVector = iconToShow, contentDescription = null, modifier = Modifier.size(120.dp), tint = colorScheme.primary)
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = stringResource(titleRes), style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(8.dp))
@@ -639,20 +644,45 @@ fun TriggerSensorContent(
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
 fun RotationVectorSensorContent(viewModel: DeviceInfoViewModel) {
-    val rotationVector by viewModel.rotationVectorData.collectAsState()
+    val rotationHistory by viewModel.rotationVectorHistory.collectAsState()
+    val lastRotationVector = rotationHistory.lastOrNull() ?: FloatArray(4)
 
-    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(text = stringResource(R.string.rotation_vector_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(24.dp))
-        RotatingCube(rotationVector = rotationVector)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // مکعب بازطراحی شده
+        RotatingCube(rotationVector = lastRotationVector)
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // کارت نمایش مقادیر عددی زنده
+        InfoCard(title = stringResource(R.string.live_values_title)) {
+            val x = lastRotationVector.getOrNull(0) ?: 0f
+            val y = lastRotationVector.getOrNull(1) ?: 0f
+            val z = lastRotationVector.getOrNull(2) ?: 0f
+            val w = lastRotationVector.getOrNull(3) ?: 0f // Scalar/Cosine component
+            InfoRow(label = "X · sin(θ/2)", value = "%.3f".format(x))
+            InfoRow(label = "Y · sin(θ/2)", value = "%.3f".format(y))
+            InfoRow(label = "Z · sin(θ/2)", value = "%.3f".format(z))
+            InfoRow(label = "cos(θ/2)", value = "%.3f".format(w))
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // نمودار بازطراحی شده
+        LiveRotationChart(history = rotationHistory)
     }
 }
 
 @Composable
 fun AdvancedCompass(rotationDegrees: Float) {
     val textMeasurer = rememberTextMeasurer()
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val primaryColor = colorScheme.primary
+    val onSurfaceColor = colorScheme.onSurface
     val textStyle = TextStyle(color = onSurfaceColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
 
     Box(modifier = Modifier.padding(16.dp)) {
@@ -702,48 +732,6 @@ private fun AngleIndicator(label: String, angle: Float) {
     }
 }
 
-@Composable
-fun RotatingCube(rotationVector: FloatArray) {
-    val cubeColor = MaterialTheme.colorScheme.primary
-
-    Canvas(modifier = Modifier.size(300.dp)) {
-        // ماتریس چرخش را از وکتور چرخش به دست می‌آوریم
-        val rotationMatrix = FloatArray(9)
-        SensorManager.getRotationMatrixFromVector(rotationMatrix, rotationVector)
-
-        // تعریف رئوس یک مکعب واحد
-        val points = arrayOf(
-            floatArrayOf(-1f, -1f, -1f), floatArrayOf(1f, -1f, -1f),
-            floatArrayOf(1f, 1f, -1f), floatArrayOf(-1f, 1f, -1f),
-            floatArrayOf(-1f, -1f, 1f), floatArrayOf(1f, -1f, 1f),
-            floatArrayOf(1f, 1f, 1f), floatArrayOf(-1f, 1f, 1f)
-        )
-
-        val projectedPoints = Array(8) { Offset.Zero }
-
-        // چرخش و تصویر کردن رئوس روی صفحه دو بعدی
-        points.forEachIndexed { i, point ->
-            val rotated = multiplyMatrix(rotationMatrix, point)
-            projectedPoints[i] = project(rotated, size.width, size.height)
-        }
-
-        // رسم خطوط مکعب
-        drawCubeEdge(projectedPoints[0], projectedPoints[1], cubeColor)
-        drawCubeEdge(projectedPoints[1], projectedPoints[2], cubeColor)
-        drawCubeEdge(projectedPoints[2], projectedPoints[3], cubeColor)
-        drawCubeEdge(projectedPoints[3], projectedPoints[0], cubeColor)
-
-        drawCubeEdge(projectedPoints[4], projectedPoints[5], cubeColor)
-        drawCubeEdge(projectedPoints[5], projectedPoints[6], cubeColor)
-        drawCubeEdge(projectedPoints[6], projectedPoints[7], cubeColor)
-        drawCubeEdge(projectedPoints[7], projectedPoints[4], cubeColor)
-
-        drawCubeEdge(projectedPoints[0], projectedPoints[4], cubeColor)
-        drawCubeEdge(projectedPoints[1], projectedPoints[5], cubeColor)
-        drawCubeEdge(projectedPoints[2], projectedPoints[6], cubeColor)
-        drawCubeEdge(projectedPoints[3], projectedPoints[7], cubeColor)
-    }
-}
 
 // تابع کمکی برای ضرب ماتریس در وکتور
 private fun multiplyMatrix(matrix: FloatArray, vector: FloatArray): FloatArray {
@@ -826,9 +814,9 @@ fun ArtificialHorizon(pitch: Float, roll: Float) {
     val groundColor = Color(0xFF6D4C41)
     val horizonLineColor = Color.White
     val markingsColor = Color.White.copy(alpha = 0.8f)
-    val planeColor = MaterialTheme.colorScheme.primary
+    val planeColor = colorScheme.primary
     // *** متغیر فراموش شده در اینجا تعریف شد ***
-    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val onSurfaceColor = colorScheme.onSurface
 
     val textPaint = remember {
         Paint().apply {
@@ -887,3 +875,233 @@ fun ArtificialHorizon(pitch: Float, roll: Float) {
         }
     }
 }
+
+/**
+ * *** کامپوننت بازنویسی شده برای نمایش مکعب سه‌بعدی نئونی و شیشه‌ای ***
+ */
+/**
+ * *** کامپوننت بازنویسی شده برای مکعب سه‌بعدی نئونی و شیشه‌ای بزرگتر ***
+ */
+/**
+ * *** کامپوننت بازنویسی شده برای مکعب سه‌بعدی نئونی و شیشه‌ای بزرگتر ***
+ */
+@Composable
+fun RotatingCube(rotationVector: FloatArray) {
+    val neonColor = colorScheme.primary
+    val glassColor = colorScheme.primary.copy(alpha = 0.15f)
+
+    Canvas(modifier = Modifier.size(250.dp)) { // *** افزایش اندازه Canvas ***
+        val rotationMatrix = FloatArray(9)
+        SensorManager.getRotationMatrixFromVector(rotationMatrix, rotationVector)
+
+        val vertices = arrayOf(
+            floatArrayOf(-1f, -1f, -1f), floatArrayOf(1f, -1f, -1f),
+            floatArrayOf(1f, 1f, -1f), floatArrayOf(-1f, 1f, -1f),
+            floatArrayOf(-1f, -1f, 1f), floatArrayOf(1f, -1f, 1f),
+            floatArrayOf(1f, 1f, 1f), floatArrayOf(-1f, 1f, 1f)
+        )
+
+        val projectedVertices = Array(8) { Offset.Zero }
+        val transformedZ = FloatArray(8)
+
+        vertices.forEachIndexed { i, vertex ->
+            val rotated = multiplyMatrix(rotationMatrix, vertex)
+            transformedZ[i] = rotated[2]
+            projectedVertices[i] = project(rotated, size.width, size.height, scale = 150f)//برای بزرگ کردن سایز مکعب
+        }
+
+        val faces = listOf(
+            listOf(0, 1, 2, 3), listOf(4, 5, 6, 7), listOf(0, 4, 7, 3),
+            listOf(1, 5, 6, 2), listOf(3, 2, 6, 7), listOf(0, 1, 5, 4)
+        )
+
+        val sortedFaces = faces.map { face ->
+            val avgZ = face.sumOf { transformedZ[it].toDouble() } / face.size
+            Pair(face, avgZ)
+        }.sortedBy { it.second }
+
+        sortedFaces.forEach { (face, _) ->
+            val path = Path().apply {
+                moveTo(projectedVertices[face[0]].x, projectedVertices[face[0]].y)
+                lineTo(projectedVertices[face[1]].x, projectedVertices[face[1]].y)
+                lineTo(projectedVertices[face[2]].x, projectedVertices[face[2]].y)
+                lineTo(projectedVertices[face[3]].x, projectedVertices[face[3]].y)
+                close()
+            }
+            drawPath(path, color = glassColor)
+        }
+
+        for (i in 0 until 4) {
+            drawNeonEdge(projectedVertices[i], projectedVertices[(i + 1) % 4], neonColor)
+            drawNeonEdge(projectedVertices[i + 4], projectedVertices[((i + 1) % 4) + 4], neonColor)
+            drawNeonEdge(projectedVertices[i], projectedVertices[i + 4], neonColor)
+        }
+    }
+}
+
+
+// تابع کمکی برای تصویر کردن با مقیاس قابل تنظیم
+private fun project(point: FloatArray, width: Float, height: Float, scale: Float): Offset {
+    val x = point[0] * scale + width / 2
+    val y = point[1] * scale + height / 2
+    return Offset(x, y)
+}
+
+
+
+
+// تابع کمکی جدید برای رسم خطوط نئونی
+private fun DrawScope.drawNeonEdge(start: Offset, end: Offset, color: Color) {
+    val paint = Paint().apply {
+        isAntiAlias = true
+        style = Paint.Style.STROKE
+        strokeWidth = 6f
+        maskFilter = android.graphics.BlurMaskFilter(15f, android.graphics.BlurMaskFilter.Blur.NORMAL)
+    }
+
+    // هاله‌ی درخشان
+    drawIntoCanvas {
+        paint.color = color.copy(alpha = 0.5f).toArgb()
+        it.nativeCanvas.drawLine(start.x, start.y, end.x, end.y, paint)
+    }
+
+    // خط اصلی
+    drawLine(
+        color = color,
+        start = start,
+        end = end,
+        strokeWidth = 4f
+    )
+}
+
+/**
+ * *** کامپوننت جدید برای رسم نمودار زنده ***
+ */
+/**
+ * *** کامپوننت بازنویسی شده برای نمودار پیشرفته ***
+ */
+/**
+ * *** کامپوننت بازنویسی شده برای نمودار پیشرفته ***
+ */
+@Composable
+fun LiveRotationChart(history: List<FloatArray>) {
+    val colors = listOf(Color.Red, Color.Green, Color(0xFF37A6FF))
+    val labels = listOf("X", "Y", "Z")
+
+    val axisColor = colorScheme.onSurface.copy(alpha = 0.5f)
+    val textMeasurer = rememberTextMeasurer()
+    val textStyle = TextStyle(color = axisColor, fontSize = 10.sp)
+
+    InfoCard(title = stringResource(R.string.live_chart_title)) {
+        Column(Modifier.padding(16.dp)) {
+            Canvas(modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)) {
+                if (history.size < 2) return@Canvas
+
+                val stepX = size.width / (history.size - 1).coerceAtLeast(1)
+
+                // رسم محورها و شبکه نقطه‌چین
+                val gridPath = Path()
+                val yGridSteps = 4
+                for (i in 0..yGridSteps) {
+                    val y = i * (size.height / yGridSteps)
+                    gridPath.moveTo(0f, y)
+                    gridPath.lineTo(size.width, y)
+                }
+                drawPath(gridPath, color = axisColor, style = Stroke(width = 1f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f))))
+
+                drawLine(axisColor, start = Offset(0f, 0f), end = Offset(0f, size.height), strokeWidth = 2f)
+
+                // رسم نمودارها
+                for (axisIndex in 0..2) {
+                    val path = Path()
+                    val glassPath = Path()
+
+                    history.forEachIndexed { index, data ->
+                        val x = index * stepX
+                        val y = (1 - ((data.getOrNull(axisIndex) ?: 0f) + 1) / 2) * size.height
+
+                        if (index == 0) {
+                            path.moveTo(x, y)
+                            glassPath.moveTo(x, size.height)
+                            glassPath.lineTo(x, y)
+                        } else {
+                            path.lineTo(x, y)
+                            glassPath.lineTo(x, y)
+                        }
+                    }
+
+                    glassPath.lineTo((history.size - 1) * stepX, size.height)
+                    glassPath.close()
+
+                    drawPath(glassPath, brush = Brush.verticalGradient(
+                        colors = listOf(colors[axisIndex].copy(alpha = 0.3f), Color.Transparent)
+                    ))
+
+                    // رسم خط نئونی
+                    drawPath(path, color = colors[axisIndex].copy(alpha = 0.4f), style = Stroke(width = 10f))
+                    drawPath(path, color = colors[axisIndex], style = Stroke(width = 4f))
+
+                    // *** بخش جدید: رسم لیبل متحرک و نئونی ***
+                    val lastX = (history.size - 1) * stepX
+                    val lastY = (1 - ((history.last().getOrNull(axisIndex) ?: 0f) + 1) / 2) * size.height
+
+                    // رسم نقطه نئونی
+                    drawCircle(colors[axisIndex].copy(alpha = 0.5f), radius = 20f, center = Offset(lastX, lastY))
+                    drawCircle(colors[axisIndex], radius = 9f, center = Offset(lastX, lastY))
+
+//                    // رسم متن نئونی
+//                    val labelText = labels[axisIndex]
+//                    val textLayoutResult = textMeasurer.measure(labelText, style = textStyle.copy(color = colors[axisIndex]))
+//                    val textOffset = Offset(lastX - textLayoutResult.size.width/2 , lastY - 35.dp.toPx())
+
+//                    drawText(textMeasurer, labelText, textOffset, style = textStyle.copy(color = colors[axisIndex].copy(alpha = 0.5f)))
+//                    drawText(textMeasurer, labelText, textOffset, style = textStyle.copy(color = Color.White))
+                }
+
+                // رسم برچسب‌های محور Y
+                drawText(textMeasurer, "1.0", Offset(5.dp.toPx(), -5.dp.toPx()), style = textStyle)
+                drawText(textMeasurer, "0.0", Offset(5.dp.toPx(), center.y - 10.sp.toPx()), style = textStyle)
+                drawText(textMeasurer, "-1.0", Offset(5.dp.toPx(), size.height - 20.sp.toPx()), style = textStyle)
+            }
+            // *** راهنمای نمودار با نقاط نئونی ***
+            Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+                labels.forEachIndexed { index, label ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // استفاده از Canvas برای رسم نقطه نئونی
+                        Canvas(modifier = Modifier.size(12.dp)) {
+                            drawNeonDot(center = this.center, color = colors[index], radius = 9f, glowRadius = 20f)
+                        }
+                        Text(text = label, modifier = Modifier.padding(start = 8.dp))
+                    }
+                    }
+                }
+            }}}
+
+/**
+ * *** تابع کمکی جدید برای رسم یک نقطه نئونی ***
+ */
+fun DrawScope.drawNeonDot(center: Offset, color: Color, radius: Float = 6f, glowRadius: Float = 12f) {
+    // رسم هاله درخشان
+    drawCircle(color.copy(alpha = 0.5f), radius = glowRadius, center = center)
+    // رسم نقطه اصلی
+    drawCircle(color, radius = radius, center = center)
+}
+
+//// تابع کمکی جدید برای رسم مسیر نئونی
+//private fun DrawScope.drawNeonPath(path: Path, color: Color) {
+//    val paint = Paint().apply {
+//        isAntiAlias = true
+//        style = Paint.Style.STROKE
+//        strokeWidth = 8f
+//        maskFilter = android.graphics.BlurMaskFilter(15f, android.graphics.BlurMaskFilter.Blur.NORMAL)
+//    }
+//
+//    drawIntoCanvas {
+//        paint.color = color.copy(alpha = 0.5f).toArgb()
+//        it.nativeCanvas.drawPath(path, paint)
+//    }
+//    drawPath(path, color = color, style = Stroke(width = 5f))
+//}
+

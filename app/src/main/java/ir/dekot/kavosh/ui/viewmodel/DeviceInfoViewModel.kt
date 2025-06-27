@@ -63,6 +63,11 @@ class DeviceInfoViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
+    // *** تغییر State برای نگهداری تاریخچه ***
+    private val _rotationVectorHistory = MutableStateFlow<List<FloatArray>>(emptyList())
+    val rotationVectorHistory: StateFlow<List<FloatArray>> = _rotationVectorHistory.asStateFlow()
+
+
 
     // State های جدید و اختصاصی برای سنسورها
     private val _accelerometerData = MutableStateFlow(FloatArray(3))
@@ -76,8 +81,8 @@ class DeviceInfoViewModel @Inject constructor(
 
     // *** State های جدید برای داده‌های سنسورها ***
     // *** این State حالا داده‌های خام وکتور چرخش را نگه می‌دارد ***
-    private val _rotationVectorData = MutableStateFlow(FloatArray(4))
-    val rotationVectorData: StateFlow<FloatArray> = _rotationVectorData.asStateFlow()
+//    private val _rotationVectorData = MutableStateFlow(FloatArray(4))
+//    val rotationVectorData: StateFlow<FloatArray> = _rotationVectorData.asStateFlow()
 
 
     // ... (سایر State ها)
@@ -229,7 +234,10 @@ class DeviceInfoViewModel @Inject constructor(
                 updateOrientation()
             }
             Sensor.TYPE_ROTATION_VECTOR -> {
-                _rotationVectorData.value = event.values.clone()
+                val newValues = event.values.clone()
+                // افزودن مقدار جدید و حذف مقادیر قدیمی برای نگه داشتن تاریخچه
+                val history = (_rotationVectorHistory.value + listOf(newValues)).takeLast(100) // نگه داشتن ۱۰۰ مقدار آخر
+                _rotationVectorHistory.value = history
             }
             else -> {
                 _liveSensorData.value = event.values.toList()
@@ -264,6 +272,12 @@ class DeviceInfoViewModel @Inject constructor(
             }
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) { }
         }
+        // *** تغییر کلیدی: تعیین سرعت بر اساس نوع سنسور ***
+        val delay = if (sensorType == Sensor.TYPE_ROTATION_VECTOR) {
+            SensorManager.SENSOR_DELAY_UI // سرعت بالا برای انیمیشن روان
+        } else {
+            SensorManager.SENSOR_DELAY_NORMAL // سرعت عادی برای سایر سنسورها
+        }
 
         if (sensorType == Sensor.TYPE_MAGNETIC_FIELD) {
             sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also { accelerometer ->
@@ -291,7 +305,8 @@ class DeviceInfoViewModel @Inject constructor(
         _accelerometerData.value = FloatArray(3)
         _magnetometerData.value = FloatArray(3)
         orientationAngles.value = FloatArray(3)
-        _rotationVectorData.value = FloatArray(4)
+//        _rotationVectorData.value = FloatArray(4)
+        _rotationVectorHistory.value = emptyList() // ریست کردن تاریخچه
     }
 
 

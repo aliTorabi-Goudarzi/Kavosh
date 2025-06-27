@@ -190,4 +190,6 @@
     <string name="rotation_roll">رول (Roll)</string>
     <string name="orientation_angles">زوایای جهت‌یابی</string>
     <string name="raw_sensor_data">داده‌های خام سنسورها</string>
+    <string name="live_chart_title">نمودار داده‌های زنده</string>
+    <string name="live_values_title">مقادیر زنده وکتور</string>
 </resources>
