@@ -2,13 +2,10 @@ package ir.dekot.kavosh.ui.screen.detail
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
@@ -36,11 +33,14 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import ir.dekot.kavosh.R
-import ir.dekot.kavosh.data.model.DeviceInfo
-import ir.dekot.kavosh.data.model.components.BatteryInfo
-import ir.dekot.kavosh.data.model.components.ThermalInfo
-import ir.dekot.kavosh.ui.screen.detail.infoCards.*
-import ir.dekot.kavosh.ui.screen.shared.EmptyStateMessage
+import ir.dekot.kavosh.ui.screen.detail.pages.BatteryPage
+import ir.dekot.kavosh.ui.screen.detail.pages.CameraPage
+import ir.dekot.kavosh.ui.screen.detail.pages.DevicePage
+import ir.dekot.kavosh.ui.screen.detail.pages.NetworkPage
+import ir.dekot.kavosh.ui.screen.detail.pages.SensorsPage
+import ir.dekot.kavosh.ui.screen.detail.pages.SocPage
+import ir.dekot.kavosh.ui.screen.detail.pages.SystemPage
+import ir.dekot.kavosh.ui.screen.detail.pages.ThermalPage
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import ir.dekot.kavosh.ui.viewmodel.NavigationViewModel
@@ -155,114 +155,19 @@ fun DetailScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            CategoryDetailContent(
-                category = category,
-                viewModel = viewModel, // پاس دادن viewModel
-                storageViewModel = storageViewModel, // <-- پاس دادن ViewModel جدید
-                navigationViewModel = navigationViewModel, // <-- پاس دادن ViewModel
-                deviceInfo = deviceInfo,
-                batteryInfo = batteryInfo,
-                thermalDetails = thermalDetails,
-                liveCpuFrequencies = liveCpuFrequencies,
-                liveGpuLoad = liveGpuLoad,
-                downloadSpeed = downloadSpeed,
-                uploadSpeed = uploadSpeed
-            )
-        }
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.R)
-private fun LazyListScope.CategoryDetailContent(
-    category: InfoCategory,
-    viewModel: DeviceInfoViewModel, // *** پارامتر جدید ***
-    storageViewModel: StorageViewModel, // <-- پارامتر جدید
-    navigationViewModel: NavigationViewModel, // <-- پارامتر جدید
-    deviceInfo: DeviceInfo,
-    batteryInfo: BatteryInfo,
-    thermalDetails: List<ThermalInfo>,
-    liveCpuFrequencies: List<String>,
-    liveGpuLoad: Int?,
-    downloadSpeed: String,
-    uploadSpeed: String
-) {
-    when (category) {
-        InfoCategory.SOC -> {
-            item { CpuInfoCard(deviceInfo.cpu, liveCpuFrequencies) }
-            item { GpuInfoCard(deviceInfo.gpu, liveGpuLoad) }
-            item { RamInfoCard(deviceInfo.ram) }
-        }
-        InfoCategory.DEVICE -> {
-            item { DisplayInfoCard(deviceInfo.display) }
-            item { StorageInfoCard(deviceInfo.storage) }
-            // *** کارت جدید در این بخش اضافه شد ***
             item {
-                // **اصلاح کلیدی: خواندن State ها از storageViewModel**
-                val isTesting by storageViewModel.isStorageTesting.collectAsState()
-                val progress by storageViewModel.storageTestProgress.collectAsState()
-                val writeSpeed by storageViewModel.writeSpeed.collectAsState()
-                val readSpeed by storageViewModel.readSpeed.collectAsState()
-
-                StorageSpeedTestCard(
-                    isTesting = isTesting,
-                    progress = progress,
-                    writeSpeed = writeSpeed,
-                    readSpeed = readSpeed,
-                    // فراخوانی متد از ViewModel صحیح
-                    onStartTest = { storageViewModel.startStorageSpeedTest() }
-                )
-            }
-        }
-        InfoCategory.SYSTEM -> {
-            item { SystemInfoCard(deviceInfo.system) }
-        }
-        InfoCategory.BATTERY -> {
-            item { BatteryInfoCard(batteryInfo) }
-        }
-        InfoCategory.SENSORS -> {
-            if (deviceInfo.sensors.isEmpty()) {
-                item { EmptyStateMessage("No sensors found on this device.") }
-            } else {
-                items(deviceInfo.sensors, key = { it.name }) { sensor ->
-                    // *** پاس دادن رویداد کلیک به کارت ***
-                    SensorInfoCard(
-                        info = sensor,
-                        onTestClick = { sensorType ->
-                            // **اصلاح کلیدی: فراخوانی از ViewModel صحیح**
-                            navigationViewModel.navigateToSensorDetail(sensorType)
-                        }
-                    )
+                when (category) {
+                    InfoCategory.SOC -> SocPage(viewModel = viewModel)
+                    InfoCategory.DEVICE -> DevicePage(deviceInfoViewModel = viewModel, storageViewModel = storageViewModel)
+                    InfoCategory.SYSTEM -> SystemPage(viewModel = viewModel)
+                    InfoCategory.BATTERY -> BatteryPage(viewModel = viewModel)
+                    InfoCategory.SENSORS -> SensorsPage(deviceInfoViewModel = viewModel, navigationViewModel = navigationViewModel)
+                    InfoCategory.THERMAL -> ThermalPage(viewModel = viewModel)
+                    InfoCategory.CAMERA -> CameraPage(viewModel = viewModel)
+                    InfoCategory.NETWORK -> NetworkPage(viewModel = viewModel)
                 }
-            }
-        }
-        InfoCategory.THERMAL -> {
-            if (thermalDetails.isEmpty()) {
-                item { EmptyStateMessage("Thermal information is not available for this device.") }
-            } else {
-                items(thermalDetails, key = { it.type }) { thermalInfo ->
-                    ThermalInfoCard(info = thermalInfo)
-                }
-            }
-        }
-        InfoCategory.CAMERA -> {
-            if (deviceInfo.cameras.isEmpty()) {
-                item { EmptyStateMessage("No cameras found or access is not possible.") }
-            } else {
-                items(deviceInfo.cameras, key = { it.id }) { camera ->
-                    CameraInfoCard(info = camera)
-                }
-            }
-        }
-        InfoCategory.NETWORK -> {
-            item {
-                NetworkInfoCard(
-                    info = deviceInfo.network,
-                    downloadSpeed = downloadSpeed,
-                    uploadSpeed = uploadSpeed
-                )
             }
         }
     }
