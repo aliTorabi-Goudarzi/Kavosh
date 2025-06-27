@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.TrafficStats
-import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
@@ -22,20 +21,15 @@ import ir.dekot.kavosh.domain.sensor.SensorHandler
 import ir.dekot.kavosh.domain.sensor.SensorState
 import ir.dekot.kavosh.ui.navigation.Screen
 import ir.dekot.kavosh.util.formatSizeOrSpeed
-import ir.dekot.kavosh.util.report.PdfGenerator
-import ir.dekot.kavosh.util.report.ReportFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.io.FileOutputStream
 import javax.inject.Inject
 
 // کلاس‌های ExportResult حذف نشده‌اند چون هنوز اینجا استفاده می‌شوند
@@ -54,7 +48,6 @@ class DeviceInfoViewModel @Inject constructor(
 
     val sensorState: StateFlow<SensorState> = sensorHandler.sensorState
 
-    // --- State های اصلی و مربوط به داده‌های دستگاه ---
     private var hasLoadedData = false
     private val _deviceInfo = MutableStateFlow(DeviceInfo())
     val deviceInfo = _deviceInfo.asStateFlow()
@@ -62,7 +55,6 @@ class DeviceInfoViewModel @Inject constructor(
     private val _thermalDetails = MutableStateFlow<List<ThermalInfo>>(emptyList())
     val thermalDetails = _thermalDetails.asStateFlow()
 
-    // --- State های مربوط به UI و ناوبری ---
     private val _currentScreen = MutableStateFlow<Screen>(Screen.Splash)
     val currentScreen = _currentScreen.asStateFlow()
 
@@ -75,7 +67,6 @@ class DeviceInfoViewModel @Inject constructor(
     private val _scanStatusText = MutableStateFlow("آماده برای اسکن...")
     val scanStatusText = _scanStatusText.asStateFlow()
 
-    // --- State های داده‌های زنده ---
     private val _batteryInfo = MutableStateFlow(BatteryInfo())
     val batteryInfo = _batteryInfo.asStateFlow()
     private val _liveCpuFrequencies = MutableStateFlow<List<String>>(emptyList())
@@ -87,12 +78,10 @@ class DeviceInfoViewModel @Inject constructor(
     private val _uploadSpeed = MutableStateFlow("0.0 KB/s")
     val uploadSpeed = _uploadSpeed.asStateFlow()
 
-    // --- Job های مربوط به Polling ---
     private var socPollingJob: Job? = null
     private var batteryReceiver: BroadcastReceiver? = null
     private var networkPollingJob: Job? = null
 
-    // --- State های تست سرعت حافظه ---
     private val _isStorageTesting = MutableStateFlow(false)
     val isStorageTesting: StateFlow<Boolean> = _isStorageTesting.asStateFlow()
     private val _storageTestProgress = MutableStateFlow(0f)
@@ -102,13 +91,6 @@ class DeviceInfoViewModel @Inject constructor(
     private val _readSpeed = MutableStateFlow("N/A")
     val readSpeed: StateFlow<String> = _readSpeed.asStateFlow()
 
-    // --- State های مربوط به خروجی گرفتن ---
-    private val _exportResult = MutableSharedFlow<ExportResult>()
-    val exportResult = _exportResult.asSharedFlow()
-    private val _exportRequest = MutableSharedFlow<ExportFormat>()
-    val exportRequest = _exportRequest.asSharedFlow()
-    var pendingExportFormat: ExportFormat? = null
-        private set
 
     init {
         // منطق داشبورد از اینجا حذف شد
@@ -381,41 +363,5 @@ class DeviceInfoViewModel @Inject constructor(
         }
         combinedList.addAll(deviceInfo.value.thermal)
         _thermalDetails.value = combinedList
-    }
-
-    fun onExportRequested(format: ExportFormat) {
-        viewModelScope.launch {
-            pendingExportFormat = format
-            _exportRequest.emit(format)
-        }
-    }
-
-    fun performExport(uri: Uri, format: ExportFormat) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val currentDeviceInfo = _deviceInfo.value
-                val currentBatteryInfo = repository.getInitialBatteryInfo() ?: BatteryInfo()
-
-                context.contentResolver.openFileDescriptor(uri, "w")?.use { pfd ->
-                    FileOutputStream(pfd.fileDescriptor).use { fos ->
-                        when (format) {
-                            ExportFormat.TXT -> {
-                                val fullReportText = ReportFormatter.formatFullReport(context, currentDeviceInfo, currentBatteryInfo)
-                                fos.write(fullReportText.toByteArray())
-                            }
-                            ExportFormat.PDF -> {
-                                PdfGenerator.writeStyledPdf(context, fos, currentDeviceInfo, currentBatteryInfo)
-                            }
-                        }
-                    }
-                }
-                _exportResult.emit(ExportResult.Success(context.getString(R.string.file_exported_successfully)))
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _exportResult.emit(ExportResult.Failure(context.getString(R.string.file_export_failed)))
-            } finally {
-                pendingExportFormat = null
-            }
-        }
     }
 }

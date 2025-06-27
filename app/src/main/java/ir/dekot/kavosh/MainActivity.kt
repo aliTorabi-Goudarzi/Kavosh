@@ -30,6 +30,7 @@ import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel // <-- ایمپورت جدید
 import ir.dekot.kavosh.ui.theme.KavoshTheme // <-- ایمپورت اصلاح شده
 import ir.dekot.kavosh.ui.viewmodel.DashboardViewModel
+import ir.dekot.kavosh.ui.viewmodel.ExportViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -38,18 +39,20 @@ import java.util.Locale
 class MainActivity : ComponentActivity() {
 
     private val deviceInfoViewModel: DeviceInfoViewModel by viewModels()
-    // ViewModel جدید را هم از طریق Hilt دریافت می‌کنیم
     private val settingsViewModel: SettingsViewModel by viewModels()
-    private val dashboardViewModel: DashboardViewModel by viewModels() // <-- اضافه کردن ViewModel جدید
+    private val dashboardViewModel: DashboardViewModel by viewModels()
+    private val exportViewModel: ExportViewModel by viewModels() // <-- اضافه کردن ViewModel جدید
 
     @RequiresApi(Build.VERSION_CODES.R)
     private val createFileLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("*/*")
     ) { uri ->
         uri?.let {
-            val format = deviceInfoViewModel.pendingExportFormat
+            val format = exportViewModel.pendingExportFormat
             if (format != null) {
-                deviceInfoViewModel.performExport(it, format)
+                // اطلاعات دستگاه را از ViewModel اصلی می‌خوانیم و به ViewModel خروجی پاس می‌دهیم
+                val currentDeviceInfo = deviceInfoViewModel.deviceInfo.value
+                exportViewModel.performExport(it, format, currentDeviceInfo)
             }
         }
     }
@@ -70,17 +73,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // به رویدادهای ViewModel جدید گوش می‌دهیم
         lifecycleScope.launch {
-            // به رویداد تغییر زبان از ViewModel جدید گوش می‌دهیم
-            settingsViewModel.languageChangeRequest.collectLatest {
-                recreate()
+            exportViewModel.exportRequest.collectLatest { format ->
+                val fileName = "Kavosh_Report_${System.currentTimeMillis()}.${format.extension}"
+                createFileLauncher.launch(fileName)
             }
         }
 
         lifecycleScope.launch {
-            deviceInfoViewModel.exportRequest.collectLatest { format ->
-                val fileName = "Kavosh_Report_${System.currentTimeMillis()}.${format.extension}"
-                createFileLauncher.launch(fileName)
+            // به رویداد تغییر زبان از ViewModel جدید گوش می‌دهیم
+            settingsViewModel.languageChangeRequest.collectLatest {
+                recreate()
             }
         }
 
@@ -117,6 +121,7 @@ class MainActivity : ComponentActivity() {
                             deviceInfoViewModel = deviceInfoViewModel,
                             settingsViewModel = settingsViewModel,
                             dashboardViewModel = dashboardViewModel, // <-- پاس دادن ViewModel جدید
+                            exportViewModel = exportViewModel, // <-- پاس دادن ViewModel جدید
                             onStartScan = { deviceInfoViewModel.startScan(this) }
                         )
                     }
