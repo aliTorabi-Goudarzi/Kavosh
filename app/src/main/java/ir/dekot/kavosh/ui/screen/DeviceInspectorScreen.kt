@@ -24,13 +24,11 @@ fun DeviceInspectorApp(
     settingsViewModel: SettingsViewModel,
     dashboardViewModel: DashboardViewModel,
     exportViewModel: ExportViewModel,
-    navigationViewModel: NavigationViewModel, // <-- پارامتر جدید
+    navigationViewModel: NavigationViewModel,
     onStartScan: () -> Unit
 ) {
-    // **اصلاح کلیدی: خواندن وضعیت ناوبری از ViewModel جدید**
     val currentScreen by navigationViewModel.currentScreen.collectAsState()
 
-    // این افکت، مدیریت polling را بر اساس صفحه فعلی انجام می‌دهد
     LaunchedEffect(currentScreen) {
         when (val screen = currentScreen) {
             is Screen.Detail -> deviceInfoViewModel.startPollingForCategory(screen.category)
@@ -42,71 +40,69 @@ fun DeviceInspectorApp(
         }
     }
 
+    // **اصلاح کلیدی در منطق BackHandler ها**
     when (val screen = currentScreen) {
-        is Screen.Splash -> SplashScreen(
-            onStartScan = onStartScan,
-            viewModel = deviceInfoViewModel
-        )
+        is Screen.Splash -> { /* دکمه بازگشت در اسپلش غیرفعال است */ }
+
+        is Screen.Dashboard -> { /* در داشبورد، بازگشت به معنی خروج از برنامه است */ }
+
+        is Screen.Detail, is Screen.Settings, is Screen.About, is Screen.SensorDetail -> {
+            // برای تمام این صفحات، رفتار بازگشت یکسان است
+            BackHandler { navigationViewModel.navigateBack() }
+        }
+
+        is Screen.EditDashboard -> {
+            // رفتار خاص برای صفحه ویرایش داشبورد
+            BackHandler {
+                dashboardViewModel.loadDashboardItems() // آیتم‌ها را قبل از بازگشت رفرش کن
+                navigationViewModel.navigateBack()
+            }
+        }
+    }
+
+    // بدنه اصلی نمایش صفحات (بدون تغییر زیاد)
+    when (val screen = currentScreen) {
+        is Screen.Splash -> SplashScreen(onStartScan = onStartScan, viewModel = deviceInfoViewModel)
 
         is Screen.Dashboard -> DashboardScreen(
             settingsViewModel = settingsViewModel,
             dashboardViewModel = dashboardViewModel,
             exportViewModel = exportViewModel,
-            onCategoryClick = { category, _ ->
-                navigationViewModel.navigateToDetail(category)
-            },
+            onCategoryClick = { category, _ -> navigationViewModel.navigateToDetail(category) },
             onSettingsClick = { navigationViewModel.navigateToSettings() },
             onEditDashboardClick = { navigationViewModel.navigateToEditDashboard() }
         )
 
-        is Screen.Settings -> {
-            BackHandler { navigationViewModel.navigateBack() }
-            SettingsScreen(
-                viewModel = settingsViewModel,
-                onNavigateToAbout = { navigationViewModel.navigateToAbout() },
-                onBackClick = { navigationViewModel.navigateBack() }
-            )
-        }
+        is Screen.Settings -> SettingsScreen(
+            viewModel = settingsViewModel,
+            onNavigateToAbout = { navigationViewModel.navigateToAbout() },
+            onBackClick = { navigationViewModel.navigateBack() }
+        )
 
-        is Screen.Detail -> {
-            BackHandler { navigationViewModel.navigateBack() }
-            DetailScreen(
-                category = screen.category,
-                viewModel = deviceInfoViewModel,
-                navigationViewModel = navigationViewModel, // <-- پاس دادن ViewModel ناوبری
-                onBackClick = { navigationViewModel.navigateBack() }
-            )
-        }
+        is Screen.Detail -> DetailScreen(
+            category = screen.category,
+            viewModel = deviceInfoViewModel,
+            navigationViewModel = navigationViewModel,
+            onBackClick = { navigationViewModel.navigateBack() }
+        )
 
-        is Screen.EditDashboard -> {
-            BackHandler {
-                dashboardViewModel.loadDashboardItems() // بازخوانی آیتم‌ها قبل از بازگشت
+        is Screen.EditDashboard -> EditDashboardScreen(
+            viewModel = dashboardViewModel,
+            onBackClick = {
+                dashboardViewModel.loadDashboardItems()
                 navigationViewModel.navigateBack()
             }
-            EditDashboardScreen(
-                viewModel = dashboardViewModel,
-                onBackClick = {
-                    dashboardViewModel.loadDashboardItems()
-                    navigationViewModel.navigateBack()
-                }
-            )
-        }
+        )
 
-        is Screen.About -> {
-            BackHandler { navigationViewModel.navigateBack() }
-            AboutScreen(
-                viewModel = settingsViewModel,
-                onBackClick = { navigationViewModel.navigateBack() }
-            )
-        }
+        is Screen.About -> AboutScreen(
+            viewModel = settingsViewModel,
+            onBackClick = { navigationViewModel.navigateBack() }
+        )
 
-        is Screen.SensorDetail -> {
-            BackHandler { navigationViewModel.navigateBack() }
-            SensorDetailScreen(
-                viewModel = deviceInfoViewModel,
-                sensorType = screen.sensorType,
-                onBackClick = { navigationViewModel.navigateBack() }
-            )
-        }
+        is Screen.SensorDetail -> SensorDetailScreen(
+            viewModel = deviceInfoViewModel,
+            sensorType = screen.sensorType,
+            onBackClick = { navigationViewModel.navigateBack() }
+        )
     }
 }
