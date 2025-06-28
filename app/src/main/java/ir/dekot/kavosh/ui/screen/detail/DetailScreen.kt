@@ -38,6 +38,7 @@ import ir.dekot.kavosh.ui.screen.detail.pages.CameraPage
 import ir.dekot.kavosh.ui.screen.detail.pages.DevicePage
 import ir.dekot.kavosh.ui.screen.detail.pages.NetworkPage
 import ir.dekot.kavosh.ui.screen.detail.pages.SensorsPage
+import ir.dekot.kavosh.ui.screen.detail.pages.SimPage
 import ir.dekot.kavosh.ui.screen.detail.pages.SocPage
 import ir.dekot.kavosh.ui.screen.detail.pages.SystemPage
 import ir.dekot.kavosh.ui.screen.detail.pages.ThermalPage
@@ -178,6 +179,7 @@ fun DetailScreen(
                         viewModel = viewModel,
                         onNavigateToTools = { navigationViewModel.navigateToNetworkTools() } // <-- پاس دادن رویداد
                     )
+                    InfoCategory.SIM -> SimPage(viewModel = viewModel)
                 }
             }
         }

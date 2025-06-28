@@ -14,12 +14,12 @@ object ReportFormatter {
      */
     fun formatFullReport(context: Context, deviceInfo: DeviceInfo, batteryInfo: BatteryInfo): String {
         val builder = StringBuilder()
-        builder.appendLine(context.getString(R.string.full_report_title)) // رشته از منابع خوانده می‌شود
+        builder.appendLine(context.getString(R.string.full_report_title))
         builder.appendLine("========================================")
         builder.appendLine()
 
         InfoCategory.entries.forEach { category ->
-            builder.appendLine("--- ${category.getTitle(context)} ---") // از تابع جدید استفاده می‌شود
+            builder.appendLine("--- ${category.getTitle(context)} ---")
             val body = getCategoryData(context, category, deviceInfo, batteryInfo)
                 .joinToString(separator = "\n") { (label, value) ->
                     if (value.isEmpty()) label else "$label: $value"
@@ -31,7 +31,6 @@ object ReportFormatter {
         return builder.toString()
     }
 
-    // تابع getCategoryData که قبلاً اصلاح کردیم، بدون تغییر باقی می‌ماند
     fun getCategoryData(
         context: Context,
         category: InfoCategory,
@@ -104,6 +103,24 @@ object ReportFormatter {
                             context.getString(R.string.camera_apertures) to camera.apertures,
                             context.getString(R.string.camera_focal_lengths) to camera.focalLengths,
                             context.getString(R.string.camera_sensor_size) to camera.sensorSize,
+                            "" to ""
+                        )
+                    }
+                }
+            // **اصلاح کلیدی: افزودن branch برای دسته‌بندی سیم‌کارت**
+            InfoCategory.SIM ->
+                if (deviceInfo.simCards.isEmpty()) {
+                    listOf(context.getString(R.string.category_sim) to context.getString(R.string.label_not_available))
+                } else {
+                    deviceInfo.simCards.flatMap { sim ->
+                        listOf(
+                            "[ ${context.getString(R.string.sim_slot_index, sim.slotIndex + 1)} ]" to "",
+                            context.getString(R.string.sim_carrier) to sim.carrierName,
+                            context.getString(R.string.sim_country_iso) to sim.countryIso,
+                            context.getString(R.string.sim_country_code) to sim.mobileCountryCode,
+                            context.getString(R.string.sim_network_code) to sim.mobileNetworkCode,
+                            context.getString(R.string.sim_is_roaming) to context.getString(if (sim.isRoaming) R.string.label_on else R.string.label_off),
+                            context.getString(R.string.sim_data_roaming) to sim.dataRoaming,
                             "" to ""
                         )
                     }

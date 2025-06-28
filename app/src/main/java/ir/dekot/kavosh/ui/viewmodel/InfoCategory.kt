@@ -16,7 +16,9 @@ enum class InfoCategory {
     SENSORS,
     THERMAL,
     NETWORK,
-    CAMERA
+    CAMERA,
+
+    SIM
 }
 
 /**
@@ -33,6 +35,7 @@ fun InfoCategory.localizedTitle(): String {
         InfoCategory.THERMAL -> R.string.category_thermal
         InfoCategory.NETWORK -> R.string.category_network
         InfoCategory.CAMERA -> R.string.category_camera
+        InfoCategory.SIM -> R.string.category_sim
     }
     return stringResource(id = resId)
 }
@@ -51,6 +54,7 @@ fun InfoCategory.getTitle(context: Context): String {
         InfoCategory.THERMAL -> R.string.category_thermal
         InfoCategory.NETWORK -> R.string.category_network
         InfoCategory.CAMERA -> R.string.category_camera
+        InfoCategory.SIM -> R.string.category_sim
     }
     return context.getString(resId)
 }

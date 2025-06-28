@@ -11,6 +11,7 @@ import ir.dekot.kavosh.data.model.components.ThermalInfo
 import ir.dekot.kavosh.data.model.components.CameraInfo // <-- ایمپورت جدید
 // ... (imports)
 import ir.dekot.kavosh.data.model.components.NetworkInfo // <-- ایمپورت جدید
+import ir.dekot.kavosh.data.model.components.SimInfo
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -24,6 +25,7 @@ data class DeviceInfo(
     val system: SystemInfo = SystemInfo(),
     val sensors: List<SensorInfo> = emptyList(),
     val network: NetworkInfo = NetworkInfo(), // <-- این خط را اضافه کنید
-    val cameras: List<CameraInfo> = emptyList() // <-- این خط را اضافه کنید
+    val cameras: List<CameraInfo> = emptyList(), // <-- این خط را اضافه کنید
+    val simCards: List<SimInfo> = emptyList() // <-- پراپرتی جدید
 )
 // این فایل تمام کلاس‌های داده‌ای را که برای نمایش اطلاعات نیاز داریم، نگه می‌دارد.

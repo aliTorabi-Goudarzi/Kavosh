@@ -202,4 +202,13 @@
     <string name="red_gradient">طیف قرمز</string>
     <string name="green_gradient">طیف سبز</string>
     <string name="blue_gradient">طیف آبی</string>
+    <string name="category_sim">سیم‌کارت (ها)</string>
+    <string name="sim_slot_index">اسلات سیم‌کارت %d</string>
+    <string name="sim_carrier">اپراتور</string>
+    <string name="sim_country_iso">کد کشور (ISO)</string>
+    <string name="sim_network_code">کد شبکه (MNC)</string>
+    <string name="sim_country_code">کد کشور (MCC)</string>
+    <string name="sim_is_roaming">رومینگ شبکه</string>
+    <string name="sim_data_roaming">رومینگ داده</string>
+    <string name="permission_required_sim">برای دسترسی به اطلاعات سیم‌کارت، مجوز READ_PHONE_STATE لازم است.</string>
 </resources>

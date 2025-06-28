@@ -12,6 +12,7 @@ import ir.dekot.kavosh.data.model.components.GpuInfo
 import ir.dekot.kavosh.data.model.components.NetworkInfo
 import ir.dekot.kavosh.data.model.components.RamInfo
 import ir.dekot.kavosh.data.model.components.SensorInfo
+import ir.dekot.kavosh.data.model.components.SimInfo
 import ir.dekot.kavosh.data.model.components.StorageInfo
 import ir.dekot.kavosh.data.model.components.SystemInfo
 import ir.dekot.kavosh.data.model.components.ThermalInfo
@@ -23,11 +24,11 @@ import ir.dekot.kavosh.data.source.NetworkDataSource
 import ir.dekot.kavosh.data.source.NetworkToolsDataSource
 import ir.dekot.kavosh.data.source.PowerDataSource
 import ir.dekot.kavosh.data.source.SettingsDataSource
+import ir.dekot.kavosh.data.source.SimDataSource
 import ir.dekot.kavosh.data.source.SocDataSource
 import ir.dekot.kavosh.data.source.SystemDataSource
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,7 +41,8 @@ class DeviceInfoRepository @Inject constructor(
     private val settingsDataSource: SettingsDataSource,
     private val networkDataSource: NetworkDataSource, // <-- تزریق سورس جدید
     private val cameraDataSource: CameraDataSource, // <-- تزریق سورس جدید
-    private val networkToolsDataSource: NetworkToolsDataSource // <-- تزریق سورس جدید
+    private val networkToolsDataSource: NetworkToolsDataSource, // <-- تزریق سورس جدید
+    private val simDataSource: SimDataSource // <-- تزریق سورس جدید
 ) {
 
     // --- SettingsDataSource ---
@@ -121,4 +123,7 @@ class DeviceInfoRepository @Inject constructor(
     }
 
     fun pingHost(host: String): Flow<String> = networkToolsDataSource.pingHost(host)
+
+    // --- متد جدید برای اطلاعات سیم‌کارت ---
+    fun getSimInfo(): List<SimInfo> = simDataSource.getSimInfo()
 }

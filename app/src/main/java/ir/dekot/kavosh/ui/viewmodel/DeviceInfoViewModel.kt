@@ -19,7 +19,6 @@ import ir.dekot.kavosh.data.model.components.ThermalInfo
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
 import ir.dekot.kavosh.domain.sensor.SensorHandler
 import ir.dekot.kavosh.domain.sensor.SensorState
-import ir.dekot.kavosh.ui.navigation.Screen
 import ir.dekot.kavosh.util.formatSizeOrSpeed
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -158,6 +157,7 @@ class DeviceInfoViewModel @Inject constructor(
         val systemInfoJob = viewModelScope.async { repository.getSystemInfo() }
         val sensorInfoJob = viewModelScope.async { repository.getSensorInfo(activity) }
         val cameraInfoJob = viewModelScope.async { repository.getCameraInfoList() }
+        val simInfoJob = viewModelScope.async { repository.getSimInfo() } // <-- job جدید
 
         val displayInfo = repository.getDisplayInfo(activity)
         val thermalInfo = repository.getThermalInfo()
@@ -171,6 +171,7 @@ class DeviceInfoViewModel @Inject constructor(
             system = systemInfoJob.await(),
             sensors = sensorInfoJob.await(),
             cameras = cameraInfoJob.await(),
+            simCards = simInfoJob.await(), // <-- افزودن نتیجه به مدل
             display = displayInfo,
             thermal = thermalInfo,
             network = networkInfo
@@ -311,5 +312,15 @@ class DeviceInfoViewModel @Inject constructor(
         }
         combinedList.addAll(deviceInfo.value.thermal)
         _thermalDetails.value = combinedList
+    }
+    /**
+     * اطلاعات سیم‌کارت را به صورت جداگانه واکشی کرده و وضعیت برنامه را به‌روز می‌کند.
+     * این تابع برای استفاده پس از اعطای مجوز طراحی شده است.
+     */
+    fun fetchSimInfo() {
+        viewModelScope.launch {
+            val simCards = repository.getSimInfo()
+            _deviceInfo.value = _deviceInfo.value.copy(simCards = simCards)
+        }
     }
 }

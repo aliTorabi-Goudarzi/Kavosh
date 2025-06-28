@@ -200,4 +200,13 @@
     <string name="red_gradient">Red</string>
     <string name="green_gradient">Green</string>
     <string name="blue_gradient">Blue</string>
+    <string name="category_sim">SIM Card(s)</string>
+    <string name="sim_slot_index">SIM Slot %d</string>
+    <string name="sim_carrier">Carrier</string>
+    <string name="sim_country_iso">Country (ISO)</string>
+    <string name="sim_network_code">Network Code (MNC)</string>
+    <string name="sim_country_code">Country Code (MCC)</string>
+    <string name="sim_is_roaming">Network Roaming</string>
+    <string name="sim_data_roaming">Data Roaming</string>
+    <string name="permission_required_sim">READ_PHONE_STATE permission is required to access SIM card information.</string>
 </resources>

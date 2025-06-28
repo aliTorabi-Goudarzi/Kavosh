@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.NetworkWifi
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.filled.SimCard
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -69,7 +70,9 @@ class DashboardViewModel @Inject constructor(
             DashboardItem(InfoCategory.SENSORS, R.string.category_sensors, Icons.Default.Sensors),
             DashboardItem(InfoCategory.THERMAL, R.string.category_thermal, Icons.Default.Thermostat),
             DashboardItem(InfoCategory.NETWORK, R.string.category_network, Icons.Default.NetworkWifi),
-            DashboardItem(InfoCategory.CAMERA, R.string.category_camera, Icons.Default.PhotoCamera)
+            DashboardItem(InfoCategory.CAMERA, R.string.category_camera, Icons.Default.PhotoCamera),
+            DashboardItem(InfoCategory.SIM, R.string.category_sim, Icons.Default.SimCard) // <-- آیتم جدید
+
         )
     }
 

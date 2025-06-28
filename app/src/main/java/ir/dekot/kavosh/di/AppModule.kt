@@ -15,6 +15,12 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
+    @Provides
+    @Singleton
+    fun provideSimDataSource(@ApplicationContext context: Context): SimDataSource {
+        return SimDataSource(context)
+    }
+
     /**
      * این تابع به Hilt یاد می‌دهد که چگونه یک نمونه از DeviceInfoRepository بسازد.
      * Hilt به صورت خودکار تمام پارامترهای این تابع (DataSourceها) را فراهم می‌کند.
@@ -47,6 +53,7 @@ object AppModule {
         memoryDataSource: MemoryDataSource,
         settingsDataSource: SettingsDataSource,
         networkDataSource: NetworkDataSource, // <-- اضافه کردن به پارامترها
+        simDataSource: SimDataSource, // <-- تزریق جدید
         cameraDataSource: CameraDataSource, // <-- اضافه کردن به پارامترها
         // **اصلاح ۲: افزودن وابستگی جدید به پارامترها**
         networkToolsDataSource: NetworkToolsDataSource
@@ -60,7 +67,8 @@ object AppModule {
             networkDataSource, // <-- پاس دادن به constructor
             cameraDataSource,// <-- پاس دادن به constructor
             // **اصلاح ۳: پاس دادن وابستگی جدید به constructor**
-            networkToolsDataSource
+            networkToolsDataSource,
+            simDataSource // <-- پاس دادن به constructor
         )
     }
 
