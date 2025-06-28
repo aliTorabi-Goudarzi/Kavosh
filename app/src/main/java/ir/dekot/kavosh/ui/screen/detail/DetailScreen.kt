@@ -170,7 +170,10 @@ fun DetailScreen(
                     InfoCategory.SENSORS -> SensorsPage(deviceInfoViewModel = viewModel, navigationViewModel = navigationViewModel)
                     InfoCategory.THERMAL -> ThermalPage(viewModel = viewModel)
                     InfoCategory.CAMERA -> CameraPage(viewModel = viewModel)
-                    InfoCategory.NETWORK -> NetworkPage(viewModel = viewModel)
+                    InfoCategory.NETWORK -> NetworkPage(
+                        viewModel = viewModel,
+                        onNavigateToTools = { navigationViewModel.navigateToNetworkTools() } // <-- پاس دادن رویداد
+                    )
                 }
             }
         }

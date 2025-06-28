@@ -13,6 +13,7 @@ import ir.dekot.kavosh.ui.screen.about.AboutScreen
 import ir.dekot.kavosh.ui.screen.dashboard.DashboardScreen
 import ir.dekot.kavosh.ui.screen.dashboard.EditDashboardScreen
 import ir.dekot.kavosh.ui.screen.detail.DetailScreen
+import ir.dekot.kavosh.ui.screen.networktools.NetworkToolsScreen
 import ir.dekot.kavosh.ui.screen.sensordetail.SensorDetailScreen
 import ir.dekot.kavosh.ui.screen.settings.SettingsScreen
 import ir.dekot.kavosh.ui.screen.splash.SplashScreen
@@ -32,45 +33,10 @@ fun DeviceInspectorApp(
 ) {
     val currentScreen by navigationViewModel.currentScreen.collectAsState()
 
-    LaunchedEffect(currentScreen) {
-        when (val screen = currentScreen) {
-            is Screen.Detail -> deviceInfoViewModel.startPollingForCategory(screen.category)
-            is Screen.SensorDetail -> deviceInfoViewModel.registerSensorListener(screen.sensorType)
-            else -> {
-                deviceInfoViewModel.stopAllPolling()
-                deviceInfoViewModel.unregisterSensorListener()
-            }
-        }
-    }
+    // ... (کد LaunchedEffect)
 
-    // **اصلاح کلیدی در منطق BackHandler ها**
-    when (val screen = currentScreen) {
-        is Screen.Splash -> { /* دکمه بازگشت در اسپلش غیرفعال است */
-        }
+    // **اصلاح ۱: حذف BackHandler از اینجا و انتقال به داخل case ها**
 
-        is Screen.Dashboard -> { /* در داشبورد، بازگشت به معنی خروج از برنامه است */
-        }
-
-        is Screen.Detail, is Screen.Settings, is Screen.About, is Screen.SensorDetail -> {
-            // برای تمام این صفحات، رفتار بازگشت یکسان است
-            BackHandler { navigationViewModel.navigateBack() }
-        }
-
-        is Screen.EditDashboard -> {
-            // رفتار خاص برای صفحه ویرایش داشبورد
-            BackHandler {
-                dashboardViewModel.loadDashboardItems() // آیتم‌ها را قبل از بازگشت رفرش کن
-                navigationViewModel.navigateBack()
-            }
-        }
-
-        is Screen.CpuStressTest -> {
-            BackHandler { navigationViewModel.navigateBack() }
-            CpuStressTestScreen(onBackClick = { navigationViewModel.navigateBack() })
-        }
-    }
-
-    // بدنه اصلی نمایش صفحات (بدون تغییر زیاد)
     when (val screen = currentScreen) {
         is Screen.Splash -> SplashScreen(onStartScan = onStartScan, viewModel = deviceInfoViewModel)
 
@@ -83,41 +49,65 @@ fun DeviceInspectorApp(
             onEditDashboardClick = { navigationViewModel.navigateToEditDashboard() }
         )
 
-        is Screen.Settings -> SettingsScreen(
-            viewModel = settingsViewModel,
-            onNavigateToAbout = { navigationViewModel.navigateToAbout() },
-            onBackClick = { navigationViewModel.navigateBack() }
-        )
+        is Screen.Settings -> {
+            BackHandler { navigationViewModel.navigateBack() }
+            SettingsScreen(
+                viewModel = settingsViewModel,
+                onNavigateToAbout = { navigationViewModel.navigateToAbout() },
+                onBackClick = { navigationViewModel.navigateBack() }
+            )
+        }
 
-        is Screen.Detail -> DetailScreen(
-            category = screen.category,
-            viewModel = deviceInfoViewModel,
-            navigationViewModel = navigationViewModel,
-            onBackClick = { navigationViewModel.navigateBack() }
-        )
+        is Screen.Detail -> {
+            BackHandler { navigationViewModel.navigateBack() }
+            DetailScreen(
+                category = screen.category,
+                viewModel = deviceInfoViewModel,
+                navigationViewModel = navigationViewModel,
+                onBackClick = { navigationViewModel.navigateBack() }
+            )
+        }
 
-        is Screen.EditDashboard -> EditDashboardScreen(
-            viewModel = dashboardViewModel,
-            onBackClick = {
+        is Screen.EditDashboard -> {
+            BackHandler {
                 dashboardViewModel.loadDashboardItems()
                 navigationViewModel.navigateBack()
             }
-        )
+            EditDashboardScreen(
+                viewModel = dashboardViewModel,
+                onBackClick = {
+                    dashboardViewModel.loadDashboardItems()
+                    navigationViewModel.navigateBack()
+                }
+            )
+        }
 
-        is Screen.About -> AboutScreen(
-            viewModel = settingsViewModel,
-            onBackClick = { navigationViewModel.navigateBack() }
-        )
-
-        is Screen.SensorDetail -> SensorDetailScreen(
-            viewModel = deviceInfoViewModel,
-            sensorType = screen.sensorType,
-            onBackClick = { navigationViewModel.navigateBack() }
-        )
+        is Screen.About -> {
+            BackHandler { navigationViewModel.navigateBack() }
+            AboutScreen(
+                viewModel = settingsViewModel,
+                onBackClick = { navigationViewModel.navigateBack() }
+            )
+        }
 
         is Screen.CpuStressTest -> {
             BackHandler { navigationViewModel.navigateBack() }
             CpuStressTestScreen(onBackClick = { navigationViewModel.navigateBack() })
+        }
+
+        is Screen.SensorDetail -> {
+            BackHandler { navigationViewModel.navigateBack() }
+            SensorDetailScreen(
+                viewModel = deviceInfoViewModel,
+                sensorType = screen.sensorType,
+                onBackClick = { navigationViewModel.navigateBack() }
+            )
+        }
+
+        // **اصلاح ۲: جایگزینی TODO() با پیاده‌سازی صحیح**
+        is Screen.NetworkTools -> {
+            BackHandler { navigationViewModel.navigateBack() }
+            NetworkToolsScreen(onBackClick = { navigationViewModel.navigateBack() })
         }
     }
 }

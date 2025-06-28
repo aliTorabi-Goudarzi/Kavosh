@@ -15,15 +15,19 @@ import ir.dekot.kavosh.data.model.components.SensorInfo
 import ir.dekot.kavosh.data.model.components.StorageInfo
 import ir.dekot.kavosh.data.model.components.SystemInfo
 import ir.dekot.kavosh.data.model.components.ThermalInfo
+import ir.dekot.kavosh.data.model.components.WifiScanResult
 import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.data.source.CameraDataSource
 import ir.dekot.kavosh.data.source.MemoryDataSource
 import ir.dekot.kavosh.data.source.NetworkDataSource
+import ir.dekot.kavosh.data.source.NetworkToolsDataSource
 import ir.dekot.kavosh.data.source.PowerDataSource
 import ir.dekot.kavosh.data.source.SettingsDataSource
 import ir.dekot.kavosh.data.source.SocDataSource
 import ir.dekot.kavosh.data.source.SystemDataSource
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,7 +39,8 @@ class DeviceInfoRepository @Inject constructor(
     private val memoryDataSource: MemoryDataSource,
     private val settingsDataSource: SettingsDataSource,
     private val networkDataSource: NetworkDataSource, // <-- تزریق سورس جدید
-    private val cameraDataSource: CameraDataSource // <-- تزریق سورس جدید
+    private val cameraDataSource: CameraDataSource, // <-- تزریق سورس جدید
+    private val networkToolsDataSource: NetworkToolsDataSource // <-- تزریق سورس جدید
 ) {
 
     // --- SettingsDataSource ---
@@ -102,5 +107,18 @@ class DeviceInfoRepository @Inject constructor(
     fun saveDeviceInfoCache(deviceInfo: DeviceInfo) = settingsDataSource.saveDeviceInfoCache(deviceInfo)
     fun getDeviceInfoCache(): DeviceInfo? = settingsDataSource.getDeviceInfoCache()
 
+    // **اصلاح: این تابع حالا suspend است**
+    suspend fun getWifiScanResults(): List<WifiScanResult> {
+        return networkToolsDataSource.scanForWifiNetworks().map {
+            WifiScanResult(
+                ssid = it.SSID.ifEmpty { "(Hidden Network)" },
+                bssid = it.BSSID,
+                capabilities = it.capabilities,
+                level = it.level,
+                frequency = it.frequency
+            )
+        }
+    }
 
+    fun pingHost(host: String): Flow<String> = networkToolsDataSource.pingHost(host)
 }

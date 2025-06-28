@@ -12,4 +12,6 @@ sealed class Screen {
     data class SensorDetail(val sensorType: Int) : Screen()
 
     data object CpuStressTest : Screen() // <-- صفحه جدید
+
+    data object NetworkTools : Screen() // <-- صفحه جدید
 }

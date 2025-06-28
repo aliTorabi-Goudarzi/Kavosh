@@ -96,4 +96,8 @@ class NavigationViewModel @Inject constructor(
     fun navigateToCpuStressTest() {
         navigateTo(Screen.CpuStressTest)
     }
+
+    fun navigateToNetworkTools() {
+        navigateTo(Screen.NetworkTools)
+    }
 }

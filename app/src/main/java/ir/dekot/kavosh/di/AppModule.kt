@@ -25,6 +25,13 @@ object AppModule {
         return NetworkDataSource(context)
     }
 
+    // **اصلاح ۱: افزودن provider برای سورس جدید**
+    @Provides
+    @Singleton
+    fun provideNetworkToolsDataSource(@ApplicationContext context: Context): NetworkToolsDataSource {
+        return NetworkToolsDataSource(context)
+    }
+
     @Provides
     @Singleton
     fun provideCameraDataSource(@ApplicationContext context: Context): CameraDataSource {
@@ -40,7 +47,9 @@ object AppModule {
         memoryDataSource: MemoryDataSource,
         settingsDataSource: SettingsDataSource,
         networkDataSource: NetworkDataSource, // <-- اضافه کردن به پارامترها
-        cameraDataSource: CameraDataSource // <-- اضافه کردن به پارامترها
+        cameraDataSource: CameraDataSource, // <-- اضافه کردن به پارامترها
+        // **اصلاح ۲: افزودن وابستگی جدید به پارامترها**
+        networkToolsDataSource: NetworkToolsDataSource
     ): DeviceInfoRepository {
         return DeviceInfoRepository(
             powerDataSource,
@@ -49,7 +58,9 @@ object AppModule {
             memoryDataSource,
             settingsDataSource,
             networkDataSource, // <-- پاس دادن به constructor
-            cameraDataSource // <-- پاس دادن به constructor
+            cameraDataSource,// <-- پاس دادن به constructor
+            // **اصلاح ۳: پاس دادن وابستگی جدید به constructor**
+            networkToolsDataSource
         )
     }
 
