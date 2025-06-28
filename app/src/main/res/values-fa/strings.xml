@@ -193,4 +193,13 @@
     <string name="live_chart_title">نمودار داده‌های زنده</string>
     <string name="live_values_title">مقادیر زنده وکتور</string>
     <string name="amoled">مشکی خالص (AMOLED)</string>
+    <string name="display_test_title">تست صفحه‌نمایش</string>
+    <string name="display_test_description">ابزارهایی برای بررسی سلامت و کیفیت صفحه‌نمایش شما.</string>
+    <string name="dead_pixel_test">تست پیکسل سوخته</string>
+    <string name="color_banding_test">تست گرادیان رنگ</string>
+    <string name="dead_pixel_instruction">برای تغییر رنگ (مشکی، سفید، قرمز، سبز، آبی) روی هر جای صفحه ضربه بزنید. به دنبال پیکسل‌هایی باشید که با رنگ فعلی مطابقت ندارند.</string>
+    <string name="grayscale_gradient">طیف خاکستری</string>
+    <string name="red_gradient">طیف قرمز</string>
+    <string name="green_gradient">طیف سبز</string>
+    <string name="blue_gradient">طیف آبی</string>
 </resources>

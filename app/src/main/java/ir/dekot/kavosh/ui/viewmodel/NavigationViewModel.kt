@@ -100,4 +100,8 @@ class NavigationViewModel @Inject constructor(
     fun navigateToNetworkTools() {
         navigateTo(Screen.NetworkTools)
     }
+
+    fun navigateToDisplayTest() {
+        navigateTo(Screen.DisplayTest)
+    }
 }

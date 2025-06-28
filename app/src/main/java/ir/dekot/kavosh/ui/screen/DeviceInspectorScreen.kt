@@ -13,6 +13,7 @@ import ir.dekot.kavosh.ui.screen.about.AboutScreen
 import ir.dekot.kavosh.ui.screen.dashboard.DashboardScreen
 import ir.dekot.kavosh.ui.screen.dashboard.EditDashboardScreen
 import ir.dekot.kavosh.ui.screen.detail.DetailScreen
+import ir.dekot.kavosh.ui.screen.displaytest.DisplayTestScreen
 import ir.dekot.kavosh.ui.screen.networktools.NetworkToolsScreen
 import ir.dekot.kavosh.ui.screen.sensordetail.SensorDetailScreen
 import ir.dekot.kavosh.ui.screen.settings.SettingsScreen
@@ -108,6 +109,10 @@ fun DeviceInspectorApp(
         is Screen.NetworkTools -> {
             BackHandler { navigationViewModel.navigateBack() }
             NetworkToolsScreen(onBackClick = { navigationViewModel.navigateBack() })
+        }
+        is Screen.DisplayTest -> {
+            BackHandler { navigationViewModel.navigateBack() }
+            DisplayTestScreen(onBackClick = { navigationViewModel.navigateBack() })
         }
     }
 }

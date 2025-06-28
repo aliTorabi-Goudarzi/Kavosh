@@ -14,4 +14,6 @@ sealed class Screen {
     data object CpuStressTest : Screen() // <-- صفحه جدید
 
     data object NetworkTools : Screen() // <-- صفحه جدید
+
+    data object DisplayTest : Screen() // <-- صفحه جدید
 }

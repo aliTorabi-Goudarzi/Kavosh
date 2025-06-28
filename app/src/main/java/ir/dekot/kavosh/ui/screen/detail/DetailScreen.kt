@@ -164,7 +164,11 @@ fun DetailScreen(
                         // **پاس دادن رویداد کلیک**
                         onNavigateToStressTest = { navigationViewModel.navigateToCpuStressTest() }
                     )
-                    InfoCategory.DEVICE -> DevicePage(deviceInfoViewModel = viewModel, storageViewModel = storageViewModel)
+                    InfoCategory.DEVICE -> DevicePage(
+                        deviceInfoViewModel = viewModel,
+                        storageViewModel = storageViewModel,
+                        onNavigateToDisplayTest = { navigationViewModel.navigateToDisplayTest() }
+                    )
                     InfoCategory.SYSTEM -> SystemPage(viewModel = viewModel)
                     InfoCategory.BATTERY -> BatteryPage(viewModel = viewModel)
                     InfoCategory.SENSORS -> SensorsPage(deviceInfoViewModel = viewModel, navigationViewModel = navigationViewModel)

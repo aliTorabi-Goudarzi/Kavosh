@@ -191,4 +191,13 @@
     <string name="live_chart_title">Live Data Chart</string>
     <string name="live_values_title">Live Vector Values</string>
     <string name="amoled">AMOLED (Pure Black)</string>
+    <string name="display_test_title">Display Test</string>
+    <string name="display_test_description">Tools to check the health and quality of your screen.</string>
+    <string name="dead_pixel_test">Dead Pixel Test</string>
+    <string name="color_banding_test">Color Banding Test</string>
+    <string name="dead_pixel_instruction">Tap anywhere on the screen to cycle through colors (Black, White, Red, Green, Blue). Look for any pixels that don\'t match the current color.</string>
+    <string name="grayscale_gradient">Grayscale</string>
+    <string name="red_gradient">Red</string>
+    <string name="green_gradient">Green</string>
+    <string name="blue_gradient">Blue</string>
 </resources>
