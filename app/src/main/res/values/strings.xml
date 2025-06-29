@@ -209,4 +209,14 @@
     <string name="sim_is_roaming">Network Roaming</string>
     <string name="sim_data_roaming">Data Roaming</string>
     <string name="permission_required_sim">READ_PHONE_STATE permission is required to access SIM card information.</string>
+    <string name="battery_health_details">Health and Capacity</string>
+    <string name="battery_charge_stats">Charging / Discharging</string>
+    <string name="battery_capacity_design">Design Capacity</string>
+    <string name="battery_capacity_actual">Actual Capacity (Estimated)</string>
+    <string name="battery_health_estimated">Estimated Health</string>
+    <string name="battery_charge_current">Current (Now)</string>
+    <string name="battery_charge_power">Power (Now)</string>
+    <string name="battery_unit_mah">%d mAh</string>
+    <string name="battery_unit_ma">%d mA</string>
+    <string name="battery_unit_watt">%.2f W</string>
 </resources>

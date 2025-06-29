@@ -211,4 +211,14 @@
     <string name="sim_is_roaming">رومینگ شبکه</string>
     <string name="sim_data_roaming">رومینگ داده</string>
     <string name="permission_required_sim">برای دسترسی به اطلاعات سیم‌کارت، مجوز READ_PHONE_STATE لازم است.</string>
+    <string name="battery_health_details">سلامت و ظرفیت</string>
+    <string name="battery_charge_stats">شارژ / تخلیه</string>
+    <string name="battery_capacity_design">ظرفیت طراحی شده</string>
+    <string name="battery_capacity_actual">ظرفیت واقعی (تخمینی)</string>
+    <string name="battery_health_estimated">سلامت تخمینی</string>
+    <string name="battery_charge_current">جریان لحظه‌ای</string>
+    <string name="battery_charge_power">توان لحظه‌ای</string>
+    <string name="battery_unit_mah">%d میلی‌آمپر ساعت</string>
+    <string name="battery_unit_ma">%d میلی‌آمپر</string>
+    <string name="battery_unit_watt">%.2f وات</string>
 </resources>

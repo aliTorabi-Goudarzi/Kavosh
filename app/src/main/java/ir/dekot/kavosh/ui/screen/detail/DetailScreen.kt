@@ -19,6 +19,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -131,6 +133,22 @@ fun DetailScreen(
             }
         )
     }
+
+    // *** شروع اصلاحات کلیدی ***
+
+    // این افکت با ورود به صفحه اجرا شده و polling را آغاز می‌کند
+    LaunchedEffect(key1 = category) {
+        viewModel.startPollingForCategory(category)
+    }
+
+    // این افکت با خروج از صفحه اجرا شده و تمام polling ها را متوقف می‌کند
+    DisposableEffect(key1 = Unit) {
+        onDispose {
+            viewModel.stopAllPolling()
+        }
+    }
+
+    // *** پایان اصلاحات کلیدی ***
 
 
     Scaffold(
