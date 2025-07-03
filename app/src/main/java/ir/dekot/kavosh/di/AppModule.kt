@@ -46,6 +46,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideAppsDataSource(@ApplicationContext context: Context): AppsDataSource {
+        return AppsDataSource(context)
+    }
+
+    @Provides
+    @Singleton
     fun provideDeviceInfoRepository(
         powerDataSource: PowerDataSource,
         socDataSource: SocDataSource,
@@ -56,7 +62,8 @@ object AppModule {
         simDataSource: SimDataSource, // <-- تزریق جدید
         cameraDataSource: CameraDataSource, // <-- اضافه کردن به پارامترها
         // **اصلاح ۲: افزودن وابستگی جدید به پارامترها**
-        networkToolsDataSource: NetworkToolsDataSource
+        networkToolsDataSource: NetworkToolsDataSource,
+        appsDataSource: AppsDataSource // <-- اضافه کردن به پارامترها
     ): DeviceInfoRepository {
         return DeviceInfoRepository(
             powerDataSource,
@@ -68,7 +75,8 @@ object AppModule {
             cameraDataSource,// <-- پاس دادن به constructor
             // **اصلاح ۳: پاس دادن وابستگی جدید به constructor**
             networkToolsDataSource,
-            simDataSource // <-- پاس دادن به constructor
+            simDataSource, // <-- پاس دادن به constructor
+            appsDataSource // <-- پاس دادن به constructor
         )
     }
 

@@ -2,6 +2,7 @@ package ir.dekot.kavosh.ui.screen.detail
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -35,6 +36,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import ir.dekot.kavosh.R
+import ir.dekot.kavosh.ui.screen.detail.pages.AppsPage
 import ir.dekot.kavosh.ui.screen.detail.pages.BatteryPage
 import ir.dekot.kavosh.ui.screen.detail.pages.CameraPage
 import ir.dekot.kavosh.ui.screen.detail.pages.DevicePage
@@ -90,6 +92,7 @@ fun DetailScreen(
     // **اصلاح کلیدی: دریافت مستقیم StorageViewModel با Hilt**
     storageViewModel: StorageViewModel = hiltViewModel()
 ) {
+    val appsLoadingState by viewModel.appsLoadingState.collectAsState()
     val deviceInfo by viewModel.deviceInfo.collectAsState()
     val batteryInfo by viewModel.batteryInfo.collectAsState()
     val thermalDetails by viewModel.thermalDetails.collectAsState()
@@ -97,6 +100,9 @@ fun DetailScreen(
     val liveGpuLoad by viewModel.liveGpuLoad.collectAsState()
     val downloadSpeed by viewModel.downloadSpeed.collectAsState()
     val uploadSpeed by viewModel.uploadSpeed.collectAsState()
+    // تمام وضعیت‌های مورد نیاز در اینجا collect می‌شوند
+    val userApps by viewModel.userApps.collectAsState()
+    val systemApps by viewModel.systemApps.collectAsState()
 
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
@@ -106,9 +112,17 @@ fun DetailScreen(
     var showCopyDialog by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
 
+    // وقتی کاربر وارد صفحه می‌شود، درخواست بارگذاری را ارسال کن
+    LaunchedEffect(category) {
+        if (category == InfoCategory.APPS) {
+            viewModel.loadAppsListIfNeeded()
+        }
+    }
+
     if (showCopyDialog || showShareDialog) {
         // *** تغییر کلیدی: پاس دادن context ***
-        val itemsToSelect = ReportFormatter.getCategoryData(context, category, deviceInfo, batteryInfo)
+        val itemsToSelect =
+            ReportFormatter.getCategoryData(context, category, deviceInfo, batteryInfo)
 
         InfoSelectionDialog(
             onDismissRequest = {
@@ -116,8 +130,12 @@ fun DetailScreen(
                 showShareDialog = false
             },
             itemsToSelect = itemsToSelect,
-            title = if (showCopyDialog) stringResource(R.string.copy_selection_title) else stringResource(R.string.share_selection_title),
-            confirmButtonText = if (showCopyDialog) stringResource(R.string.copy_selection_button) else stringResource(R.string.share_selection_button),
+            title = if (showCopyDialog) stringResource(R.string.copy_selection_title) else stringResource(
+                R.string.share_selection_title
+            ),
+            confirmButtonText = if (showCopyDialog) stringResource(R.string.copy_selection_button) else stringResource(
+                R.string.share_selection_button
+            ),
             onConfirm = { selections ->
                 val text = buildSelectedItemsString(itemsToSelect, selections)
                 if (text.isNotBlank()) {
@@ -157,47 +175,69 @@ fun DetailScreen(
             TopAppBar(
                 // *** تغییر کلیدی: استفاده از تابع الحاقی برای عنوان ***
                 title = { Text(category.localizedTitle()) },
-                navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)) } },
-                actions = {
-                    IconButton(onClick = { showCopyDialog = true }) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.copy))
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
+                        )
                     }
-                    IconButton(onClick = { showShareDialog = true }) {
-                        Icon(Icons.Default.Share, contentDescription = stringResource(R.string.share))
+                },
+                /**
+                 * کامنت: یک شرط ساده اضافه شد تا آیکون‌های کپی و اشتراک‌گذاری
+                 * فقط برای صفحاتی غیر از "برنامه‌ها" نمایش داده شوند.
+                 */
+                actions = {
+                    if (category != InfoCategory.APPS) {
+                        IconButton(onClick = { showCopyDialog = true }) {
+                            Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.copy))
+                        }
+                        IconButton(onClick = { showShareDialog = true }) {
+                            Icon(Icons.Default.Share, contentDescription = stringResource(R.string.share))
+                        }
                     }
                 }
             )
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp)
-        ) {
-            item {
-                when (category) {
-                    InfoCategory.SOC -> SocPage(
-                        viewModel = viewModel,
-                        // **پاس دادن رویداد کلیک**
-                        onNavigateToStressTest = { navigationViewModel.navigateToCpuStressTest() }
-                    )
-                    InfoCategory.DEVICE -> DevicePage(
-                        deviceInfoViewModel = viewModel,
-                        storageViewModel = storageViewModel,
-                        onNavigateToDisplayTest = { navigationViewModel.navigateToDisplayTest() }
-                    )
-                    InfoCategory.SYSTEM -> SystemPage(viewModel = viewModel)
-                    InfoCategory.BATTERY -> BatteryPage(viewModel = viewModel)
-                    InfoCategory.SENSORS -> SensorsPage(deviceInfoViewModel = viewModel, navigationViewModel = navigationViewModel)
-                    InfoCategory.THERMAL -> ThermalPage(viewModel = viewModel)
-                    InfoCategory.CAMERA -> CameraPage(viewModel = viewModel)
-                    InfoCategory.NETWORK -> NetworkPage(
-                        viewModel = viewModel,
-                        onNavigateToTools = { navigationViewModel.navigateToNetworkTools() } // <-- پاس دادن رویداد
-                    )
-                    InfoCategory.SIM -> SimPage(viewModel = viewModel)
+        // **کامنت: برای دسته APPS، دیگر از LazyColumn استفاده نمی‌کنیم چون صفحه خودش اسکرول دارد.**
+        if (category == InfoCategory.APPS) {
+            Box(modifier = Modifier.padding(paddingValues)) {
+                AppsPage(viewModel = viewModel)
+            }
+        } else {
+            // برای سایر صفحات، از LazyColumn استفاده می‌کنیم تا اسکرول داشته باشند
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(vertical = 16.dp)
+            ) {
+                item {
+                    when (category) {
+                        InfoCategory.SOC -> SocPage(
+                            viewModel,
+                            onNavigateToStressTest = { navigationViewModel.navigateToCpuStressTest() })
+
+                        InfoCategory.DEVICE -> DevicePage(
+                            viewModel,
+                            storageViewModel,
+                            onNavigateToDisplayTest = { navigationViewModel.navigateToDisplayTest() })
+
+                        InfoCategory.SYSTEM -> SystemPage(viewModel)
+                        InfoCategory.BATTERY -> BatteryPage(viewModel)
+                        InfoCategory.SENSORS -> SensorsPage(viewModel, navigationViewModel)
+                        InfoCategory.THERMAL -> ThermalPage(viewModel)
+                        InfoCategory.CAMERA -> CameraPage(viewModel)
+                        InfoCategory.NETWORK -> NetworkPage(
+                            viewModel,
+                            onNavigateToTools = { navigationViewModel.navigateToNetworkTools() })
+
+                        InfoCategory.SIM -> SimPage(viewModel)
+                        InfoCategory.APPS -> { /* Handled above */
+                        }
+                    }
                 }
             }
         }

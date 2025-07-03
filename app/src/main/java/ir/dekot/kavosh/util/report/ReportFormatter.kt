@@ -125,6 +125,8 @@ object ReportFormatter {
                         )
                     }
                 }
+
+            InfoCategory.APPS -> TODO()
         }.filter { it.first.isNotBlank() || it.second.isNotBlank() }
     }
 }

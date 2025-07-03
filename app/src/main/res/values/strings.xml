@@ -219,4 +219,11 @@
     <string name="battery_unit_mah">%d mAh</string>
     <string name="battery_unit_ma">%d mA</string>
     <string name="battery_unit_watt">%.2f W</string>
+    <string name="category_apps">Apps</string>
+    <string name="apps_system_apps">System Apps</string>
+    <string name="apps_user_apps">User Apps</string>
+    <string name="app_version">Version: %1$s (%2$d)</string>
+    <string name="app_installed_on">Installed on: %s</string>
+    <string name="app_permissions">Permissions</string>
+    <string name="app_no_permissions">No permissions requested.</string>
 </resources>

@@ -13,6 +13,7 @@ import ir.dekot.kavosh.data.model.components.CameraInfo // <-- ایمپورت ج
 import ir.dekot.kavosh.data.model.components.NetworkInfo // <-- ایمپورت جدید
 import ir.dekot.kavosh.data.model.components.SimInfo
 import kotlinx.serialization.Serializable
+import ir.dekot.kavosh.data.model.components.AppInfo // <-- ایمپورت جدید
 
 @Serializable
 data class DeviceInfo(
@@ -26,6 +27,7 @@ data class DeviceInfo(
     val sensors: List<SensorInfo> = emptyList(),
     val network: NetworkInfo = NetworkInfo(), // <-- این خط را اضافه کنید
     val cameras: List<CameraInfo> = emptyList(), // <-- این خط را اضافه کنید
-    val simCards: List<SimInfo> = emptyList() // <-- پراپرتی جدید
+    val simCards: List<SimInfo> = emptyList(), // <-- پراپرتی جدید
+    val apps: List<AppInfo> = emptyList() // <-- پراپرتی جدید برای لیست برنامه‌ها
 )
 // این فایل تمام کلاس‌های داده‌ای را که برای نمایش اطلاعات نیاز داریم، نگه می‌دارد.

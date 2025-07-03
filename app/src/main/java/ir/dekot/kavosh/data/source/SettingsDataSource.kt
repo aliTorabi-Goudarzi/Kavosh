@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.dekot.kavosh.data.model.DeviceInfo
+import ir.dekot.kavosh.data.model.components.AppInfo
 import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import kotlinx.serialization.json.Json
@@ -29,6 +30,33 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
         const val KEY_DYNAMIC_THEME_ENABLED = "dynamic_theme_enabled"
         // کلید جدید برای زبان
         const val KEY_APP_LANGUAGE = "app_language"
+        const val KEY_USER_APPS_CACHE = "user_apps_cache"
+        const val KEY_SYSTEM_APPS_CACHE = "system_apps_cache"
+        const val KEY_PACKAGE_COUNT = "package_count"
+    }
+
+    // --- متدهای جدید برای کش برنامه‌ها ---
+
+    fun saveAppsCache(userApps: List<AppInfo>, systemApps: List<AppInfo>, count: Int) {
+        prefs.edit {
+            putString(KEY_USER_APPS_CACHE, Json.encodeToString(userApps))
+            putString(KEY_SYSTEM_APPS_CACHE, Json.encodeToString(systemApps))
+            putInt(KEY_PACKAGE_COUNT, count)
+        }
+    }
+
+    fun getUserAppsCache(): List<AppInfo>? {
+        val jsonString = prefs.getString(KEY_USER_APPS_CACHE, null)
+        return jsonString?.let { Json.decodeFromString<List<AppInfo>>(it) }
+    }
+
+    fun getSystemAppsCache(): List<AppInfo>? {
+        val jsonString = prefs.getString(KEY_SYSTEM_APPS_CACHE, null)
+        return jsonString?.let { Json.decodeFromString<List<AppInfo>>(it) }
+    }
+
+    fun getPackageCountCache(): Int {
+        return prefs.getInt(KEY_PACKAGE_COUNT, -1)
     }
 
     // **متدهای جدید برای مدیریت کش**

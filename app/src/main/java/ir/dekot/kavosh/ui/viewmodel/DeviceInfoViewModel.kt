@@ -14,12 +14,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.DeviceInfo
+import ir.dekot.kavosh.data.model.components.AppInfo
 import ir.dekot.kavosh.data.model.components.BatteryInfo
 import ir.dekot.kavosh.data.model.components.ThermalInfo
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
 import ir.dekot.kavosh.domain.sensor.SensorHandler
 import ir.dekot.kavosh.domain.sensor.SensorState
 import ir.dekot.kavosh.util.formatSizeOrSpeed
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -36,6 +38,9 @@ sealed class ExportResult {
     data class Failure(val message: String) : ExportResult()
 }
 
+// یک enum برای مدیریت بهتر وضعیت لودینگ می‌سازیم
+enum class AppsLoadingState { IDLE, LOADING, LOADED }
+
 @HiltViewModel
 @RequiresApi(Build.VERSION_CODES.R)
 class DeviceInfoViewModel @Inject constructor(
@@ -44,9 +49,27 @@ class DeviceInfoViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
+
+    // --- State های جدید و بهینه شده برای بخش برنامه‌ها ---
+    private val _userApps = MutableStateFlow<List<AppInfo>>(emptyList())
+    val userApps: StateFlow<List<AppInfo>> = _userApps.asStateFlow()
+
+    private val _systemApps = MutableStateFlow<List<AppInfo>>(emptyList())
+    val systemApps: StateFlow<List<AppInfo>> = _systemApps.asStateFlow()
+
+    private val _appsLoadingState = MutableStateFlow(AppsLoadingState.IDLE)
+    val appsLoadingState: StateFlow<AppsLoadingState> = _appsLoadingState.asStateFlow()
+
+
+    // --- State های جدید برای بخش برنامه‌ها ---
+    private val _appsList = MutableStateFlow<List<AppInfo>>(emptyList())
+    val appsList: StateFlow<List<AppInfo>> = _appsList.asStateFlow()
+
+    private val _isAppsLoading = MutableStateFlow(false)
+    val isAppsLoading: StateFlow<Boolean> = _isAppsLoading.asStateFlow()
+
     val sensorState: StateFlow<SensorState> = sensorHandler.sensorState
 
-    private var hasLoadedData = false
     private val _deviceInfo = MutableStateFlow(DeviceInfo())
     val deviceInfo = _deviceInfo.asStateFlow()
 
@@ -83,15 +106,11 @@ class DeviceInfoViewModel @Inject constructor(
 
 
     init {
-        // **اصلاح کلیدی در init**
-        if (repository.isFirstLaunch()) {
-            hasLoadedData = false
-        } else {
-            // اگر اجرای اول نیست، سعی کن از کش بخونی
+        // فقط تلاش می‌کنیم کش را بارگذاری کنیم.
+        if (!repository.isFirstLaunch()) {
             val cachedInfo = repository.getDeviceInfoCache()
             if (cachedInfo != null) {
                 _deviceInfo.value = cachedInfo
-                hasLoadedData = true
             }
         }
     }
@@ -128,23 +147,72 @@ class DeviceInfoViewModel @Inject constructor(
         }
     }
 
-    // --- توابع مربوط به اسکن و بارگذاری داده ---
+    /**
+     * کامنت: این تابع تنها زمانی فراخوانی می‌شود که کاربر وارد صفحه "برنامه‌ها" می‌شود.
+     */
+    /**
+     * کامنت: این تابع به طور کامل بازنویسی شده است.
+     * حالا یک بار اطلاعات را واکشی، پارتیشن‌بندی و در StateFlow های مجزا ذخیره می‌کند.
+     */
+    /**
+     * کامنت: این تابع حالا تمام کارهای سنگین خود را در یک ترد پس‌زمینه (IO) انجام می‌دهد.
+     * این کار ترد اصلی UI را آزاد نگه می‌دارد و از یخ‌زدگی انیمیشن و کندی ناوبری جلوگیری می‌کند.
+     */
+    fun loadAppsListIfNeeded() {
+        // اگر در حال لودینگ یا از قبل لود شده است، کاری نکن
+        if (_appsLoadingState.value != AppsLoadingState.IDLE) return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentCount = repository.getCurrentPackageCount()
+            val cachedCount = repository.getPackageCountCache()
+
+            // **شرط اصلی برای استفاده از کش**
+            if (currentCount == cachedCount) {
+                val cachedUserApps = repository.getUserAppsCache()
+                val cachedSystemApps = repository.getSystemAppsCache()
+
+                if (cachedUserApps != null && cachedSystemApps != null) {
+                    _userApps.value = cachedUserApps
+                    _systemApps.value = cachedSystemApps
+                    _appsLoadingState.value = AppsLoadingState.LOADED
+                    return@launch // از کش استفاده شد، عملیات پایان یافت
+                }
+            }
+
+            // **اگر کش معتبر نبود، واکشی کامل را شروع کن**
+            _appsLoadingState.value = AppsLoadingState.LOADING // StateFlow is thread-safe // postValue برای ترد پس‌زمینه
+
+            val allApps = repository.getAppsInfo()
+            val (user, system) = allApps.partition { !it.isSystemApp }
+
+            // ذخیره نتایج جدید در کش
+            repository.saveAppsCache(user, system, allApps.size)
+
+            _userApps.value = user
+            _systemApps.value = system
+            _appsLoadingState.value = AppsLoadingState.LOADED
+        }
+        }
+
+
+        // --- توابع مربوط به اسکن و بارگذاری داده ---
 
     fun loadDataForNonFirstLaunch(activity: Activity) {
         // اگر کش داریم، این متد نباید دوباره اسکن کند
-        if (repository.isFirstLaunch() || hasLoadedData) return
+        // اگر اجرای اول برنامه باشد، این تابع کاری انجام نمی‌دهد.
+        if (repository.isFirstLaunch()) return
 
-        viewModelScope.launch {
-            _isScanning.value = true
-            try {
-                _deviceInfo.value = fetchAllDeviceInfo(activity)
-                // **اصلاح کلیدی: ذخیره اطلاعات در کش**
-                repository.saveDeviceInfoCache(_deviceInfo.value)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                _isScanning.value = false
-                hasLoadedData = true
+        // **منطق جدید و کلیدی برای حل مشکل**
+        // بررسی می‌کنیم که آیا اطلاعات بارگذاری شده از کش، قدیمی است یا نه.
+        // نشانه ما برای قدیمی بودن کش، خالی بودن لیست برنامه‌هاست.
+        if (_deviceInfo.value.apps.isEmpty()) {
+            viewModelScope.launch {
+                // به صورت آرام و در پس‌زمینه، اطلاعات را مجددا واکشی می‌کنیم.
+                val freshInfo = fetchAllDeviceInfo(activity)
+                // کش را با اطلاعات جدید و کامل به‌روزرسانی می‌کنیم.
+                repository.saveDeviceInfoCache(freshInfo)
+                // وضعیت UI را با اطلاعات جدید به‌روز می‌کنیم.
+                _deviceInfo.value = freshInfo
             }
         }
     }
@@ -174,7 +242,7 @@ class DeviceInfoViewModel @Inject constructor(
             simCards = simInfoJob.await(), // <-- افزودن نتیجه به مدل
             display = displayInfo,
             thermal = thermalInfo,
-            network = networkInfo
+            network = networkInfo,
         )
     }
 
@@ -203,7 +271,7 @@ class DeviceInfoViewModel @Inject constructor(
             animationJob.join()
             dataLoadingJob.join()
             repository.setFirstLaunchCompleted()
-            hasLoadedData = true
+//            hasLoadedData = true
 
             onScanComplete() // به لایه ناوبری اطلاع می‌دهیم که اسکن تمام شد
             _isScanning.value = false

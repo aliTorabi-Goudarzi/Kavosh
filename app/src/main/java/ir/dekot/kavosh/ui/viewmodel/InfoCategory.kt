@@ -18,7 +18,8 @@ enum class InfoCategory {
     NETWORK,
     CAMERA,
 
-    SIM
+    SIM,
+    APPS
 }
 
 /**
@@ -36,6 +37,7 @@ fun InfoCategory.localizedTitle(): String {
         InfoCategory.NETWORK -> R.string.category_network
         InfoCategory.CAMERA -> R.string.category_camera
         InfoCategory.SIM -> R.string.category_sim
+        InfoCategory.APPS -> R.string.category_apps // <-- اضافه شد
     }
     return stringResource(id = resId)
 }
@@ -55,6 +57,7 @@ fun InfoCategory.getTitle(context: Context): String {
         InfoCategory.NETWORK -> R.string.category_network
         InfoCategory.CAMERA -> R.string.category_camera
         InfoCategory.SIM -> R.string.category_sim
+        InfoCategory.APPS -> R.string.category_apps // <-- اضافه شد
     }
     return context.getString(resId)
 }

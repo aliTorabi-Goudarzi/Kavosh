@@ -2,8 +2,10 @@ package ir.dekot.kavosh.data.repository
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import androidx.annotation.RequiresApi
 import ir.dekot.kavosh.data.model.DeviceInfo
+import ir.dekot.kavosh.data.model.components.AppInfo
 import ir.dekot.kavosh.data.model.components.BatteryInfo
 import ir.dekot.kavosh.data.model.components.CameraInfo
 import ir.dekot.kavosh.data.model.components.CpuInfo
@@ -31,6 +33,7 @@ import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
+import ir.dekot.kavosh.data.source.AppsDataSource // <-- ایمپورت سورس جدید
 
 @Singleton
 class DeviceInfoRepository @Inject constructor(
@@ -42,7 +45,8 @@ class DeviceInfoRepository @Inject constructor(
     private val networkDataSource: NetworkDataSource, // <-- تزریق سورس جدید
     private val cameraDataSource: CameraDataSource, // <-- تزریق سورس جدید
     private val networkToolsDataSource: NetworkToolsDataSource, // <-- تزریق سورس جدید
-    private val simDataSource: SimDataSource // <-- تزریق سورس جدید
+    private val simDataSource: SimDataSource, // <-- تزریق سورس جدید
+    private val appsDataSource: AppsDataSource // <-- تزریق سورس جدید
 ) {
 
     // --- SettingsDataSource ---
@@ -125,5 +129,18 @@ class DeviceInfoRepository @Inject constructor(
     fun pingHost(host: String): Flow<String> = networkToolsDataSource.pingHost(host)
 
     // --- متد جدید برای اطلاعات سیم‌کارت ---
+    @RequiresApi(Build.VERSION_CODES.Q)
     fun getSimInfo(): List<SimInfo> = simDataSource.getSimInfo()
+
+    // --- متد جدید برای اطلاعات برنامه‌ها ---
+    fun getAppsInfo(): List<AppInfo> = appsDataSource.getInstalledApps()
+
+    // --- متدهای جدید برای کش برنامه‌ها ---
+    fun saveAppsCache(userApps: List<AppInfo>, systemApps: List<AppInfo>, count: Int) =
+        settingsDataSource.saveAppsCache(userApps, systemApps, count)
+
+    fun getUserAppsCache(): List<AppInfo>? = settingsDataSource.getUserAppsCache()
+    fun getSystemAppsCache(): List<AppInfo>? = settingsDataSource.getSystemAppsCache()
+    fun getPackageCountCache(): Int = settingsDataSource.getPackageCountCache()
+    fun getCurrentPackageCount(): Int = appsDataSource.getPackageCount()
 }

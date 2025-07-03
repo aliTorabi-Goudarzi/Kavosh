@@ -221,4 +221,11 @@
     <string name="battery_unit_mah">%d میلی‌آمپر ساعت</string>
     <string name="battery_unit_ma">%d میلی‌آمپر</string>
     <string name="battery_unit_watt">%.2f وات</string>
+    <string name="category_apps">برنامه‌ها</string>
+    <string name="apps_system_apps">برنامه‌های سیستمی</string>
+    <string name="apps_user_apps">برنامه‌های کاربر</string>
+    <string name="app_version">نسخه: %1$s (%2$d)</string>
+    <string name="app_installed_on">تاریخ نصب: %s</string>
+    <string name="app_permissions">مجوزها</string>
+    <string name="app_no_permissions">هیچ مجوزی درخواست نشده است.</string>
 </resources>

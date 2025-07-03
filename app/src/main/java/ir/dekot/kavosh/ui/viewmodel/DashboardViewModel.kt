@@ -2,6 +2,7 @@ package ir.dekot.kavosh.ui.viewmodel
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Android
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.NetworkWifi
@@ -71,7 +72,8 @@ class DashboardViewModel @Inject constructor(
             DashboardItem(InfoCategory.THERMAL, R.string.category_thermal, Icons.Default.Thermostat),
             DashboardItem(InfoCategory.NETWORK, R.string.category_network, Icons.Default.NetworkWifi),
             DashboardItem(InfoCategory.CAMERA, R.string.category_camera, Icons.Default.PhotoCamera),
-            DashboardItem(InfoCategory.SIM, R.string.category_sim, Icons.Default.SimCard) // <-- آیتم جدید
+            DashboardItem(InfoCategory.SIM, R.string.category_sim, Icons.Default.SimCard) ,// <-- آیتم جدید
+            DashboardItem(InfoCategory.APPS, R.string.category_apps, Icons.Default.Apps) // <-- آیتم جدید
 
         )
     }
