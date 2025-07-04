@@ -114,6 +114,52 @@ class DeviceInfoRepository @Inject constructor(
     fun getDeviceInfoCache(): DeviceInfo? = settingsDataSource.getDeviceInfoCache()
     fun clearDeviceInfoCache() = settingsDataSource.clearDeviceInfoCache()
 
+    /**
+     * دریافت اطلاعات کامل دستگاه
+     * @param activity Activity مورد نیاز برای دسترسی به برخی اطلاعات سیستم
+     */
+    @RequiresApi(Build.VERSION_CODES.R)
+    suspend fun getDeviceInfo(activity: Activity): DeviceInfo {
+        return DeviceInfo(
+            cpu = getCpuInfo(),
+            gpu = getGpuInfo(activity),
+            ram = getRamInfo(),
+            display = getDisplayInfo(activity),
+            storage = getStorageInfo(),
+            system = getSystemInfo(),
+            network = getNetworkInfo(),
+            sensors = getSensorInfo(activity),
+            thermal = getThermalInfo(),
+            cameras = getCameraInfoList(),
+            simCards = getSimInfo(),
+            apps = getInstalledApps()
+        )
+    }
+
+    /**
+     * دریافت اطلاعات کامل دستگاه بدون Activity (محدود)
+     * این متد فقط اطلاعاتی را برمی‌گرداند که نیاز به Activity ندارند
+     */
+    fun getBasicDeviceInfo(): DeviceInfo {
+        return DeviceInfo(
+            cpu = getCpuInfo(),
+            ram = getRamInfo(),
+            storage = getStorageInfo(),
+            system = getSystemInfo(),
+            network = getNetworkInfo(),
+            thermal = getThermalInfo(),
+            cameras = getCameraInfoList(),
+            apps = getInstalledApps()
+        )
+    }
+
+    /**
+     * دریافت اطلاعات فعلی باتری
+     */
+    fun getCurrentBatteryInfo(): BatteryInfo {
+        return getInitialBatteryInfo() ?: BatteryInfo()
+    }
+
     // **اصلاح: این تابع حالا suspend است**
     suspend fun getWifiScanResults(): List<WifiScanResult> {
         return networkToolsDataSource.scanForWifiNetworks().map {
@@ -135,6 +181,7 @@ class DeviceInfoRepository @Inject constructor(
 
     // --- متد جدید برای اطلاعات برنامه‌ها ---
     fun getAppsInfo(): List<AppInfo> = appsDataSource.getInstalledApps()
+    fun getInstalledApps(): List<AppInfo> = appsDataSource.getInstalledApps()
 
     // --- متدهای جدید برای کش برنامه‌ها ---
     fun saveAppsCache(userApps: List<AppInfo>, systemApps: List<AppInfo>, count: Int) =

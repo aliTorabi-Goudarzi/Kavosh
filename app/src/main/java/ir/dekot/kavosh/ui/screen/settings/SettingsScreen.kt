@@ -9,8 +9,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,12 +21,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.RestartAlt
@@ -37,18 +35,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -78,6 +73,7 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onNavigateToAbout: () -> Unit,
+    onEditDashboardClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
     // جمع‌آوری state های مختلف از ViewModel
@@ -90,34 +86,23 @@ fun SettingsScreen(
     var expandedSection by remember { mutableStateOf<SettingsSection?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(id = R.string.settings),
-                        fontWeight = FontWeight.Medium
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = R.string.back)
-                        )
-                    }
-                }
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
+    Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // هدر صفحه
+            item {
+                Text(
+                    text = stringResource(id = R.string.settings),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
             // بخش ظاهر
             item {
                 SettingsSection(
@@ -153,7 +138,8 @@ fun SettingsScreen(
                 ) {
                     DashboardSettings(
                         isReorderingEnabled = isReorderingEnabled,
-                        onReorderingToggled = viewModel::onReorderingToggled
+                        onReorderingToggled = viewModel::onReorderingToggled,
+                        onEditDashboardClick = onEditDashboardClick
                     )
                 }
             }
@@ -189,6 +175,12 @@ fun SettingsScreen(
                 }
             }
         }
+
+        // Snackbar برای نمایش پیام‌ها
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
@@ -376,7 +368,8 @@ private fun ThemeSelector(
 @Composable
 private fun DashboardSettings(
     isReorderingEnabled: Boolean,
-    onReorderingToggled: (Boolean) -> Unit
+    onReorderingToggled: (Boolean) -> Unit,
+    onEditDashboardClick: () -> Unit
 ) {
     SettingsGroup(
         title = stringResource(R.string.dashboard_customization)
@@ -386,6 +379,15 @@ private fun DashboardSettings(
             description = null,
             checked = isReorderingEnabled,
             onCheckedChange = onReorderingToggled
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        SettingsClickableItem(
+            title = stringResource(R.string.edit_dashboard_items),
+            description = "نمایش یا مخفی کردن آیتم‌های داشبورد",
+            icon = Icons.Default.Edit,
+            onClick = onEditDashboardClick
         )
     }
 }

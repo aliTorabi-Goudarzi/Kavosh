@@ -47,6 +47,39 @@
     <string name="confirm_reset_settings">Are you sure you want to reset all settings to default?</string>
     <string name="action_confirm">Confirm</string>
 
+    <!-- Bottom Navigation -->
+    <string name="nav_info">Info</string>
+    <string name="nav_info_desc">Device information and specifications</string>
+    <string name="nav_tests">Tests</string>
+    <string name="nav_tests_desc">Hardware testing tools</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_settings_desc">App settings and preferences</string>
+    <string name="nav_share">Share</string>
+    <string name="nav_share_desc">Export and share device information</string>
+
+    <!-- Tests Screen -->
+    <string name="tests_title">Hardware Tests</string>
+    <string name="tests_subtitle">Test your device performance</string>
+    <string name="test_cpu_stress">CPU Stress Test</string>
+    <string name="test_cpu_stress_desc">Test CPU performance under load</string>
+    <string name="test_storage_speed">Storage Speed Test</string>
+    <string name="test_storage_speed_desc">Measure read/write speeds</string>
+    <string name="test_display">Display Test</string>
+    <string name="test_display_desc">Test screen colors and pixels</string>
+    <string name="test_network_tools">Network Tools</string>
+    <string name="test_network_tools_desc">Wi-Fi scanner and network utilities</string>
+
+    <!-- Share Screen -->
+    <string name="share_title">Export &amp; Share</string>
+    <string name="share_subtitle">Share your device information</string>
+    <string name="export_format_txt">Text Format (TXT)</string>
+    <string name="export_format_pdf">PDF Document</string>
+    <string name="export_format_json">JSON Data</string>
+    <string name="quick_share">Quick Share</string>
+    <string name="quick_share_desc">Share basic device info</string>
+    <string name="full_report">Full Report</string>
+    <string name="full_report_desc">Complete device specifications</string>
+
     <string name="scan_device">Scan Device</string>
     <string name="ready_to_scan">Ready to scan…</string>
     <string name="copy">Copy</string>

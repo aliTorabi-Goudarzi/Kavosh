@@ -16,4 +16,6 @@ sealed class Screen {
     data object NetworkTools : Screen() // <-- صفحه جدید
 
     data object DisplayTest : Screen() // <-- صفحه جدید
+
+    data object StorageTest : Screen() // <-- صفحه تست سرعت حافظه
 }

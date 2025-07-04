@@ -5,21 +5,25 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import ir.dekot.kavosh.ui.navigation.Screen
 import ir.dekot.kavosh.ui.screen.about.AboutScreen
-import ir.dekot.kavosh.ui.screen.dashboard.DashboardScreen
 import ir.dekot.kavosh.ui.screen.dashboard.EditDashboardScreen
 import ir.dekot.kavosh.ui.screen.detail.DetailScreen
 import ir.dekot.kavosh.ui.screen.displaytest.DisplayTestScreen
+import ir.dekot.kavosh.ui.screen.main.MainScreen
 import ir.dekot.kavosh.ui.screen.networktools.NetworkToolsScreen
 import ir.dekot.kavosh.ui.screen.sensordetail.SensorDetailScreen
 import ir.dekot.kavosh.ui.screen.settings.SettingsScreen
 import ir.dekot.kavosh.ui.screen.splash.SplashScreen
+import ir.dekot.kavosh.ui.screen.storagetest.StorageTestScreen
 import ir.dekot.kavosh.ui.screen.stresstest.CpuStressTestScreen
-import ir.dekot.kavosh.ui.viewmodel.*
+import ir.dekot.kavosh.ui.viewmodel.DashboardViewModel
+import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
+import ir.dekot.kavosh.ui.viewmodel.ExportViewModel
+import ir.dekot.kavosh.ui.viewmodel.NavigationViewModel
+import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel
 
 @SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.R)
@@ -41,13 +45,19 @@ fun DeviceInspectorApp(
     when (val screen = currentScreen) {
         is Screen.Splash -> SplashScreen(onStartScan = onStartScan, viewModel = deviceInfoViewModel)
 
-        is Screen.Dashboard -> DashboardScreen(
+        is Screen.Dashboard -> MainScreen(
+            deviceInfoViewModel = deviceInfoViewModel,
             settingsViewModel = settingsViewModel,
             dashboardViewModel = dashboardViewModel,
             exportViewModel = exportViewModel,
+            navigationViewModel = navigationViewModel,
             onCategoryClick = { category, _ -> navigationViewModel.navigateToDetail(category) },
-            onSettingsClick = { navigationViewModel.navigateToSettings() },
-            onEditDashboardClick = { navigationViewModel.navigateToEditDashboard() }
+            onNavigateToAbout = { navigationViewModel.navigateToAbout() },
+            onEditDashboardClick = { navigationViewModel.navigateToEditDashboard() },
+            onCpuStressTestClick = { navigationViewModel.navigateToCpuStressTest() },
+            onStorageTestClick = { navigationViewModel.navigateToStorageTest() },
+            onDisplayTestClick = { navigationViewModel.navigateToDisplayTest() },
+            onNetworkToolsClick = { navigationViewModel.navigateToNetworkTools() }
         )
 
         is Screen.Settings -> {
@@ -55,6 +65,7 @@ fun DeviceInspectorApp(
             SettingsScreen(
                 viewModel = settingsViewModel,
                 onNavigateToAbout = { navigationViewModel.navigateToAbout() },
+                onEditDashboardClick = { navigationViewModel.navigateToEditDashboard() },
                 onBackClick = { navigationViewModel.navigateBack() }
             )
         }
@@ -113,6 +124,13 @@ fun DeviceInspectorApp(
         is Screen.DisplayTest -> {
             BackHandler { navigationViewModel.navigateBack() }
             DisplayTestScreen(onBackClick = { navigationViewModel.navigateBack() })
+        }
+
+        is Screen.StorageTest -> {
+            BackHandler { navigationViewModel.navigateBack() }
+            StorageTestScreen(
+                onBackClick = { navigationViewModel.navigateBack() }
+            )
         }
     }
 }

@@ -87,12 +87,6 @@ class NavigationViewModel @Inject constructor(
         navigateTo(Screen.SensorDetail(sensorType))
     }
 
-    fun onScanCompleted() {
-        // پس از اسکن، تاریخچه باید پاک شود
-        _backStack.clear()
-        _currentScreen.value = Screen.Dashboard
-    }
-
     fun navigateToCpuStressTest() {
         navigateTo(Screen.CpuStressTest)
     }
@@ -103,5 +97,15 @@ class NavigationViewModel @Inject constructor(
 
     fun navigateToDisplayTest() {
         navigateTo(Screen.DisplayTest)
+    }
+
+    fun navigateToStorageTest() {
+        navigateTo(Screen.StorageTest)
+    }
+
+    fun onScanCompleted() {
+        // پس از اسکن، تاریخچه باید پاک شود
+        _backStack.clear()
+        _currentScreen.value = Screen.Dashboard
     }
 }

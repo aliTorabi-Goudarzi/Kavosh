@@ -47,6 +47,39 @@
     <string name="confirm_reset_settings">آیا مطمئن هستید که می‌خواهید همه تنظیمات را به حالت پیش‌فرض بازنشانی کنید؟</string>
     <string name="action_confirm">تأیید</string>
 
+    <!-- Bottom Navigation -->
+    <string name="nav_info">اطلاعات</string>
+    <string name="nav_info_desc">اطلاعات و مشخصات دستگاه</string>
+    <string name="nav_tests">تست‌ها</string>
+    <string name="nav_tests_desc">ابزارهای تست سخت‌افزار</string>
+    <string name="nav_settings">تنظیمات</string>
+    <string name="nav_settings_desc">تنظیمات و ترجیحات برنامه</string>
+    <string name="nav_share">اشتراک‌گذاری</string>
+    <string name="nav_share_desc">خروجی و اشتراک‌گذاری اطلاعات دستگاه</string>
+
+    <!-- Tests Screen -->
+    <string name="tests_title">تست‌های سخت‌افزار</string>
+    <string name="tests_subtitle">عملکرد دستگاه خود را تست کنید</string>
+    <string name="test_cpu_stress">تست استرس پردازنده</string>
+    <string name="test_cpu_stress_desc">تست عملکرد پردازنده تحت بار</string>
+    <string name="test_storage_speed">تست سرعت حافظه</string>
+    <string name="test_storage_speed_desc">اندازه‌گیری سرعت خواندن/نوشتن</string>
+    <string name="test_display">تست نمایشگر</string>
+    <string name="test_display_desc">تست رنگ‌ها و پیکسل‌های صفحه</string>
+    <string name="test_network_tools">ابزارهای شبکه</string>
+    <string name="test_network_tools_desc">اسکنر Wi-Fi و ابزارهای شبکه</string>
+
+    <!-- Share Screen -->
+    <string name="share_title">خروجی و اشتراک‌گذاری</string>
+    <string name="share_subtitle">اطلاعات دستگاه خود را به اشتراک بگذارید</string>
+    <string name="export_format_txt">فرمت متنی (TXT)</string>
+    <string name="export_format_pdf">سند PDF</string>
+    <string name="export_format_json">داده JSON</string>
+    <string name="quick_share">اشتراک‌گذاری سریع</string>
+    <string name="quick_share_desc">اشتراک‌گذاری اطلاعات پایه دستگاه</string>
+    <string name="full_report">گزارش کامل</string>
+    <string name="full_report_desc">مشخصات کامل دستگاه</string>
+
     <string name="scan_device">اسکن دستگاه</string>
     <string name="ready_to_scan">آماده برای اسکن…</string>
     <string name="copy">کپی</string>

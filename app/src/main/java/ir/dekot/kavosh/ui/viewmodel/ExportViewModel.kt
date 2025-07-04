@@ -69,6 +69,10 @@ class ExportViewModel @Inject constructor(
                             ExportFormat.PDF -> {
                                 PdfGenerator.writeStyledPdf(context, fos, deviceInfo, currentBatteryInfo)
                             }
+                            ExportFormat.JSON -> {
+                                val jsonReport = ReportFormatter.formatJsonReport(deviceInfo, currentBatteryInfo)
+                                fos.write(jsonReport.toByteArray())
+                            }
                         }
                     }
                 }
@@ -78,6 +82,49 @@ class ExportViewModel @Inject constructor(
                 _exportResult.emit(ExportResult.Failure(context.getString(R.string.file_export_failed)))
             } finally {
                 pendingExportFormat = null
+            }
+        }
+    }
+
+    /**
+     * اشتراک‌گذاری سریع اطلاعات پایه دستگاه
+     */
+    fun onQuickShareRequested() {
+        viewModelScope.launch {
+            try {
+                // استفاده از کش یا دریافت اطلاعات پایه
+                val deviceInfo = repository.getDeviceInfoCache() ?: repository.getBasicDeviceInfo()
+                val batteryInfo = repository.getCurrentBatteryInfo()
+
+                // ایجاد متن خلاصه برای اشتراک‌گذاری سریع
+                val quickInfo = buildString {
+                    appendLine("📱 اطلاعات دستگاه")
+                    appendLine("━━━━━━━━━━━━━━━━━━━━")
+                    appendLine("🔧 پردازنده: ${deviceInfo.cpu.model}")
+                    appendLine("🎮 پردازنده گرافیکی: ${deviceInfo.gpu.model}")
+                    appendLine("💾 حافظه RAM: ${deviceInfo.ram.total}")
+                    appendLine("📱 سیستم‌عامل: Android ${deviceInfo.system.androidVersion}")
+                    appendLine("🔋 باتری: ${batteryInfo.level}% (${batteryInfo.status})")
+                    appendLine("━━━━━━━━━━━━━━━━━━━━")
+                    appendLine("📊 تولید شده توسط کاوش")
+                }
+
+                // استفاده از Intent برای اشتراک‌گذاری
+                val shareIntent = android.content.Intent().apply {
+                    action = android.content.Intent.ACTION_SEND
+                    type = "text/plain"
+                    putExtra(android.content.Intent.EXTRA_TEXT, quickInfo)
+                    putExtra(android.content.Intent.EXTRA_SUBJECT, "اطلاعات دستگاه")
+                }
+
+                val chooserIntent = android.content.Intent.createChooser(shareIntent, "اشتراک‌گذاری از طریق...")
+                chooserIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(chooserIntent)
+
+                _exportResult.emit(ExportResult.Success("اطلاعات با موفقیت به اشتراک گذاشته شد"))
+
+            } catch (e: Exception) {
+                _exportResult.emit(ExportResult.Failure("خطا در اشتراک‌گذاری: ${e.message}"))
             }
         }
     }

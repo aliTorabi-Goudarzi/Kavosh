@@ -6,6 +6,10 @@ import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.BatteryInfo
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import ir.dekot.kavosh.ui.viewmodel.getTitle
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 object ReportFormatter {
 
@@ -29,6 +33,62 @@ object ReportFormatter {
         }
 
         return builder.toString()
+    }
+
+    /**
+     * یک گزارش JSON از تمام اطلاعات دستگاه تولید می‌کند.
+     */
+    fun formatJsonReport(deviceInfo: DeviceInfo, batteryInfo: BatteryInfo): String {
+        val jsonObject = buildJsonObject {
+            put("device_info", buildJsonObject {
+                put("cpu", buildJsonObject {
+                    put("model", deviceInfo.cpu.model)
+                    put("architecture", deviceInfo.cpu.architecture)
+                    put("topology", deviceInfo.cpu.topology)
+                })
+                put("gpu", buildJsonObject {
+                    put("model", deviceInfo.gpu.model)
+                    put("vendor", deviceInfo.gpu.vendor)
+                })
+                put("ram", buildJsonObject {
+                    put("total", deviceInfo.ram.total)
+                    put("available", deviceInfo.ram.available)
+                })
+                put("display", buildJsonObject {
+                    put("resolution", deviceInfo.display.resolution)
+                    put("density", deviceInfo.display.density)
+                    put("refresh_rate", deviceInfo.display.refreshRate)
+                })
+                put("storage", buildJsonObject {
+                    put("total", deviceInfo.storage.total)
+                    put("available", deviceInfo.storage.available)
+                })
+                put("system", buildJsonObject {
+                    put("android_version", deviceInfo.system.androidVersion)
+                    put("sdk_level", deviceInfo.system.sdkLevel)
+                    put("build_number", deviceInfo.system.buildNumber)
+                    put("is_rooted", deviceInfo.system.isRooted)
+                })
+                put("network", buildJsonObject {
+                    put("type", deviceInfo.network.networkType)
+                    put("ipv4", deviceInfo.network.ipAddressV4)
+                    put("ipv6", deviceInfo.network.ipAddressV6)
+                    put("ssid", deviceInfo.network.ssid)
+                    put("dns1", deviceInfo.network.dns1)
+                })
+            })
+            put("battery_info", buildJsonObject {
+                put("health", batteryInfo.health)
+                put("level", batteryInfo.level)
+                put("status", batteryInfo.status)
+                put("technology", batteryInfo.technology)
+                put("temperature", batteryInfo.temperature)
+                put("voltage", batteryInfo.voltage)
+            })
+            put("timestamp", System.currentTimeMillis())
+        }
+
+        return Json { prettyPrint = true }.encodeToString(JsonObject.serializer(), jsonObject)
     }
 
     fun getCategoryData(
@@ -126,7 +186,14 @@ object ReportFormatter {
                     }
                 }
 
-            InfoCategory.APPS -> TODO()
+            InfoCategory.APPS ->
+                if (deviceInfo.apps.isEmpty()) {
+                    listOf("اپلیکیشن‌های نصب شده" to "در دسترس نیست")
+                } else {
+                    deviceInfo.apps.take(10).map { app: ir.dekot.kavosh.data.model.components.AppInfo ->
+                        app.appName to "نسخه ${app.versionName}"
+                    }
+                }
         }.filter { it.first.isNotBlank() || it.second.isNotBlank() }
     }
 }
