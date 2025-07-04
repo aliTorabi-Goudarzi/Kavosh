@@ -82,6 +82,44 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    /**
+     * پاک کردن کش اطلاعات دستگاه
+     */
+    fun clearCache() {
+        viewModelScope.launch {
+            repository.clearDeviceInfoCache()
+        }
+    }
+
+    /**
+     * بازنشانی همه تنظیمات به حالت پیش‌فرض
+     */
+    fun resetAllSettings() {
+        viewModelScope.launch {
+            // بازنشانی تم به حالت سیستم
+            repository.saveTheme(Theme.SYSTEM)
+            _themeState.value = Theme.SYSTEM
+
+            // بازنشانی زبان به فارسی
+            repository.saveLanguage("fa")
+            _language.value = "fa"
+
+            // بازنشانی تم پویا به فعال
+            repository.setDynamicThemeEnabled(true)
+            _isDynamicThemeEnabled.value = true
+
+            // بازنشانی قابلیت جابجایی به فعال
+            repository.setReorderingEnabled(true)
+            _isReorderingEnabled.value = true
+
+            // پاک کردن کش
+            repository.clearDeviceInfoCache()
+
+            // ارسال رویداد برای بازسازی Activity (در صورت تغییر زبان)
+            _languageChangeRequest.emit(Unit)
+        }
+    }
+
     companion object {
         /**
          * متد استاتیک برای دسترسی به زبان قبل از اینکه ViewModel ساخته شود.

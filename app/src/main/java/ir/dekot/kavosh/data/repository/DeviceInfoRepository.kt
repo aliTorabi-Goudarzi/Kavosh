@@ -112,6 +112,7 @@ class DeviceInfoRepository @Inject constructor(
     // --- متدهای جدید برای کش ---
     fun saveDeviceInfoCache(deviceInfo: DeviceInfo) = settingsDataSource.saveDeviceInfoCache(deviceInfo)
     fun getDeviceInfoCache(): DeviceInfo? = settingsDataSource.getDeviceInfoCache()
+    fun clearDeviceInfoCache() = settingsDataSource.clearDeviceInfoCache()
 
     // **اصلاح: این تابع حالا suspend است**
     suspend fun getWifiScanResults(): List<WifiScanResult> {

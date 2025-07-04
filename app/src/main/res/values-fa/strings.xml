@@ -15,6 +15,38 @@
     <string name="persian">فارسی</string>
     <string name="english">English</string>
     <string name="edit_dashboard_items">نمایش/مخفی کردن آیتم‌ها</string>
+    <string name="amoled">AMOLED</string>
+
+    <!-- Settings Screen New Strings -->
+    <string name="settings_appearance">ظاهر</string>
+    <string name="settings_appearance_desc">تم، رنگ‌ها و زبان</string>
+    <string name="settings_dashboard">داشبورد</string>
+    <string name="settings_dashboard_desc">گزینه‌های چیدمان و نمایش</string>
+    <string name="settings_performance">عملکرد</string>
+    <string name="settings_performance_desc">تنظیمات پیشرفته و بهینه‌سازی</string>
+    <string name="settings_about">درباره</string>
+    <string name="settings_about_desc">اطلاعات برنامه و پشتیبانی</string>
+    <string name="theme_selection">انتخاب تم</string>
+    <string name="language_selection">انتخاب زبان</string>
+    <string name="dashboard_customization">سفارشی‌سازی داشبورد</string>
+    <string name="advanced_settings">تنظیمات پیشرفته</string>
+    <string name="enable_animations">فعال‌سازی انیمیشن‌ها</string>
+    <string name="enable_animations_desc">نمایش ترانزیشن‌ها و جلوه‌های نرم</string>
+    <string name="auto_refresh">به‌روزرسانی خودکار</string>
+    <string name="auto_refresh_desc">به‌روزرسانی خودکار اطلاعات دستگاه</string>
+    <string name="cache_management">مدیریت کش</string>
+    <string name="clear_cache">پاک کردن کش</string>
+    <string name="clear_cache_desc">پاک کردن اطلاعات ذخیره شده دستگاه</string>
+    <string name="cache_cleared">کش با موفقیت پاک شد</string>
+    <string name="export_settings">خروجی تنظیمات</string>
+    <string name="import_settings">وارد کردن تنظیمات</string>
+    <string name="reset_settings">بازنشانی به حالت پیش‌فرض</string>
+    <string name="reset_settings_desc">بازنشانی همه تنظیمات به مقادیر پیش‌فرض</string>
+    <string name="settings_reset">تنظیمات با موفقیت بازنشانی شد</string>
+    <string name="confirm_clear_cache">آیا مطمئن هستید که می‌خواهید تمام داده‌های کش شده را پاک کنید؟</string>
+    <string name="confirm_reset_settings">آیا مطمئن هستید که می‌خواهید همه تنظیمات را به حالت پیش‌فرض بازنشانی کنید؟</string>
+    <string name="action_confirm">تأیید</string>
+
     <string name="scan_device">اسکن دستگاه</string>
     <string name="ready_to_scan">آماده برای اسکن…</string>
     <string name="copy">کپی</string>
@@ -192,7 +224,6 @@
     <string name="raw_sensor_data">داده‌های خام سنسورها</string>
     <string name="live_chart_title">نمودار داده‌های زنده</string>
     <string name="live_values_title">مقادیر زنده وکتور</string>
-    <string name="amoled">مشکی خالص (AMOLED)</string>
     <string name="display_test_title">تست صفحه‌نمایش</string>
     <string name="display_test_description">ابزارهایی برای بررسی سلامت و کیفیت صفحه‌نمایش شما.</string>
     <string name="dead_pixel_test">تست پیکسل سوخته</string>
