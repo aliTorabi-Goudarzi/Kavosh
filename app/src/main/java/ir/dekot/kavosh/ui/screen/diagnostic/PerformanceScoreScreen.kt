@@ -109,9 +109,6 @@ fun PerformanceScoreScreen(
                             score = score,
                             onRunNewTest = {
                                 viewModel.calculatePerformanceScore()
-                            },
-                            onExportReport = { format ->
-                                viewModel.exportPerformanceScoreReport(format)
                             }
                         )
                     }
@@ -252,8 +249,7 @@ private fun BenchmarkLoadingCard() {
 @Composable
 private fun OverallScoreCard(
     score: PerformanceScore,
-    onRunNewTest: () -> Unit,
-    onExportReport: (ExportFormat) -> Unit
+    onRunNewTest: () -> Unit
 ) {
     val animatedScore by animateFloatAsState(
         targetValue = score.overallScore.toFloat(),
@@ -337,36 +333,18 @@ private fun OverallScoreCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // دکمه‌های عملیات
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            // دکمه تست جدید در کارت اصلی
+            OutlinedButton(
+                onClick = onRunNewTest,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                OutlinedButton(
-                    onClick = onRunNewTest,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("تست جدید")
-                }
-
-                OutlinedButton(
-                    onClick = { onExportReport(ExportFormat.TXT) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FileDownload,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("خروجی گزارش")
-                }
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("تست جدید")
             }
         }
     }
@@ -749,6 +727,7 @@ private fun PerformanceHistorySection(
                     history.take(5).forEach { score -> // نمایش 5 تست آخر
                         PerformanceHistoryItemCard(
                             score = score,
+                            viewModel = viewModel(),
                             onClick = { onHistoryItemClick(score) }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -776,6 +755,7 @@ private fun PerformanceHistorySection(
 @Composable
 private fun PerformanceHistoryItemCard(
     score: PerformanceScore,
+    viewModel: DiagnosticViewModel,
     onClick: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -914,8 +894,7 @@ private fun PerformanceHistoryItemCard(
                 // دکمه خروجی گزارش
                 OutlinedButton(
                     onClick = {
-                        // TODO: پیاده‌سازی خروجی گزارش برای این تست خاص - فعلاً از score استفاده می‌کنیم
-                        // viewModel.exportPerformanceScoreHistoryReport(score, ExportFormat.TXT)
+                        viewModel.exportPerformanceScoreHistoryReport(score, ExportFormat.TXT)
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {

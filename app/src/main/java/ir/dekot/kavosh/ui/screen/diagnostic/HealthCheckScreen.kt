@@ -113,9 +113,6 @@ fun HealthCheckScreen(
                             result = result,
                             onRunNewTest = {
                                 viewModel.performHealthCheck()
-                            },
-                            onExportReport = { format ->
-                                viewModel.exportHealthCheckReport(format)
                             }
                         )
                     }
@@ -250,8 +247,7 @@ private fun LoadingCard() {
 @Composable
 private fun OverallHealthCard(
     result: HealthCheckResult,
-    onRunNewTest: () -> Unit,
-    onExportReport: (ExportFormat) -> Unit
+    onRunNewTest: () -> Unit
 ) {
     val animatedScore by animateFloatAsState(
         targetValue = result.overallScore.toFloat(),
@@ -334,36 +330,18 @@ private fun OverallHealthCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // دکمه‌های عملیات
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            // دکمه تست جدید در کارت اصلی
+            OutlinedButton(
+                onClick = onRunNewTest,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                OutlinedButton(
-                    onClick = onRunNewTest,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("تست جدید")
-                }
-
-                OutlinedButton(
-                    onClick = { onExportReport(ExportFormat.TXT) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FileDownload,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.health_check_export_report))
-                }
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("تست جدید")
             }
         }
     }
@@ -651,6 +629,7 @@ private fun TestHistorySection(
                     history.take(5).forEach { summary -> // نمایش 5 تست آخر
                         HistoryItemCard(
                             summary = summary,
+                            viewModel = viewModel(),
                             onClick = { onHistoryItemClick(summary) }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -678,6 +657,7 @@ private fun TestHistorySection(
 @Composable
 private fun HistoryItemCard(
     summary: HealthCheckSummary,
+    viewModel: DiagnosticViewModel,
     onClick: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -820,8 +800,7 @@ private fun HistoryItemCard(
                 // دکمه خروجی گزارش
                 OutlinedButton(
                     onClick = {
-                        // TODO: پیاده‌سازی خروجی گزارش برای این تست خاص - فعلاً از summary استفاده می‌کنیم
-                        // viewModel.exportHealthCheckHistoryReport(summary, ExportFormat.TXT)
+                        viewModel.exportHealthCheckHistoryReport(summary, ExportFormat.TXT)
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {

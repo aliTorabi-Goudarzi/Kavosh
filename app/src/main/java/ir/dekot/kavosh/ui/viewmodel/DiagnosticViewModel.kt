@@ -7,6 +7,7 @@ import android.os.Build
 import ir.dekot.kavosh.data.model.diagnostic.DeviceComparison
 import ir.dekot.kavosh.data.model.diagnostic.HealthCheckResult
 import ir.dekot.kavosh.data.model.diagnostic.HealthCheckSummary
+import ir.dekot.kavosh.data.model.diagnostic.HealthStatus
 import ir.dekot.kavosh.data.model.diagnostic.PerformanceScore
 import ir.dekot.kavosh.data.source.DiagnosticDataSource
 import ir.dekot.kavosh.data.source.SettingsDataSource
@@ -95,13 +96,18 @@ class DiagnosticViewModel @Inject constructor(
                 val result = diagnosticDataSource.performHealthCheck()
                 _healthCheckResult.value = result
 
-                // اضافه کردن به تاریخچه
+                // اضافه کردن به تاریخچه - ایجاد خلاصه کامل
                 val summary = HealthCheckSummary(
                     timestamp = result.lastCheckTime,
                     overallScore = result.overallScore,
                     overallStatus = result.overallStatus,
                     deviceName = "${Build.MANUFACTURER} ${Build.MODEL}",
-                    androidVersion = Build.VERSION.RELEASE
+                    androidVersion = Build.VERSION.RELEASE,
+                    checks = result.checks,
+                    recommendations = result.recommendations,
+                    testDuration = System.currentTimeMillis() - result.lastCheckTime,
+                    criticalIssuesCount = result.checks.count { it.status == HealthStatus.CRITICAL },
+                    warningsCount = result.checks.count { it.status == HealthStatus.POOR || it.status == HealthStatus.FAIR }
                 )
                 val currentHistory = _healthCheckHistory.value.toMutableList()
                 currentHistory.add(0, summary) // اضافه کردن به ابتدای لیست

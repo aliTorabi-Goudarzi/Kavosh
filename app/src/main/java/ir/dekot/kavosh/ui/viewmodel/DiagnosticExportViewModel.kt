@@ -182,32 +182,78 @@ class DiagnosticExportViewModel @Inject constructor(
     }
 
     /**
-     * تولید گزارش تاریخچه بررسی سلامت
+     * تولید گزارش کامل تاریخچه بررسی سلامت
      */
     private fun generateHealthCheckHistoryReport(summary: HealthCheckSummary): String {
         val builder = StringBuilder()
-        
+
         builder.appendLine("=".repeat(50))
-        builder.appendLine("گزارش تاریخچه بررسی سلامت")
+        builder.appendLine("گزارش کامل بررسی سلامت - تاریخچه")
         builder.appendLine("=".repeat(50))
         builder.appendLine()
-        
+
+        // اطلاعات کلی
         builder.appendLine("📊 اطلاعات کلی:")
         builder.appendLine("تاریخ تست: ${java.text.SimpleDateFormat("yyyy/MM/dd HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date(summary.timestamp))}")
         builder.appendLine("امتیاز کلی: ${summary.overallScore}/100")
-        builder.appendLine("وضعیت: ${summary.overallStatus.name}")
+        builder.appendLine("وضعیت: ${getHealthStatusText(summary.overallStatus)}")
         builder.appendLine("نام دستگاه: ${summary.deviceName}")
         builder.appendLine("نسخه اندروید: ${summary.androidVersion}")
+        builder.appendLine("مدت زمان تست: ${summary.testDuration / 1000} ثانیه")
+        builder.appendLine("تعداد مسائل بحرانی: ${summary.criticalIssuesCount}")
+        builder.appendLine("تعداد هشدارها: ${summary.warningsCount}")
         builder.appendLine()
-        
+
+        // جزئیات بررسی‌ها
+        if (summary.checks.isNotEmpty()) {
+            builder.appendLine("📋 جزئیات بررسی‌ها:")
+            builder.appendLine("-".repeat(30))
+
+            summary.checks.forEach { check ->
+                builder.appendLine()
+                builder.appendLine("🔍 ${check.name}")
+                builder.appendLine("   امتیاز: ${check.score}/100")
+                builder.appendLine("   وضعیت: ${getHealthStatusText(check.status)}")
+                builder.appendLine("   توضیحات: ${check.description}")
+                check.details?.let { details ->
+                    builder.appendLine("   جزئیات: $details")
+                }
+                check.recommendation?.let { rec ->
+                    builder.appendLine("   💡 توصیه: $rec")
+                }
+            }
+        }
+
+        // توصیه‌های کلی
+        if (summary.recommendations.isNotEmpty()) {
+            builder.appendLine()
+            builder.appendLine("💡 توصیه‌های کلی:")
+            builder.appendLine("-".repeat(20))
+            summary.recommendations.forEachIndexed { index, recommendation ->
+                builder.appendLine("${index + 1}. $recommendation")
+            }
+        }
+
+        builder.appendLine()
         builder.appendLine("=".repeat(50))
         builder.appendLine("گزارش تولید شده توسط کاوش - ${java.text.SimpleDateFormat("yyyy/MM/dd HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())}")
-        
+
         return builder.toString()
     }
 
     /**
-     * تولید گزارش JSON تاریخچه بررسی سلامت
+     * دریافت متن وضعیت سلامت
+     */
+    private fun getHealthStatusText(status: HealthStatus): String = when (status) {
+        HealthStatus.EXCELLENT -> "عالی"
+        HealthStatus.GOOD -> "خوب"
+        HealthStatus.FAIR -> "متوسط"
+        HealthStatus.POOR -> "ضعیف"
+        HealthStatus.CRITICAL -> "بحرانی"
+    }
+
+    /**
+     * تولید گزارش JSON کامل تاریخچه بررسی سلامت
      */
     private fun generateHealthCheckHistoryJsonReport(summary: HealthCheckSummary): String {
         val jsonObject = kotlinx.serialization.json.buildJsonObject {
@@ -218,10 +264,34 @@ class DiagnosticExportViewModel @Inject constructor(
             put("overall_status", summary.overallStatus.name)
             put("device_name", summary.deviceName)
             put("android_version", summary.androidVersion)
+            put("test_duration", summary.testDuration)
+            put("critical_issues_count", summary.criticalIssuesCount)
+            put("warnings_count", summary.warningsCount)
+
+            // جزئیات بررسی‌ها
+            put("checks", kotlinx.serialization.json.buildJsonObject {
+                summary.checks.forEach { check ->
+                    put(check.category.name.lowercase(), kotlinx.serialization.json.buildJsonObject {
+                        put("name", check.name)
+                        put("score", check.score)
+                        put("status", check.status.name)
+                        put("description", check.description)
+                        check.details?.let { put("details", it) }
+                        check.recommendation?.let { put("recommendation", it) }
+                    })
+                }
+            })
+
+            // توصیه‌های کلی
+            put("recommendations", kotlinx.serialization.json.buildJsonObject {
+                summary.recommendations.forEachIndexed { index, rec ->
+                    put("recommendation_${index + 1}", rec)
+                }
+            })
         }
-        
+
         return kotlinx.serialization.json.Json { prettyPrint = true }.encodeToString(
-            kotlinx.serialization.json.JsonObject.serializer(), 
+            kotlinx.serialization.json.JsonObject.serializer(),
             jsonObject
         )
     }

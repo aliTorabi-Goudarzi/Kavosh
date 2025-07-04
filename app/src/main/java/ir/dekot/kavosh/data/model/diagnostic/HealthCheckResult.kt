@@ -88,5 +88,11 @@ data class HealthCheckSummary(
     val overallScore: Int,
     val overallStatus: HealthStatus,
     val deviceName: String,
-    val androidVersion: String
+    val androidVersion: String,
+    // جزئیات کامل برای گزارش
+    val checks: List<HealthCheck> = emptyList(),
+    val recommendations: List<String> = emptyList(),
+    val testDuration: Long = 0L, // مدت زمان تست به میلی‌ثانیه
+    val criticalIssuesCount: Int = 0,
+    val warningsCount: Int = 0
 )

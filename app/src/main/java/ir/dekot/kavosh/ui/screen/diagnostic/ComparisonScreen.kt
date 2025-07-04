@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.diagnostic.ComparisonCategory
 import ir.dekot.kavosh.data.model.diagnostic.ComparisonResult
@@ -124,9 +125,6 @@ fun ComparisonScreen(
                             onRunNewTest = {
                                 showStartButton = false
                                 viewModel.compareDevice()
-                            },
-                            onExportReport = { format ->
-                                viewModel.exportDeviceComparisonReport(format)
                             }
                         )
                     }
@@ -751,8 +749,7 @@ private fun getRankingColor(ranking: Int, total: Int): Color {
  */
 @Composable
 private fun ComparisonTestActionsCard(
-    onRunNewTest: () -> Unit,
-    onExportReport: (ExportFormat) -> Unit
+    onRunNewTest: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -763,35 +760,17 @@ private fun ComparisonTestActionsCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            OutlinedButton(
+                onClick = onRunNewTest,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                OutlinedButton(
-                    onClick = onRunNewTest,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("مقایسه جدید")
-                }
-
-                OutlinedButton(
-                    onClick = { onExportReport(ExportFormat.TXT) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FileDownload,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.comparison_export_report))
-                }
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("مقایسه جدید")
             }
         }
     }
@@ -862,6 +841,7 @@ private fun ComparisonHistorySection(
                     history.take(5).forEach { comparison -> // نمایش 5 مقایسه آخر
                         ComparisonHistoryItemCard(
                             comparison = comparison,
+                            viewModel = viewModel(),
                             onClick = { onHistoryItemClick(comparison) }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -889,6 +869,7 @@ private fun ComparisonHistorySection(
 @Composable
 private fun ComparisonHistoryItemCard(
     comparison: DeviceComparison,
+    viewModel: DiagnosticViewModel,
     onClick: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -1053,7 +1034,7 @@ private fun ComparisonHistoryItemCard(
                 // دکمه خروجی گزارش
                 OutlinedButton(
                     onClick = {
-                        // TODO: پیاده‌سازی خروجی گزارش برای این مقایسه خاص
+                        viewModel.exportDeviceComparisonHistoryReport(comparison, ExportFormat.TXT)
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
