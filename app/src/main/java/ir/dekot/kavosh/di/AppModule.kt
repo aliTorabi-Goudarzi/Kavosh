@@ -130,5 +130,21 @@ object AppModule {
     fun provideSensorHandler(@ApplicationContext context: Context): SensorHandler {
         return SensorHandler(context)
     }
+
+    /**
+     * Provider برای DiagnosticDataSource
+     * منبع داده ابزارهای تشخیصی جدید
+     */
+    @Provides
+    @Singleton
+    fun provideDiagnosticDataSource(
+        @ApplicationContext context: Context,
+        socDataSource: SocDataSource,
+        memoryDataSource: MemoryDataSource,
+        powerDataSource: PowerDataSource,
+        systemDataSource: SystemDataSource
+    ): DiagnosticDataSource {
+        return DiagnosticDataSource(context, socDataSource, memoryDataSource, powerDataSource, systemDataSource)
+    }
 }
 

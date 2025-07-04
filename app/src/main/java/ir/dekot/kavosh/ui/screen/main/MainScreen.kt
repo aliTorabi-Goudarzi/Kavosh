@@ -34,7 +34,10 @@ fun MainScreen(
     onCpuStressTestClick: () -> Unit,
     onStorageTestClick: () -> Unit,
     onDisplayTestClick: () -> Unit,
-    onNetworkToolsClick: () -> Unit
+    onNetworkToolsClick: () -> Unit,
+    onHealthCheckClick: () -> Unit,
+    onPerformanceScoreClick: () -> Unit,
+    onDeviceComparisonClick: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(BottomNavItem.INFO) }
     val context = LocalContext.current
@@ -66,7 +69,10 @@ fun MainScreen(
                         onCpuStressTestClick = onCpuStressTestClick,
                         onStorageTestClick = onStorageTestClick,
                         onDisplayTestClick = onDisplayTestClick,
-                        onNetworkToolsClick = onNetworkToolsClick
+                        onNetworkToolsClick = onNetworkToolsClick,
+                        onHealthCheckClick = onHealthCheckClick,
+                        onPerformanceScoreClick = onPerformanceScoreClick,
+                        onDeviceComparisonClick = onDeviceComparisonClick
                     )
                 }
                 

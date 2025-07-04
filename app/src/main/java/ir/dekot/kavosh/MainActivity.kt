@@ -31,6 +31,7 @@ import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel // <-- ایمپورت جد
 import ir.dekot.kavosh.ui.theme.KavoshTheme // <-- ایمپورت اصلاح شده
 import ir.dekot.kavosh.ui.viewmodel.DashboardViewModel
 import ir.dekot.kavosh.ui.viewmodel.ExportViewModel
+import ir.dekot.kavosh.ui.viewmodel.DiagnosticExportViewModel
 import ir.dekot.kavosh.ui.viewmodel.NavigationViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -43,6 +44,7 @@ class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val dashboardViewModel: DashboardViewModel by viewModels()
     private val exportViewModel: ExportViewModel by viewModels() // <-- اضافه کردن ViewModel جدید
+    private val diagnosticExportViewModel: DiagnosticExportViewModel by viewModels() // <-- اضافه کردن ViewModel جدید
     private val navigationViewModel: NavigationViewModel by viewModels() // <-- اضافه کردن ViewModel جدید
 
 
@@ -57,6 +59,15 @@ class MainActivity : ComponentActivity() {
                 val currentDeviceInfo = deviceInfoViewModel.deviceInfo.value
                 exportViewModel.performExport(it, format, currentDeviceInfo)
             }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    private val createDiagnosticFileLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("*/*")
+    ) { uri ->
+        uri?.let {
+            diagnosticExportViewModel.performExport(it)
         }
     }
 
@@ -81,6 +92,14 @@ class MainActivity : ComponentActivity() {
             exportViewModel.exportRequest.collectLatest { format ->
                 val fileName = "Kavosh_Report_${System.currentTimeMillis()}.${format.extension}"
                 createFileLauncher.launch(fileName)
+            }
+        }
+
+        // به رویدادهای DiagnosticExportViewModel گوش می‌دهیم
+        lifecycleScope.launch {
+            diagnosticExportViewModel.filePickerRequest.collectLatest { format ->
+                val fileName = "Kavosh_Diagnostic_${System.currentTimeMillis()}.${format.extension}"
+                createDiagnosticFileLauncher.launch(fileName)
             }
         }
 
@@ -131,6 +150,7 @@ class MainActivity : ComponentActivity() {
                             settingsViewModel = settingsViewModel,
                             dashboardViewModel = dashboardViewModel, // <-- پاس دادن ViewModel جدید
                             exportViewModel = exportViewModel, // <-- پاس دادن ViewModel جدید
+                            diagnosticExportViewModel = diagnosticExportViewModel, // <-- پاس دادن ViewModel جدید
                             navigationViewModel = navigationViewModel, // <-- پاس دادن ViewModel جدید
                             onStartScan = {
                                 deviceInfoViewModel.startScan(this) {

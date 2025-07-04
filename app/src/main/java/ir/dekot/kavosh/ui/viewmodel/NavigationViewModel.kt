@@ -103,6 +103,19 @@ class NavigationViewModel @Inject constructor(
         navigateTo(Screen.StorageTest)
     }
 
+    // توابع ناوبری برای ابزارهای تشخیصی جدید
+    fun navigateToHealthCheck() {
+        navigateTo(Screen.HealthCheck)
+    }
+
+    fun navigateToPerformanceScore() {
+        navigateTo(Screen.PerformanceScore)
+    }
+
+    fun navigateToDeviceComparison() {
+        navigateTo(Screen.DeviceComparison)
+    }
+
     fun onScanCompleted() {
         // پس از اسکن، تاریخچه باید پاک شود
         _backStack.clear()

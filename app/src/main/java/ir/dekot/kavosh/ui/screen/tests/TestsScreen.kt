@@ -27,7 +27,10 @@ fun TestsScreen(
     onCpuStressTestClick: () -> Unit,
     onStorageTestClick: () -> Unit,
     onDisplayTestClick: () -> Unit,
-    onNetworkToolsClick: () -> Unit
+    onNetworkToolsClick: () -> Unit,
+    onHealthCheckClick: () -> Unit,
+    onPerformanceScoreClick: () -> Unit,
+    onDeviceComparisonClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -65,6 +68,9 @@ fun TestsScreen(
                         TestType.STORAGE_SPEED -> onStorageTestClick
                         TestType.DISPLAY -> onDisplayTestClick
                         TestType.NETWORK_TOOLS -> onNetworkToolsClick
+                        TestType.HEALTH_CHECK -> onHealthCheckClick
+                        TestType.PERFORMANCE_SCORE -> onPerformanceScoreClick
+                        TestType.DEVICE_COMPARISON -> onDeviceComparisonClick
                     }
                 )
             }
@@ -138,7 +144,7 @@ private fun TestCard(
  * انواع تست‌های موجود
  */
 private enum class TestType {
-    CPU_STRESS, STORAGE_SPEED, DISPLAY, NETWORK_TOOLS
+    CPU_STRESS, STORAGE_SPEED, DISPLAY, NETWORK_TOOLS, HEALTH_CHECK, PERFORMANCE_SCORE, DEVICE_COMPARISON
 }
 
 /**
@@ -178,5 +184,23 @@ private fun getTestItems(): List<TestItem> = listOf(
         titleResId = R.string.test_network_tools,
         descriptionResId = R.string.test_network_tools_desc,
         icon = Icons.Default.Wifi
+    ),
+    TestItem(
+        type = TestType.HEALTH_CHECK,
+        titleResId = R.string.test_health_check,
+        descriptionResId = R.string.test_health_check_desc,
+        icon = Icons.Default.HealthAndSafety
+    ),
+    TestItem(
+        type = TestType.PERFORMANCE_SCORE,
+        titleResId = R.string.test_performance_score,
+        descriptionResId = R.string.test_performance_score_desc,
+        icon = Icons.Default.Speed
+    ),
+    TestItem(
+        type = TestType.DEVICE_COMPARISON,
+        titleResId = R.string.test_device_comparison,
+        descriptionResId = R.string.test_device_comparison_desc,
+        icon = Icons.Default.Compare
     )
 )

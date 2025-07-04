@@ -8,7 +8,12 @@ import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.AppInfo
 import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
+import ir.dekot.kavosh.data.model.diagnostic.HealthCheckSummary
+import ir.dekot.kavosh.data.model.diagnostic.PerformanceScore
+import ir.dekot.kavosh.data.model.diagnostic.DeviceComparison
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,6 +38,10 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
         const val KEY_USER_APPS_CACHE = "user_apps_cache"
         const val KEY_SYSTEM_APPS_CACHE = "system_apps_cache"
         const val KEY_PACKAGE_COUNT = "package_count"
+        // کلیدهای جدید برای ذخیره تاریخچه تست‌های تشخیصی
+        const val KEY_HEALTH_CHECK_HISTORY = "health_check_history"
+        const val KEY_PERFORMANCE_SCORE_HISTORY = "performance_score_history"
+        const val KEY_DEVICE_COMPARISON_HISTORY = "device_comparison_history"
     }
 
     // --- متدهای جدید برای کش برنامه‌ها ---
@@ -57,6 +66,83 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
 
     fun getPackageCountCache(): Int {
         return prefs.getInt(KEY_PACKAGE_COUNT, -1)
+    }
+
+    // --- متدهای جدید برای ذخیره و بازیابی تاریخچه تست‌های تشخیصی ---
+
+    /**
+     * ذخیره تاریخچه بررسی سلامت
+     */
+    fun saveHealthCheckHistory(history: List<HealthCheckSummary>) {
+        val jsonString = Json.encodeToString(history)
+        prefs.edit {
+            putString(KEY_HEALTH_CHECK_HISTORY, jsonString)
+        }
+    }
+
+    /**
+     * بازیابی تاریخچه بررسی سلامت
+     */
+    fun getHealthCheckHistory(): List<HealthCheckSummary> {
+        val jsonString = prefs.getString(KEY_HEALTH_CHECK_HISTORY, null)
+        return jsonString?.let {
+            try {
+                Json.decodeFromString<List<HealthCheckSummary>>(it)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        } ?: emptyList()
+    }
+
+    /**
+     * ذخیره تاریخچه امتیاز عملکرد
+     */
+    fun savePerformanceScoreHistory(history: List<PerformanceScore>) {
+        val jsonString = Json.encodeToString(history)
+        prefs.edit {
+            putString(KEY_PERFORMANCE_SCORE_HISTORY, jsonString)
+        }
+    }
+
+    /**
+     * بازیابی تاریخچه امتیاز عملکرد
+     */
+    fun getPerformanceScoreHistory(): List<PerformanceScore> {
+        val jsonString = prefs.getString(KEY_PERFORMANCE_SCORE_HISTORY, null)
+        return jsonString?.let {
+            try {
+                Json.decodeFromString<List<PerformanceScore>>(it)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        } ?: emptyList()
+    }
+
+    /**
+     * ذخیره تاریخچه مقایسه دستگاه
+     */
+    fun saveDeviceComparisonHistory(history: List<DeviceComparison>) {
+        val jsonString = Json.encodeToString(history)
+        prefs.edit {
+            putString(KEY_DEVICE_COMPARISON_HISTORY, jsonString)
+        }
+    }
+
+    /**
+     * بازیابی تاریخچه مقایسه دستگاه
+     */
+    fun getDeviceComparisonHistory(): List<DeviceComparison> {
+        val jsonString = prefs.getString(KEY_DEVICE_COMPARISON_HISTORY, null)
+        return jsonString?.let {
+            try {
+                Json.decodeFromString<List<DeviceComparison>>(it)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        } ?: emptyList()
     }
 
     // **متدهای جدید برای مدیریت کش**

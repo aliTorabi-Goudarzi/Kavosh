@@ -19,9 +19,13 @@ import ir.dekot.kavosh.ui.screen.settings.SettingsScreen
 import ir.dekot.kavosh.ui.screen.splash.SplashScreen
 import ir.dekot.kavosh.ui.screen.storagetest.StorageTestScreen
 import ir.dekot.kavosh.ui.screen.stresstest.CpuStressTestScreen
+import ir.dekot.kavosh.ui.screen.diagnostic.HealthCheckScreen
+import ir.dekot.kavosh.ui.screen.diagnostic.PerformanceScoreScreen
+import ir.dekot.kavosh.ui.screen.diagnostic.ComparisonScreen
 import ir.dekot.kavosh.ui.viewmodel.DashboardViewModel
 import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
 import ir.dekot.kavosh.ui.viewmodel.ExportViewModel
+import ir.dekot.kavosh.ui.viewmodel.DiagnosticExportViewModel
 import ir.dekot.kavosh.ui.viewmodel.NavigationViewModel
 import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel
 
@@ -33,6 +37,7 @@ fun DeviceInspectorApp(
     settingsViewModel: SettingsViewModel,
     dashboardViewModel: DashboardViewModel,
     exportViewModel: ExportViewModel,
+    diagnosticExportViewModel: DiagnosticExportViewModel,
     navigationViewModel: NavigationViewModel,
     onStartScan: () -> Unit
 ) {
@@ -57,7 +62,10 @@ fun DeviceInspectorApp(
             onCpuStressTestClick = { navigationViewModel.navigateToCpuStressTest() },
             onStorageTestClick = { navigationViewModel.navigateToStorageTest() },
             onDisplayTestClick = { navigationViewModel.navigateToDisplayTest() },
-            onNetworkToolsClick = { navigationViewModel.navigateToNetworkTools() }
+            onNetworkToolsClick = { navigationViewModel.navigateToNetworkTools() },
+            onHealthCheckClick = { navigationViewModel.navigateToHealthCheck() },
+            onPerformanceScoreClick = { navigationViewModel.navigateToPerformanceScore() },
+            onDeviceComparisonClick = { navigationViewModel.navigateToDeviceComparison() }
         )
 
         is Screen.Settings -> {
@@ -129,6 +137,28 @@ fun DeviceInspectorApp(
         is Screen.StorageTest -> {
             BackHandler { navigationViewModel.navigateBack() }
             StorageTestScreen(
+                onBackClick = { navigationViewModel.navigateBack() }
+            )
+        }
+
+        // صفحات ابزارهای تشخیصی جدید
+        is Screen.HealthCheck -> {
+            BackHandler { navigationViewModel.navigateBack() }
+            HealthCheckScreen(
+                onBackClick = { navigationViewModel.navigateBack() }
+            )
+        }
+
+        is Screen.PerformanceScore -> {
+            BackHandler { navigationViewModel.navigateBack() }
+            PerformanceScoreScreen(
+                onBackClick = { navigationViewModel.navigateBack() }
+            )
+        }
+
+        is Screen.DeviceComparison -> {
+            BackHandler { navigationViewModel.navigateBack() }
+            ComparisonScreen(
                 onBackClick = { navigationViewModel.navigateBack() }
             )
         }
