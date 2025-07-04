@@ -1,18 +1,21 @@
 package ir.dekot.kavosh.ui.composables
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,8 +28,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ir.dekot.kavosh.ui.navigation.BottomNavItem
@@ -44,7 +49,7 @@ fun FloatingBottomNavigation(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 40.dp),
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(
@@ -71,6 +76,7 @@ fun FloatingBottomNavigation(
 
 /**
  * محتوای هر آیتم در Navigation Bar
+ * با انیمیشن افقی برای متن و پس‌زمینه لغزنده
  */
 @Composable
 private fun BottomNavItemContent(
@@ -78,64 +84,87 @@ private fun BottomNavItemContent(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    // انیمیشن‌های رنگ و اندازه
+    val layoutDirection = LocalLayoutDirection.current
+    val isRtl = layoutDirection == LayoutDirection.Rtl
+
+    // انیمیشن‌های رنگ
     val iconColor by animateColorAsState(
         targetValue = if (isSelected) {
-            MaterialTheme.colorScheme.primary
+            MaterialTheme.colorScheme.onPrimary
         } else {
             MaterialTheme.colorScheme.onSurfaceVariant
         },
-        animationSpec = tween(300),
+        animationSpec = tween(350),
         label = "iconColor"
     )
-    
+
     val textColor by animateColorAsState(
         targetValue = if (isSelected) {
-            MaterialTheme.colorScheme.primary
+            MaterialTheme.colorScheme.onPrimary
         } else {
             MaterialTheme.colorScheme.onSurfaceVariant
         },
-        animationSpec = tween(300),
+        animationSpec = tween(350),
         label = "textColor"
     )
-    
-    val scale by animateFloatAsState(
+
+    // انیمیشن اندازه آیکون
+    val iconScale by animateFloatAsState(
         targetValue = if (isSelected) 1.1f else 1f,
-        animationSpec = tween(300),
-        label = "scale"
-    )
-    
-    val backgroundAlpha by animateFloatAsState(
-        targetValue = if (isSelected) 0.12f else 0f,
-        animationSpec = tween(300),
-        label = "backgroundAlpha"
+        animationSpec = tween(350),
+        label = "iconScale"
     )
 
-    Column(
+    Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(
-                MaterialTheme.colorScheme.primary.copy(alpha = backgroundAlpha)
+                if (isSelected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.surface
+                }
             )
             .clickable { onClick() }
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-            .scale(scale),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Icon(
-            imageVector = item.icon,
-            contentDescription = stringResource(item.titleResId),
-            tint = iconColor,
-            modifier = Modifier.size(24.dp)
-        )
-        
-        Spacer(modifier = Modifier.height(4.dp))
-        
-        Text(
-            text = stringResource(item.titleResId),
-            color = textColor,
-            fontSize = 12.sp,
-            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            // آیکون همیشه نمایش داده می‌شود
+            Icon(
+                imageVector = item.icon,
+                contentDescription = stringResource(item.titleResId),
+                tint = iconColor,
+                modifier = Modifier
+                    .size(24.dp)
+                    .scale(iconScale)
+            )
+
+            // متن با انیمیشن افقی ظاهر می‌شود
+            AnimatedVisibility(
+                visible = isSelected,
+                enter = expandHorizontally(
+                    animationSpec = tween(350),
+                    expandFrom = if (isRtl) Alignment.End else Alignment.Start
+                ),
+                exit = shrinkHorizontally(
+                    animationSpec = tween(350),
+                    shrinkTowards = if (isRtl) Alignment.End else Alignment.Start
+                )
+            ) {
+                Row {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(item.titleResId),
+                        color = textColor,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        }
     }
 }
