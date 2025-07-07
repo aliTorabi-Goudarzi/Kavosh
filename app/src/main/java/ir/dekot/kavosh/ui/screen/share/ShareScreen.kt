@@ -1,9 +1,8 @@
 package ir.dekot.kavosh.ui.screen.share
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -69,36 +68,28 @@ fun ShareScreen(
             QuickShareSection(
                 onQuickShare = {
                     exportViewModel.onQuickShareRequested()
+                },
+                onQrCodeShare = {
+                    exportViewModel.onQrCodeShareRequested()
                 }
             )
             
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // بخش خروجی فایل
+
+            // بخش ذخیره اطلاعات دستگاه
             Text(
-                text = "فرمت‌های خروجی",
+                text = "ذخیره اطلاعات دستگاه",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            
+
             Spacer(modifier = Modifier.height(12.dp))
-            
-            // لیست فرمت‌های خروجی
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(getExportOptions()) { option ->
-                    ExportOptionCard(
-                        title = stringResource(option.titleResId),
-                        description = option.description,
-                        icon = option.icon,
-                        onClick = {
-                            exportViewModel.onExportRequested(option.format)
-                        }
-                    )
-                }
-            }
+
+            // کارت انتخاب فرمت و ذخیره
+            ExportFormatSelector(
+                exportViewModel = exportViewModel
+            )
         }
         
         // Snackbar برای نمایش پیام‌ها
@@ -114,7 +105,8 @@ fun ShareScreen(
  */
 @Composable
 private fun QuickShareSection(
-    onQuickShare: () -> Unit
+    onQuickShare: () -> Unit,
+    onQrCodeShare: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -154,25 +146,187 @@ private fun QuickShareSection(
             }
             
             Spacer(modifier = Modifier.height(12.dp))
-            
+
+            // دکمه اشتراک‌گذاری متنی
             Button(
                 onClick = onQuickShare,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Send,
+                    imageVector = Icons.AutoMirrored.Filled.Send,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("اشتراک‌گذاری سریع")
+                Text("اشتراک‌گذاری متنی")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // دکمه اشتراک‌گذاری QR Code
+            OutlinedButton(
+                onClick = onQrCodeShare,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.QrCode,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("اشتراک‌گذاری QR Code")
             }
         }
     }
 }
 
 /**
- * کارت هر گزینه خروجی
+ * کامپوننت انتخاب فرمت و ذخیره
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ExportFormatSelector(
+    exportViewModel: ExportViewModel
+) {
+    var selectedFormat by remember { mutableStateOf(ExportFormat.PDF) }
+    var isDropdownExpanded by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            // آیکون و عنوان
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Save,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp)
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column {
+                    Text(
+                        text = "ذخیره گزارش کامل",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    Text(
+                        text = "تمام اطلاعات دستگاه را در فرمت دلخواه ذخیره کنید",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // منوی انتخاب فرمت
+            ExposedDropdownMenuBox(
+                expanded = isDropdownExpanded,
+                onExpandedChange = { isDropdownExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = getFormatDisplayName(selectedFormat),
+                    onValueChange = { },
+                    readOnly = true,
+                    label = { Text("انتخاب فرمت") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropdownExpanded)
+                    },
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = isDropdownExpanded,
+                    onDismissRequest = { isDropdownExpanded = false }
+                ) {
+                    getExportOptions().forEach { option ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = option.icon,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        Text(
+                                            text = stringResource(option.titleResId),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                        Text(
+                                            text = option.description,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            },
+                            onClick = {
+                                selectedFormat = option.format
+                                isDropdownExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // دکمه ذخیره
+            Button(
+                onClick = {
+                    exportViewModel.onExportRequested(selectedFormat)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Download,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("ذخیره فایل")
+            }
+        }
+    }
+}
+
+/**
+ * دریافت نام نمایشی فرمت
+ */
+@Composable
+private fun getFormatDisplayName(format: ExportFormat): String {
+    return when (format) {
+        ExportFormat.TXT -> stringResource(R.string.export_format_txt)
+        ExportFormat.PDF -> stringResource(R.string.export_format_pdf)
+        ExportFormat.JSON -> stringResource(R.string.export_format_json)
+        ExportFormat.HTML -> stringResource(R.string.export_format_html)
+        ExportFormat.EXCEL -> stringResource(R.string.export_format_excel)
+        ExportFormat.QR_CODE -> stringResource(R.string.export_format_qr_code)
+    }
+}
+
+/**
+ * کارت هر گزینه خروجی (حفظ شده برای سازگاری)
  */
 @Composable
 private fun ExportOptionCard(
@@ -241,21 +395,39 @@ private data class ExportOption(
  */
 private fun getExportOptions(): List<ExportOption> = listOf(
     ExportOption(
-        format = ExportFormat.TXT,
-        titleResId = R.string.export_format_txt,
-        description = "فایل متنی ساده برای مشاهده در هر ویرایشگر",
-        icon = Icons.Default.TextSnippet
-    ),
-    ExportOption(
         format = ExportFormat.PDF,
         titleResId = R.string.export_format_pdf,
-        description = "سند PDF با فرمت‌بندی زیبا",
+        description = "سند PDF با فرمت‌بندی زیبا و حرفه‌ای",
         icon = Icons.Default.PictureAsPdf
+    ),
+    ExportOption(
+        format = ExportFormat.HTML,
+        titleResId = R.string.export_format_html,
+        description = "گزارش وب زیبا قابل مشاهده در مرورگر",
+        icon = Icons.Default.Language
+    ),
+    ExportOption(
+        format = ExportFormat.EXCEL,
+        titleResId = R.string.export_format_excel,
+        description = "فایل اکسل با جداول و فرمت‌بندی",
+        icon = Icons.Default.TableChart
     ),
     ExportOption(
         format = ExportFormat.JSON,
         titleResId = R.string.export_format_json,
         description = "داده ساختاریافته برای توسعه‌دهندگان",
         icon = Icons.Default.Code
+    ),
+    ExportOption(
+        format = ExportFormat.TXT,
+        titleResId = R.string.export_format_txt,
+        description = "فایل متنی ساده برای مشاهده سریع",
+        icon = Icons.Default.TextSnippet
+    ),
+    ExportOption(
+        format = ExportFormat.QR_CODE,
+        titleResId = R.string.export_format_qr_code,
+        description = "کد QR برای اشتراک‌گذاری سریع",
+        icon = Icons.Default.QrCode
     )
 )

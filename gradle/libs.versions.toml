@@ -2,6 +2,7 @@
 accompanistPermissions = "0.37.3"
 agp = "8.11.0"
 coilCompose = "2.7.0"
+core = "3.5.3"
 kotlin = "2.2.0"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -16,6 +17,9 @@ hilt = "2.56.2" # <-- نسخه Hilt را اضافه کنید
 mockk = "1.14.4"
 mockkAgentJvm = "1.14.4"
 hiltNavigationCompose = "1.2.0" # <-- این خط را اضافه کنید
+poi = "5.4.1"
+poiOoxml = "5.4.1"
+zxingAndroidEmbedded = "4.3.0"
 
 
 [libraries]
@@ -24,6 +28,7 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 # کتابخانه جدید برای جابجایی آیتم‌ها
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+core = { module = "com.google.zxing:core", version.ref = "core" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -44,6 +49,9 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 mockk-agent-jvm = { module = "io.mockk:mockk-agent-jvm", version.ref = "mockkAgentJvm" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" } # <-- این خط را اضافه کنید
+poi = { module = "org.apache.poi:poi", version.ref = "poi" }
+poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poiOoxml" }
+zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxingAndroidEmbedded" }
 
 
 [plugins]

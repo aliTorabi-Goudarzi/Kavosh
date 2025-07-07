@@ -166,12 +166,15 @@
 
     <!-- Share Screen -->
     <string name="share_title">خروجی و اشتراک‌گذاری</string>
-    <string name="share_subtitle">اطلاعات دستگاه خود را به اشتراک بگذارید</string>
+    <string name="share_subtitle">اطلاعات دستگاه خود را ذخیره یا به اشتراک بگذارید</string>
     <string name="export_format_txt">فرمت متنی (TXT)</string>
     <string name="export_format_pdf">سند PDF</string>
     <string name="export_format_json">داده JSON</string>
+    <string name="export_format_html">گزارش وب (HTML)</string>
+    <string name="export_format_excel">فایل اکسل (XLSX)</string>
+    <string name="export_format_qr_code">کد QR</string>
     <string name="quick_share">اشتراک‌گذاری سریع</string>
-    <string name="quick_share_desc">اشتراک‌گذاری اطلاعات پایه دستگاه</string>
+    <string name="quick_share_desc">اشتراک‌گذاری اطلاعات پایه دستگاه به صورت متن یا QR Code</string>
     <string name="full_report">گزارش کامل</string>
     <string name="full_report_desc">مشخصات کامل دستگاه</string>
 

@@ -10,14 +10,13 @@ import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.diagnostic.*
 import ir.dekot.kavosh.util.report.DiagnosticReportFormatter
 import ir.dekot.kavosh.util.report.DiagnosticPdfGenerator
-import ir.dekot.kavosh.ui.viewmodel.ExportResult
-import ir.dekot.kavosh.ui.viewmodel.ExportFormat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.put
+import java.io.OutputStream
 import java.io.FileOutputStream
 import javax.inject.Inject
 
@@ -89,6 +88,15 @@ class DiagnosticExportViewModel @Inject constructor(
                             ExportFormat.JSON -> {
                                 val jsonReport = generateJsonReport(request)
                                 fos.write(jsonReport.toByteArray())
+                            }
+                            ExportFormat.HTML -> {
+                                generateHtmlReport(request, fos)
+                            }
+                            ExportFormat.EXCEL -> {
+                                generateExcelReport(request, fos)
+                            }
+                            ExportFormat.QR_CODE -> {
+                                generateQrCodeReport(request, fos)
                             }
                         }
                     }
@@ -294,6 +302,97 @@ class DiagnosticExportViewModel @Inject constructor(
             kotlinx.serialization.json.JsonObject.serializer(),
             jsonObject
         )
+    }
+
+    /**
+     * تولید گزارش HTML
+     */
+    private fun generateHtmlReport(request: ExportRequest, outputStream: OutputStream) {
+        // برای سادگی، از همان محتوای متنی استفاده می‌کنیم و آن را در HTML قرار می‌دهیم
+        val textContent = generateTextReport(request)
+        val htmlContent = """
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${getReportTitle(request)}</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 5px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 ${getReportTitle(request)}</h1>
+        <pre>$textContent</pre>
+    </div>
+</body>
+</html>
+        """.trimIndent()
+
+        outputStream.write(htmlContent.toByteArray(Charsets.UTF_8))
+    }
+
+    /**
+     * تولید گزارش Excel
+     */
+    private fun generateExcelReport(request: ExportRequest, outputStream: OutputStream) {
+        // برای سادگی، از یک Excel ساده استفاده می‌کنیم
+        val workbook = org.apache.poi.xssf.usermodel.XSSFWorkbook()
+
+        try {
+            val sheet = workbook.createSheet(getReportTitle(request))
+            val textContent = generateTextReport(request)
+            val lines = textContent.split("\n")
+
+            lines.forEachIndexed { index, line ->
+                val row = sheet.createRow(index)
+                val cell = row.createCell(0)
+                cell.setCellValue(line)
+            }
+
+            // تنظیم عرض ستون
+            sheet.setColumnWidth(0, 15000)
+
+            workbook.write(outputStream)
+        } finally {
+            workbook.close()
+        }
+    }
+
+    /**
+     * تولید QR Code
+     */
+    private fun generateQrCodeReport(request: ExportRequest, outputStream: OutputStream) {
+        val textContent = generateTextReport(request)
+        val reportTitle = getReportTitle(request)
+
+        // ایجاد محتوای کامل‌تر برای QR Code
+        val qrContent = buildString {
+            append("📊 $reportTitle\n")
+            append("═══════════════════════\n")
+            append("📅 تاریخ: ${java.text.SimpleDateFormat("yyyy/MM/dd HH:mm", java.util.Locale.getDefault()).format(java.util.Date())}\n")
+            append("═══════════════════════\n")
+
+            // محدود کردن محتوا برای QR Code (حداکثر 1500 کاراکتر برای باقی محتوا)
+            val remainingSpace = 1500 - length
+            if (textContent.length > remainingSpace) {
+                append(textContent.substring(0, remainingSpace))
+                append("\n...\n")
+                append("📱 برای مشاهده کامل از اپلیکیشن کاوش استفاده کنید")
+            } else {
+                append(textContent)
+            }
+
+            append("\n═══════════════════════\n")
+            append("🚀 تولید شده با اپلیکیشن کاوش")
+        }
+
+        val qrBitmap = ir.dekot.kavosh.util.report.QrCodeGenerator.createStyledQrCode(context, qrContent, reportTitle)
+        ir.dekot.kavosh.util.report.QrCodeGenerator.saveQrCodeAsPng(qrBitmap, outputStream as FileOutputStream)
     }
 
     /**

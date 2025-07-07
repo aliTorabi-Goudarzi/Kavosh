@@ -11,6 +11,9 @@ import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
 import ir.dekot.kavosh.util.report.PdfGenerator
 import ir.dekot.kavosh.util.report.ReportFormatter
+import ir.dekot.kavosh.util.report.HtmlReportGenerator
+import ir.dekot.kavosh.util.report.ExcelReportGenerator
+import ir.dekot.kavosh.util.report.QrCodeGenerator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -73,6 +76,16 @@ class ExportViewModel @Inject constructor(
                                 val jsonReport = ReportFormatter.formatJsonReport(deviceInfo, currentBatteryInfo)
                                 fos.write(jsonReport.toByteArray())
                             }
+                            ExportFormat.HTML -> {
+                                HtmlReportGenerator.generateHtmlReport(context, fos, deviceInfo, currentBatteryInfo)
+                            }
+                            ExportFormat.EXCEL -> {
+                                ExcelReportGenerator.generateExcelReport(context, fos, deviceInfo, currentBatteryInfo)
+                            }
+                            ExportFormat.QR_CODE -> {
+                                val qrBitmap = QrCodeGenerator.generateQuickShareQrCode(context, deviceInfo, currentBatteryInfo)
+                                QrCodeGenerator.saveQrCodeAsPng(qrBitmap, fos)
+                            }
                         }
                     }
                 }
@@ -125,6 +138,52 @@ class ExportViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 _exportResult.emit(ExportResult.Failure("خطا در اشتراک‌گذاری: ${e.message}"))
+            }
+        }
+    }
+
+    /**
+     * اشتراک‌گذاری QR Code
+     */
+    fun onQrCodeShareRequested() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val deviceInfo = repository.getDeviceInfoCache() ?: repository.getBasicDeviceInfo()
+                val batteryInfo = repository.getCurrentBatteryInfo()
+
+                // تولید QR Code برای اشتراک‌گذاری آنلاین
+                val shareableQrBitmap = QrCodeGenerator.generateShareableQrCode(context, deviceInfo, batteryInfo)
+
+                // ذخیره موقت QR Code
+                val tempFile = java.io.File(context.cacheDir, "qr_share_${System.currentTimeMillis()}.png")
+                val fos = FileOutputStream(tempFile)
+                QrCodeGenerator.saveQrCodeAsPng(shareableQrBitmap, fos)
+                fos.close()
+
+                // تولید URI برای اشتراک‌گذاری
+                val uri = androidx.core.content.FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    tempFile
+                )
+
+                // Intent اشتراک‌گذاری تصویر
+                val shareIntent = android.content.Intent().apply {
+                    action = android.content.Intent.ACTION_SEND
+                    type = "image/png"
+                    putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                    putExtra(android.content.Intent.EXTRA_TEXT, "QR Code اطلاعات دستگاه - تولید شده با اپلیکیشن کاوش")
+                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                val chooserIntent = android.content.Intent.createChooser(shareIntent, "اشتراک‌گذاری QR Code از طریق...")
+                chooserIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(chooserIntent)
+
+                _exportResult.emit(ExportResult.Success("QR Code با موفقیت به اشتراک گذاشته شد"))
+
+            } catch (e: Exception) {
+                _exportResult.emit(ExportResult.Failure("خطا در اشتراک‌گذاری QR Code: ${e.message}"))
             }
         }
     }

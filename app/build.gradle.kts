@@ -17,7 +17,7 @@ android {
         minSdk = 28
         targetSdk = 35
         versionCode = 1
-        versionName = "6.2.1"
+        versionName = "6.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -79,6 +79,14 @@ dependencies {
     testImplementation(libs.mockk.agent.jvm)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.coil.compose)
+
+    // Apache POI for Excel export
+    implementation(libs.poi)
+    implementation(libs.poi.ooxml)
+
+    // QR Code generation (already exists but ensuring it's there)
+    implementation(libs.core)
+    implementation(libs.zxing.android.embedded)
 
 
 }

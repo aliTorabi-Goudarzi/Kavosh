@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- مسیر cache برای فایل‌های موقت -->
+    <cache-path name="cache" path="." />
+    <!-- مسیر external برای فایل‌های خروجی -->
+    <external-path name="external" path="." />
+    <!-- مسیر files برای فایل‌های داخلی -->
+    <files-path name="files" path="." />
+</paths>
