@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Science
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,11 +51,12 @@ val testableSensors = listOf(
 @Composable
 fun SensorInfoCard(
     info: SensorInfo,
-    onTestClick: (Int) -> Unit // یک Callback برای کلیک روی دکمه تست
+    onClick: () -> Unit // کلیک روی کل کارت
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier
@@ -75,11 +79,14 @@ fun SensorInfoCard(
                 )
             }
 
-            // *** دکمه تست به صورت شرطی اضافه شد ***
+            // آیکون نشان‌دهنده قابلیت تست
             if (info.type in testableSensors) {
-                Button(onClick = { onTestClick(info.type) }) {
-                    Text(text = stringResource(R.string.sensor_test_button))
-                }
+                Icon(
+                    imageVector = Icons.Default.Science,
+                    contentDescription = "قابل تست",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
             }
         }
     }
