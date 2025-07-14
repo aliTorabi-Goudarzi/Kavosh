@@ -122,6 +122,7 @@ class MainActivity : ComponentActivity() {
             val language by settingsViewModel.language.collectAsState()
             val currentTheme by settingsViewModel.themeState.collectAsState() // <-- خواندن تم
             val dynamicColor by settingsViewModel.isDynamicThemeEnabled.collectAsState()
+            val currentColorTheme by settingsViewModel.currentColorTheme.collectAsState() // <-- خواندن تم رنگی
 
 
             val useDarkTheme = when (currentTheme) {
@@ -138,7 +139,8 @@ class MainActivity : ComponentActivity() {
                 KavoshTheme(
                     darkTheme = useDarkTheme,
                     dynamicColor = dynamicColor,
-                    theme = currentTheme
+                    theme = currentTheme,
+                    colorTheme = currentColorTheme // <-- پاس دادن تم رنگی
                 ) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),

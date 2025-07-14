@@ -455,6 +455,23 @@
     <!-- Share Screen -->
     <string name="save_device_info">Save Device Information</string>
 
+    <!-- Color Themes -->
+    <string name="color_theme_selection">Color Theme</string>
+    <string name="color_theme_blue">Blue</string>
+    <string name="color_theme_green">Green</string>
+    <string name="color_theme_red">Red</string>
+    <string name="color_theme_purple">Purple</string>
+    <string name="color_theme_orange">Orange</string>
+    <string name="color_theme_teal">Teal</string>
+    <string name="color_theme_indigo">Indigo</string>
+    <string name="color_theme_pink">Pink</string>
+    <string name="color_theme_custom">Custom</string>
+    <string name="custom_color_picker">Custom Color Picker</string>
+    <string name="select_primary_color">Select Primary Color</string>
+    <string name="preview">Preview</string>
+    <string name="apply_color">Apply Color</string>
+    <string name="reset_to_default">Reset to Default</string>
+
     <!-- General UI -->
     <string name="back_button">Back</string>
     <string name="running">Running...</string>

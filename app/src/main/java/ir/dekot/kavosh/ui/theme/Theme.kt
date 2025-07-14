@@ -10,6 +10,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import ir.dekot.kavosh.data.model.settings.ColorTheme
 
 // پالت رنگی ثابت برای حالت تاریک (برای اندرویدهای قدیمی‌تر)
 private val DarkColorScheme = darkColorScheme(
@@ -51,21 +52,92 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color.Black
 )
 
-// ... (پالت‌های رنگی ثابت بدون تغییر) ...
+/**
+ * تابع کمکی برای ایجاد ColorScheme با رنگ‌های سفارشی
+ */
+private fun createCustomColorScheme(
+    colorTheme: ColorTheme,
+    isDark: Boolean
+): androidx.compose.material3.ColorScheme {
+    val primaryColor = colorTheme.primaryColor
+    val secondaryColor = colorTheme.secondaryColor ?: Color(0xFF03DAC6)
+
+    return if (isDark) {
+        darkColorScheme(
+            primary = primaryColor,
+            secondary = secondaryColor,
+            background = Color(0xFF121212),
+            surface = Color(0xFF1E1E1E),
+            surfaceVariant = Color(0xFF2C2C2C),
+            onPrimary = if (isLightColor(primaryColor)) Color.Black else Color.White,
+            onSecondary = if (isLightColor(secondaryColor)) Color.Black else Color.White,
+            onBackground = Color.White,
+            onSurface = Color.White,
+            onSurfaceVariant = Color(0xFFCCCCCC)
+        )
+    } else {
+        lightColorScheme(
+            primary = primaryColor,
+            secondary = secondaryColor,
+            background = Color(0xFFFFFFFF),
+            surface = Color(0xFFFFFFFF),
+            onPrimary = if (isLightColor(primaryColor)) Color.Black else Color.White,
+            onSecondary = if (isLightColor(secondaryColor)) Color.Black else Color.White,
+            onBackground = Color.Black,
+            onSurface = Color.Black
+        )
+    }
+}
+
+/**
+ * تابع کمکی برای ایجاد ColorScheme AMOLED با رنگ‌های سفارشی
+ */
+private fun createAmoledColorScheme(colorTheme: ColorTheme): androidx.compose.material3.ColorScheme {
+    val primaryColor = colorTheme.primaryColor
+    val secondaryColor = colorTheme.secondaryColor ?: Color(0xFF03DAC6)
+
+    return darkColorScheme(
+        primary = primaryColor,
+        secondary = secondaryColor,
+        background = Color.Black,
+        surface = Color.Black,
+        surfaceVariant = Color(0xFF1A1A1A),
+        onPrimary = if (isLightColor(primaryColor)) Color.Black else Color.White,
+        onSecondary = if (isLightColor(secondaryColor)) Color.Black else Color.White,
+        onBackground = Color.White,
+        onSurface = Color.White,
+        onSurfaceVariant = Color(0xFFCCCCCC)
+    )
+}
+
+/**
+ * تابع کمکی برای تشخیص رنگ‌های روشن
+ */
+private fun isLightColor(color: Color): Boolean {
+    val luminance = 0.299 * color.red + 0.587 * color.green + 0.114 * color.blue
+    return luminance > 0.5
+}
 
 @Composable
 fun KavoshTheme(
     darkTheme: Boolean = true,
-    dynamicColor: Boolean = true, // پارامتر جدید برای کنترل تم پویا
-    // **اصلاح ۲: پارامتر جدید برای دریافت نوع تم**
+    dynamicColor: Boolean = true,
     theme: ir.dekot.kavosh.data.model.settings.Theme = ir.dekot.kavosh.data.model.settings.Theme.SYSTEM,
+    colorTheme: ColorTheme? = null, // پارامتر جدید برای تم رنگی
     content: @Composable () -> Unit
 ) {
     val supportsDynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val context = LocalContext.current
 
     val colorScheme = when {
-        // **اصلاح ۳: منطق انتخاب پالت رنگی**
+        // اگر تم رنگی سفارشی انتخاب شده باشد
+        colorTheme != null -> {
+            when (theme) {
+                ir.dekot.kavosh.data.model.settings.Theme.AMOLED -> createAmoledColorScheme(colorTheme)
+                else -> createCustomColorScheme(colorTheme, darkTheme)
+            }
+        }
+        // منطق قبلی برای تم‌های پیش‌فرض
         theme == ir.dekot.kavosh.data.model.settings.Theme.AMOLED -> AmoledColorScheme
         dynamicColor && supportsDynamicColor && darkTheme -> dynamicDarkColorScheme(context)
         dynamicColor && supportsDynamicColor && !darkTheme -> dynamicLightColorScheme(context)

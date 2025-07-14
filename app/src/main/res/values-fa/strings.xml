@@ -457,6 +457,23 @@
     <!-- Share Screen -->
     <string name="save_device_info">ذخیره اطلاعات دستگاه</string>
 
+    <!-- Color Themes -->
+    <string name="color_theme_selection">تم رنگی</string>
+    <string name="color_theme_blue">آبی</string>
+    <string name="color_theme_green">سبز</string>
+    <string name="color_theme_red">قرمز</string>
+    <string name="color_theme_purple">بنفش</string>
+    <string name="color_theme_orange">نارنجی</string>
+    <string name="color_theme_teal">فیروزه‌ای</string>
+    <string name="color_theme_indigo">نیلی</string>
+    <string name="color_theme_pink">صورتی</string>
+    <string name="color_theme_custom">سفارشی</string>
+    <string name="custom_color_picker">انتخابگر رنگ سفارشی</string>
+    <string name="select_primary_color">انتخاب رنگ اصلی</string>
+    <string name="preview">پیش‌نمایش</string>
+    <string name="apply_color">اعمال رنگ</string>
+    <string name="reset_to_default">بازنشانی به پیش‌فرض</string>
+
     <!-- General UI -->
     <string name="back_button">بازگشت</string>
     <string name="running">در حال اجرا…</string>

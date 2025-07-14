@@ -60,6 +60,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.settings.Theme
+import ir.dekot.kavosh.data.model.settings.ColorTheme
+import ir.dekot.kavosh.ui.screen.settings.components.ColorThemeSection
 import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
 
@@ -81,6 +83,7 @@ fun SettingsScreen(
     val isReorderingEnabled by viewModel.isReorderingEnabled.collectAsState()
     val isDynamicThemeEnabled by viewModel.isDynamicThemeEnabled.collectAsState()
     val currentLanguage by viewModel.language.collectAsState()
+    val currentColorTheme by viewModel.currentColorTheme.collectAsState()
 
     // state های محلی برای کنترل نمایش بخش‌های مختلف
     var expandedSection by remember { mutableStateOf<SettingsSection?>(null) }
@@ -118,9 +121,13 @@ fun SettingsScreen(
                         currentTheme = currentTheme,
                         currentLanguage = currentLanguage,
                         isDynamicThemeEnabled = isDynamicThemeEnabled,
+                        currentColorTheme = currentColorTheme,
                         onThemeSelected = viewModel::onThemeSelected,
                         onLanguageSelected = viewModel::onLanguageSelected,
-                        onDynamicThemeToggled = viewModel::onDynamicThemeToggled
+                        onDynamicThemeToggled = viewModel::onDynamicThemeToggled,
+                        onPredefinedColorThemeSelected = viewModel::selectPredefinedColorTheme,
+                        onCustomColorThemeSelected = viewModel::selectCustomColorTheme,
+                        onResetColorTheme = viewModel::resetColorTheme
                     )
                 }
             }
@@ -274,9 +281,13 @@ private fun AppearanceSettings(
     currentTheme: Theme,
     currentLanguage: String,
     isDynamicThemeEnabled: Boolean,
+    currentColorTheme: ColorTheme?,
     onThemeSelected: (Theme) -> Unit,
     onLanguageSelected: (String) -> Unit,
-    onDynamicThemeToggled: (Boolean) -> Unit
+    onDynamicThemeToggled: (Boolean) -> Unit,
+    onPredefinedColorThemeSelected: (ir.dekot.kavosh.data.model.settings.PredefinedColorTheme) -> Unit,
+    onCustomColorThemeSelected: (ir.dekot.kavosh.data.model.settings.CustomColorTheme) -> Unit,
+    onResetColorTheme: () -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -311,6 +322,14 @@ private fun AppearanceSettings(
                 )
             }
         }
+
+        // بخش انتخاب تم رنگی
+        ColorThemeSection(
+            currentColorTheme = currentColorTheme,
+            onPredefinedThemeSelected = onPredefinedColorThemeSelected,
+            onCustomThemeSelected = onCustomColorThemeSelected,
+            onResetTheme = onResetColorTheme
+        )
     }
 }
 

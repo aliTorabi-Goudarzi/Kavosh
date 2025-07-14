@@ -20,6 +20,9 @@ import ir.dekot.kavosh.data.model.components.SystemInfo
 import ir.dekot.kavosh.data.model.components.ThermalInfo
 import ir.dekot.kavosh.data.model.components.WifiScanResult
 import ir.dekot.kavosh.data.model.settings.Theme
+import ir.dekot.kavosh.data.model.settings.PredefinedColorTheme
+import ir.dekot.kavosh.data.model.settings.CustomColorTheme
+import ir.dekot.kavosh.data.model.settings.ColorTheme
 import ir.dekot.kavosh.data.source.CameraDataSource
 import ir.dekot.kavosh.data.source.MemoryDataSource
 import ir.dekot.kavosh.data.source.NetworkDataSource
@@ -191,4 +194,18 @@ class DeviceInfoRepository @Inject constructor(
     fun getSystemAppsCache(): List<AppInfo>? = settingsDataSource.getSystemAppsCache()
     fun getPackageCountCache(): Int = settingsDataSource.getPackageCountCache()
     fun getCurrentPackageCount(): Int = appsDataSource.getPackageCount()
+
+    // --- متدهای جدید برای مدیریت تم‌های رنگی ---
+    fun savePredefinedColorTheme(colorTheme: PredefinedColorTheme) =
+        settingsDataSource.savePredefinedColorTheme(colorTheme)
+
+    fun saveCustomColorTheme(customTheme: CustomColorTheme) =
+        settingsDataSource.saveCustomColorTheme(customTheme)
+
+    fun getCurrentColorTheme(): ColorTheme? =
+        settingsDataSource.getCurrentColorTheme()
+
+    fun resetColorTheme() = settingsDataSource.resetColorTheme()
+
+    fun hasCustomColorTheme(): Boolean = settingsDataSource.hasCustomColorTheme()
 }

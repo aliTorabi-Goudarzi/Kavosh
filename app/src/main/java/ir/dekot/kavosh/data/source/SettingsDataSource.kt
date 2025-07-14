@@ -7,10 +7,14 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.AppInfo
 import ir.dekot.kavosh.data.model.settings.Theme
+import ir.dekot.kavosh.data.model.settings.PredefinedColorTheme
+import ir.dekot.kavosh.data.model.settings.CustomColorTheme
 import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import ir.dekot.kavosh.data.model.diagnostic.HealthCheckSummary
 import ir.dekot.kavosh.data.model.diagnostic.PerformanceScore
 import ir.dekot.kavosh.data.model.diagnostic.DeviceComparison
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
@@ -42,6 +46,11 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
         const val KEY_HEALTH_CHECK_HISTORY = "health_check_history"
         const val KEY_PERFORMANCE_SCORE_HISTORY = "performance_score_history"
         const val KEY_DEVICE_COMPARISON_HISTORY = "device_comparison_history"
+        // کلیدهای جدید برای تم‌های رنگی
+        const val KEY_COLOR_THEME_TYPE = "color_theme_type" // "predefined" یا "custom"
+        const val KEY_PREDEFINED_COLOR_THEME = "predefined_color_theme"
+        const val KEY_CUSTOM_PRIMARY_COLOR = "custom_primary_color"
+        const val KEY_CUSTOM_SECONDARY_COLOR = "custom_secondary_color"
     }
 
     // --- متدهای جدید برای کش برنامه‌ها ---
@@ -284,5 +293,76 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
      */
     fun isDynamicThemeEnabled(): Boolean {
         return prefs.getBoolean(KEY_DYNAMIC_THEME_ENABLED, true)
+    }
+
+    // --- متدهای جدید برای مدیریت تم‌های رنگی ---
+
+    /**
+     * ذخیره تم رنگی از پیش تعریف شده
+     */
+    fun savePredefinedColorTheme(colorTheme: PredefinedColorTheme) {
+        prefs.edit {
+            putString(KEY_COLOR_THEME_TYPE, "predefined")
+            putString(KEY_PREDEFINED_COLOR_THEME, colorTheme.id)
+            remove(KEY_CUSTOM_PRIMARY_COLOR)
+            remove(KEY_CUSTOM_SECONDARY_COLOR)
+        }
+    }
+
+    /**
+     * ذخیره تم رنگی سفارشی
+     */
+    fun saveCustomColorTheme(customTheme: CustomColorTheme) {
+        prefs.edit {
+            putString(KEY_COLOR_THEME_TYPE, "custom")
+            putInt(KEY_CUSTOM_PRIMARY_COLOR, customTheme.primaryColor.toArgb())
+            customTheme.secondaryColor?.let {
+                putInt(KEY_CUSTOM_SECONDARY_COLOR, it.toArgb())
+            } ?: remove(KEY_CUSTOM_SECONDARY_COLOR)
+            remove(KEY_PREDEFINED_COLOR_THEME)
+        }
+    }
+
+    /**
+     * دریافت تم رنگی فعلی
+     */
+    fun getCurrentColorTheme(): ir.dekot.kavosh.data.model.settings.ColorTheme? {
+        val themeType = prefs.getString(KEY_COLOR_THEME_TYPE, null)
+
+        return when (themeType) {
+            "predefined" -> {
+                val themeId = prefs.getString(KEY_PREDEFINED_COLOR_THEME, null)
+                themeId?.let { PredefinedColorTheme.fromId(it)?.toColorTheme() }
+            }
+            "custom" -> {
+                val primaryColorInt = prefs.getInt(KEY_CUSTOM_PRIMARY_COLOR, -1)
+                if (primaryColorInt != -1) {
+                    val primaryColor = Color(primaryColorInt)
+                    val secondaryColorInt = prefs.getInt(KEY_CUSTOM_SECONDARY_COLOR, -1)
+                    val secondaryColor = if (secondaryColorInt != -1) Color(secondaryColorInt) else null
+                    CustomColorTheme(primaryColor, secondaryColor).toColorTheme()
+                } else null
+            }
+            else -> null // هیچ تم رنگی انتخاب نشده
+        }
+    }
+
+    /**
+     * بازنشانی تم رنگی به حالت پیش‌فرض
+     */
+    fun resetColorTheme() {
+        prefs.edit {
+            remove(KEY_COLOR_THEME_TYPE)
+            remove(KEY_PREDEFINED_COLOR_THEME)
+            remove(KEY_CUSTOM_PRIMARY_COLOR)
+            remove(KEY_CUSTOM_SECONDARY_COLOR)
+        }
+    }
+
+    /**
+     * بررسی اینکه آیا تم رنگی سفارشی انتخاب شده یا خیر
+     */
+    fun hasCustomColorTheme(): Boolean {
+        return prefs.getString(KEY_COLOR_THEME_TYPE, null) != null
     }
 }

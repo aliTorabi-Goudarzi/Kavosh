@@ -5,6 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.dekot.kavosh.data.model.settings.Theme
+import ir.dekot.kavosh.data.model.settings.PredefinedColorTheme
+import ir.dekot.kavosh.data.model.settings.CustomColorTheme
+import ir.dekot.kavosh.data.model.settings.ColorTheme
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,6 +41,10 @@ class SettingsViewModel @Inject constructor(
     private val _languageChangeRequest = MutableSharedFlow<Unit>()
     val languageChangeRequest = _languageChangeRequest.asSharedFlow()
 
+    // --- State های جدید برای تم‌های رنگی ---
+    private val _currentColorTheme = MutableStateFlow<ColorTheme?>(null)
+    val currentColorTheme: StateFlow<ColorTheme?> = _currentColorTheme.asStateFlow()
+
     init {
         // بارگذاری تنظیمات ذخیره شده در شروع
         _themeState.value = repository.getTheme()
@@ -45,6 +52,7 @@ class SettingsViewModel @Inject constructor(
         _isDynamicThemeEnabled.value = repository.isDynamicThemeEnabled()
         _language.value = repository.getLanguage()
         _appVersion.value = repository.getAppVersion()
+        _currentColorTheme.value = repository.getCurrentColorTheme()
     }
 
     // --- توابع مربوط به رویدادهای کاربر ---
@@ -118,6 +126,52 @@ class SettingsViewModel @Inject constructor(
             // ارسال رویداد برای بازسازی Activity (در صورت تغییر زبان)
             _languageChangeRequest.emit(Unit)
         }
+    }
+
+    // --- توابع جدید برای مدیریت تم‌های رنگی ---
+
+    /**
+     * انتخاب تم رنگی از پیش تعریف شده
+     */
+    fun selectPredefinedColorTheme(colorTheme: PredefinedColorTheme) {
+        viewModelScope.launch {
+            repository.savePredefinedColorTheme(colorTheme)
+            _currentColorTheme.value = colorTheme.toColorTheme()
+        }
+    }
+
+    /**
+     * انتخاب تم رنگی سفارشی
+     */
+    fun selectCustomColorTheme(customTheme: CustomColorTheme) {
+        viewModelScope.launch {
+            repository.saveCustomColorTheme(customTheme)
+            _currentColorTheme.value = customTheme.toColorTheme()
+        }
+    }
+
+    /**
+     * بازنشانی تم رنگی به حالت پیش‌فرض
+     */
+    fun resetColorTheme() {
+        viewModelScope.launch {
+            repository.resetColorTheme()
+            _currentColorTheme.value = null
+        }
+    }
+
+    /**
+     * دریافت لیست تم‌های رنگی از پیش تعریف شده
+     */
+    fun getPredefinedColorThemes(): List<PredefinedColorTheme> {
+        return PredefinedColorTheme.values().toList()
+    }
+
+    /**
+     * بررسی اینکه آیا تم رنگی سفارشی انتخاب شده یا خیر
+     */
+    fun hasCustomColorTheme(): Boolean {
+        return repository.hasCustomColorTheme()
     }
 
     companion object {
