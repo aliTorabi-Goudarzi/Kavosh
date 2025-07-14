@@ -3,9 +3,11 @@ package ir.dekot.kavosh.ui.screen.main
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import ir.dekot.kavosh.ui.composables.FloatingBottomNavigation
@@ -39,14 +41,22 @@ fun MainScreen(
     onPerformanceScoreClick: () -> Unit,
     onDeviceComparisonClick: () -> Unit
 ) {
-    var selectedTab by remember { mutableStateOf(BottomNavItem.INFO) }
+    // **اصلاح: استفاده از NavigationViewModel برای مدیریت بخش فعلی**
+    val selectedTab by navigationViewModel.currentBottomNavSection.collectAsState()
     val context = LocalContext.current
+
+    // **اصلاح: مدیریت دکمه بازگشت در سطح بالای هر بخش**
+    // اگر کاربر در INFO tab باشد، دکمه back باید برنامه را ببندد
+    // اگر در تب‌های دیگر باشد، باید به INFO tab برگردد
+    BackHandler(enabled = selectedTab != BottomNavItem.INFO) {
+        navigationViewModel.setBottomNavSection(BottomNavItem.INFO)
+    }
 
     Scaffold(
         bottomBar = {
             FloatingBottomNavigation(
                 selectedItem = selectedTab,
-                onItemSelected = { selectedTab = it }
+                onItemSelected = { navigationViewModel.setBottomNavSection(it) }
             )
         }
     ) { paddingValues ->

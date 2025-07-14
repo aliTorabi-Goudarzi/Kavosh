@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.dekot.kavosh.data.repository.DeviceInfoRepository
 import ir.dekot.kavosh.ui.navigation.Screen
+import ir.dekot.kavosh.ui.navigation.BottomNavItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,6 +23,13 @@ class NavigationViewModel @Inject constructor(
     // **اصلاح ۱: اضافه کردن پشته برای تاریخچه ناوبری**
     private val _backStack = mutableListOf<Screen>()
 
+    // **اصلاح جدید: ردیابی بخش فعلی bottom navigation**
+    private val _currentBottomNavSection = MutableStateFlow<BottomNavItem>(BottomNavItem.INFO)
+    val currentBottomNavSection: StateFlow<BottomNavItem> = _currentBottomNavSection.asStateFlow()
+
+    // **اصلاح جدید: ردیابی آخرین بخش قبل از رفتن به صفحه جزئیات**
+    private var lastBottomNavSection: BottomNavItem = BottomNavItem.INFO
+
     init {
         if (repository.isFirstLaunch()) {
             _currentScreen.value = Screen.Splash
@@ -31,26 +39,46 @@ class NavigationViewModel @Inject constructor(
     }
 
     /**
+     * **اصلاح جدید: تابع برای تغییر بخش bottom navigation**
+     */
+    fun setBottomNavSection(section: BottomNavItem) {
+        _currentBottomNavSection.value = section
+        // اگر در حال حاضر در صفحه Dashboard هستیم، تغییری در currentScreen نمی‌دهیم
+        // فقط بخش bottom nav را تغییر می‌دهیم
+    }
+
+    /**
      * **اصلاح ۲: تابع اصلی برای مدیریت ناوبری و پشته**
      * این تابع صفحه فعلی را به پشته اضافه کرده و به مقصد جدید می‌رود.
      */
     private fun navigateTo(destination: Screen) {
         // جلوگیری از اضافه شدن صفحات تکراری به پشته
         if (_currentScreen.value != destination) {
+            // اگر از Dashboard به صفحه دیگری می‌رویم، بخش فعلی را ذخیره می‌کنیم
+            if (_currentScreen.value == Screen.Dashboard) {
+                lastBottomNavSection = _currentBottomNavSection.value
+            }
             _backStack.add(_currentScreen.value)
             _currentScreen.value = destination
         }
     }
 
-    // **اصلاح ۳: بازنویسی تابع بازگشت**
+    // **اصلاح ۳: بازنویسی تابع بازگشت با پشتیبانی از بخش‌های bottom nav**
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun navigateBack() {
         // اگر پشته خالی نباشد، به آخرین صفحه برمی‌گردیم
         if (_backStack.isNotEmpty()) {
-            _currentScreen.value = _backStack.removeLast()
+            val previousScreen = _backStack.removeLast()
+            _currentScreen.value = previousScreen
+
+            // اگر به Dashboard برمی‌گردیم، بخش bottom nav را به آخرین بخش بازگردانیم
+            if (previousScreen == Screen.Dashboard) {
+                _currentBottomNavSection.value = lastBottomNavSection
+            }
         } else {
             // به عنوان fallback، اگر پشته خالی بود به داشبورد برو
             _currentScreen.value = Screen.Dashboard
+            _currentBottomNavSection.value = BottomNavItem.INFO
         }
     }
 
@@ -61,6 +89,8 @@ class NavigationViewModel @Inject constructor(
     fun navigateToDashboardAndClearHistory() {
         _backStack.clear()
         _currentScreen.value = Screen.Dashboard
+        _currentBottomNavSection.value = BottomNavItem.INFO
+        lastBottomNavSection = BottomNavItem.INFO
     }
 
 
@@ -120,5 +150,7 @@ class NavigationViewModel @Inject constructor(
         // پس از اسکن، تاریخچه باید پاک شود
         _backStack.clear()
         _currentScreen.value = Screen.Dashboard
+        _currentBottomNavSection.value = BottomNavItem.INFO
+        lastBottomNavSection = BottomNavItem.INFO
     }
 }
