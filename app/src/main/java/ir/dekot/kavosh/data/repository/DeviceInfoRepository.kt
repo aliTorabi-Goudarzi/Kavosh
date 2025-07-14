@@ -99,6 +99,29 @@ class DeviceInfoRepository @Inject constructor(
     fun performStorageSpeedTest(onProgress: (Float) -> Unit): Pair<String, String> =
         memoryDataSource.performStorageSpeedTest(onProgress)
 
+    /**
+     * تست پیشرفته سرعت حافظه با فایل ۱ گیگابایتی
+     */
+    fun performEnhancedStorageSpeedTest(
+        onProgress: (Float) -> Unit,
+        onSpeedUpdate: (writeSpeed: Double, readSpeed: Double) -> Unit,
+        onPhaseChange: (phase: String) -> Unit,
+        onSpeedHistoryUpdate: (writeHistory: List<ir.dekot.kavosh.data.model.storage.SpeedDataPoint>, readHistory: List<ir.dekot.kavosh.data.model.storage.SpeedDataPoint>) -> Unit
+    ): ir.dekot.kavosh.data.model.storage.StorageSpeedTestResult =
+        memoryDataSource.performEnhancedStorageSpeedTest(onProgress, onSpeedUpdate, onPhaseChange, onSpeedHistoryUpdate)
+
+    /**
+     * ذخیره تاریخچه تست سرعت حافظه
+     */
+    fun saveStorageSpeedTestHistory(history: List<ir.dekot.kavosh.data.model.storage.StorageTestSummary>) =
+        settingsDataSource.saveStorageSpeedTestHistory(history)
+
+    /**
+     * بازیابی تاریخچه تست سرعت حافظه
+     */
+    fun getStorageSpeedTestHistory(): List<ir.dekot.kavosh.data.model.storage.StorageTestSummary> =
+        settingsDataSource.getStorageSpeedTestHistory()
+
     // --- NetworkDataSource ---
     fun getNetworkInfo(): NetworkInfo = networkDataSource.getNetworkInfo()
 

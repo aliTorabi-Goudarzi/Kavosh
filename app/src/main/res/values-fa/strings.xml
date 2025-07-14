@@ -448,6 +448,27 @@
     <string name="retest">تست مجدد</string>
     <string name="retry">تلاش مجدد</string>
 
+    <!-- Enhanced Storage Speed Test -->
+    <string name="storage_speed_permission_title">مجوز تست سرعت حافظه</string>
+    <string name="storage_speed_permission_message">این تست برای اندازه‌گیری دقیق سرعت حافظه، یک فایل موقت ۱ گیگابایتی ایجاد خواهد کرد. فایل پس از اتمام تست به طور خودکار حذف می‌شود.\n\nآیا می‌خواهید ادامه دهید؟</string>
+    <string name="storage_speed_permission_grant">شروع تست</string>
+    <string name="storage_speed_permission_deny">لغو</string>
+    <string name="storage_speed_live_chart_title">نمایش زنده سرعت</string>
+    <string name="storage_speed_write_chart_title">نمودار سرعت نوشتن</string>
+    <string name="storage_speed_read_chart_title">نمودار سرعت خواندن</string>
+    <string name="storage_speed_test_duration">مدت زمان تست: %d ثانیه</string>
+    <string name="storage_speed_file_size">اندازه فایل تست: ۱ گیگابایت</string>
+    <string name="storage_speed_history_title">تاریخچه تست‌ها</string>
+    <string name="storage_speed_no_history">هیچ تست قبلی یافت نشد</string>
+    <string name="storage_speed_export_title">خروجی نتایج تست</string>
+    <string name="storage_speed_test_completed">تست با موفقیت تکمیل شد</string>
+    <string name="storage_speed_test_failed">تست ناموفق بود. لطفاً دوباره تلاش کنید.</string>
+    <string name="storage_speed_insufficient_space">فضای ذخیره‌سازی کافی برای تست وجود ندارد</string>
+    <string name="storage_speed_creating_file">در حال ایجاد فایل تست...</string>
+    <string name="storage_speed_testing_write">در حال تست سرعت نوشتن...</string>
+    <string name="storage_speed_testing_read">در حال تست سرعت خواندن...</string>
+    <string name="storage_speed_cleaning_up">در حال پاک‌سازی...</string>
+
     <!-- Compass Directions -->
     <string name="compass_north">شمال</string>
     <string name="compass_east">شرق</string>

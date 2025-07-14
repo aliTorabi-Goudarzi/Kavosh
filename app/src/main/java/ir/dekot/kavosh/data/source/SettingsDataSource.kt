@@ -2,22 +2,21 @@ package ir.dekot.kavosh.data.source
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.dekot.kavosh.data.model.DeviceInfo
 import ir.dekot.kavosh.data.model.components.AppInfo
-import ir.dekot.kavosh.data.model.settings.Theme
-import ir.dekot.kavosh.data.model.settings.PredefinedColorTheme
-import ir.dekot.kavosh.data.model.settings.CustomColorTheme
-import ir.dekot.kavosh.ui.viewmodel.InfoCategory
+import ir.dekot.kavosh.data.model.diagnostic.DeviceComparison
 import ir.dekot.kavosh.data.model.diagnostic.HealthCheckSummary
 import ir.dekot.kavosh.data.model.diagnostic.PerformanceScore
-import ir.dekot.kavosh.data.model.diagnostic.DeviceComparison
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
+import ir.dekot.kavosh.data.model.settings.CustomColorTheme
+import ir.dekot.kavosh.data.model.settings.PredefinedColorTheme
+import ir.dekot.kavosh.data.model.settings.Theme
+import ir.dekot.kavosh.data.model.storage.StorageTestSummary
+import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.decodeFromString
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -46,6 +45,7 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
         const val KEY_HEALTH_CHECK_HISTORY = "health_check_history"
         const val KEY_PERFORMANCE_SCORE_HISTORY = "performance_score_history"
         const val KEY_DEVICE_COMPARISON_HISTORY = "device_comparison_history"
+        const val KEY_STORAGE_SPEED_TEST_HISTORY = "storage_speed_test_history"
         // کلیدهای جدید برای تم‌های رنگی
         const val KEY_COLOR_THEME_TYPE = "color_theme_type" // "predefined" یا "custom"
         const val KEY_PREDEFINED_COLOR_THEME = "predefined_color_theme"
@@ -147,6 +147,31 @@ class SettingsDataSource @Inject constructor(@ApplicationContext context: Contex
         return jsonString?.let {
             try {
                 Json.decodeFromString<List<DeviceComparison>>(it)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        } ?: emptyList()
+    }
+
+    /**
+     * ذخیره تاریخچه تست سرعت حافظه
+     */
+    fun saveStorageSpeedTestHistory(history: List<StorageTestSummary>) {
+        val jsonString = Json.encodeToString(history)
+        prefs.edit {
+            putString(KEY_STORAGE_SPEED_TEST_HISTORY, jsonString)
+        }
+    }
+
+    /**
+     * بازیابی تاریخچه تست سرعت حافظه
+     */
+    fun getStorageSpeedTestHistory(): List<StorageTestSummary> {
+        val jsonString = prefs.getString(KEY_STORAGE_SPEED_TEST_HISTORY, null)
+        return jsonString?.let {
+            try {
+                Json.decodeFromString<List<StorageTestSummary>>(it)
             } catch (e: Exception) {
                 e.printStackTrace()
                 emptyList()

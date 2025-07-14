@@ -446,6 +446,27 @@
     <string name="retest">Retest</string>
     <string name="retry">Retry</string>
 
+    <!-- Enhanced Storage Speed Test -->
+    <string name="storage_speed_permission_title">Storage Speed Test Permission</string>
+    <string name="storage_speed_permission_message">This test will create a temporary 1GB file to accurately measure your storage speed. The file will be automatically deleted after the test.\n\nDo you want to proceed?</string>
+    <string name="storage_speed_permission_grant">Start Test</string>
+    <string name="storage_speed_permission_deny">Cancel</string>
+    <string name="storage_speed_live_chart_title">Live Speed Monitor</string>
+    <string name="storage_speed_write_chart_title">Write Speed Chart</string>
+    <string name="storage_speed_read_chart_title">Read Speed Chart</string>
+    <string name="storage_speed_test_duration">Test Duration: %d seconds</string>
+    <string name="storage_speed_file_size">Test File Size: 1GB</string>
+    <string name="storage_speed_history_title">Test History</string>
+    <string name="storage_speed_no_history">No previous tests found</string>
+    <string name="storage_speed_export_title">Export Test Results</string>
+    <string name="storage_speed_test_completed">Test completed successfully</string>
+    <string name="storage_speed_test_failed">Test failed. Please try again.</string>
+    <string name="storage_speed_insufficient_space">Insufficient storage space for test</string>
+    <string name="storage_speed_creating_file">Creating test file...</string>
+    <string name="storage_speed_testing_write">Testing write speed...</string>
+    <string name="storage_speed_testing_read">Testing read speed...</string>
+    <string name="storage_speed_cleaning_up">Cleaning up...</string>
+
     <!-- Compass Directions -->
     <string name="compass_north">N</string>
     <string name="compass_east">E</string>
