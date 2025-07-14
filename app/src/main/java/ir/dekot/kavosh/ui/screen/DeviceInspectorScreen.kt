@@ -7,6 +7,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import ir.dekot.kavosh.ui.composables.AnimatedScreenTransition
 import ir.dekot.kavosh.ui.navigation.Screen
 import ir.dekot.kavosh.ui.screen.about.AboutScreen
 import ir.dekot.kavosh.ui.screen.dashboard.EditDashboardScreen
@@ -45,10 +46,10 @@ fun DeviceInspectorApp(
 
     // ... (کد LaunchedEffect)
 
-    // **اصلاح ۱: حذف BackHandler از اینجا و انتقال به داخل case ها**
-
-    when (val screen = currentScreen) {
-        is Screen.Splash -> SplashScreen(onStartScan = onStartScan, viewModel = deviceInfoViewModel)
+    // **اصلاح ۱: استفاده از انیمیشن انتقال صفحات**
+    AnimatedScreenTransition(currentScreen = currentScreen) { screen ->
+        when (screen) {
+            is Screen.Splash -> SplashScreen(onStartScan = onStartScan, viewModel = deviceInfoViewModel)
 
         is Screen.Dashboard -> MainScreen(
             deviceInfoViewModel = deviceInfoViewModel,
@@ -161,6 +162,7 @@ fun DeviceInspectorApp(
             ComparisonScreen(
                 onBackClick = { navigationViewModel.navigateBack() }
             )
+        }
         }
     }
 }

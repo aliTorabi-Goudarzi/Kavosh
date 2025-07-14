@@ -23,7 +23,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material.icons.filled.EmojiEvents
@@ -43,8 +42,6 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -68,6 +65,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -76,6 +74,7 @@ import ir.dekot.kavosh.data.model.diagnostic.ComparisonCategory
 import ir.dekot.kavosh.data.model.diagnostic.ComparisonResult
 import ir.dekot.kavosh.data.model.diagnostic.DeviceComparison
 import ir.dekot.kavosh.data.model.diagnostic.DeviceProfile
+import ir.dekot.kavosh.ui.composables.ProfessionalLoadingIndicator
 import ir.dekot.kavosh.ui.viewmodel.DiagnosticViewModel
 import ir.dekot.kavosh.ui.viewmodel.ExportFormat
 
@@ -235,7 +234,7 @@ private fun ComparisonStartTestCard(
                 text = stringResource(R.string.device_comparison_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -257,7 +256,7 @@ private fun ComparisonStartTestCard(
 }
 
 /**
- * کارت بارگذاری مقایسه
+ * کارت بارگذاری مقایسه با انیمیشن حرفه‌ای
  */
 @Composable
 private fun ComparisonLoadingCard() {
@@ -271,20 +270,24 @@ private fun ComparisonLoadingCard() {
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(48.dp),
-                strokeWidth = 4.dp
+            // استفاده از انیمیشن بارگذاری حرفه‌ای
+            ProfessionalLoadingIndicator(
+                size = 64.dp,
+                color = MaterialTheme.colorScheme.secondary
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = stringResource(R.string.device_comparison_comparing),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
             )
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = stringResource(R.string.device_comparison_analyzing),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
             )
         }
     }

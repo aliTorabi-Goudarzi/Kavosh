@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.Battery6Bar
 import androidx.compose.material.icons.filled.EmojiEvents
@@ -43,7 +42,6 @@ import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -78,6 +76,7 @@ import ir.dekot.kavosh.data.model.diagnostic.CategoryScore
 import ir.dekot.kavosh.data.model.diagnostic.PerformanceCategory
 import ir.dekot.kavosh.data.model.diagnostic.PerformanceGrade
 import ir.dekot.kavosh.data.model.diagnostic.PerformanceScore
+import ir.dekot.kavosh.ui.composables.ProfessionalLoadingIndicator
 import ir.dekot.kavosh.ui.viewmodel.DiagnosticViewModel
 import ir.dekot.kavosh.ui.viewmodel.ExportFormat
 
@@ -251,7 +250,7 @@ private fun PerformanceStartTestCard(
 }
 
 /**
- * کارت بارگذاری benchmark
+ * کارت بارگذاری benchmark با انیمیشن حرفه‌ای
  */
 @Composable
 private fun BenchmarkLoadingCard() {
@@ -265,20 +264,24 @@ private fun BenchmarkLoadingCard() {
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(48.dp),
-                strokeWidth = 4.dp
+            // استفاده از انیمیشن بارگذاری حرفه‌ای
+            ProfessionalLoadingIndicator(
+                size = 64.dp,
+                color = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = stringResource(R.string.performance_score_running_benchmarks),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
             )
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = stringResource(R.string.performance_score_this_may_take),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
             )
         }
     }

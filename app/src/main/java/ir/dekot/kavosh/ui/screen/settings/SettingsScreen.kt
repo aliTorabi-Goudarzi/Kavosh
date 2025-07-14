@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -213,7 +214,10 @@ private fun SettingsSection(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onToggleExpanded() },
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { onToggleExpanded() },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
@@ -541,7 +545,10 @@ private fun SettingsRadioItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { onClick() }
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -576,7 +583,10 @@ private fun SettingsToggleItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { onCheckedChange(!checked) }
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -622,7 +632,10 @@ private fun SettingsClickableItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { onClick() }
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

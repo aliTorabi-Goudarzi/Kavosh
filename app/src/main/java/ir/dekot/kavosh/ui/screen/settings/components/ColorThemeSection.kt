@@ -3,16 +3,42 @@ package ir.dekot.kavosh.ui.screen.settings.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,8 +48,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.settings.ColorTheme
-import ir.dekot.kavosh.data.model.settings.PredefinedColorTheme
 import ir.dekot.kavosh.data.model.settings.CustomColorTheme
+import ir.dekot.kavosh.data.model.settings.PredefinedColorTheme
 
 /**
  * بخش انتخاب تم رنگی در تنظیمات
@@ -81,7 +107,7 @@ fun ColorThemeSection(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(horizontal = 4.dp)
             ) {
-                items(PredefinedColorTheme.values()) { theme ->
+                items(PredefinedColorTheme.entries.toTypedArray()) { theme ->
                     PredefinedColorThemeItem(
                         theme = theme,
                         isSelected = currentColorTheme?.id == theme.id,
@@ -96,10 +122,10 @@ fun ColorThemeSection(
             OutlinedButton(
                 onClick = { showCustomColorPicker = true },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = if (currentColorTheme?.isCustom == true) 
-                        MaterialTheme.colorScheme.primaryContainer else Color.Transparent
-                )
+//                colors = ButtonDefaults.outlinedButtonColors(
+//                    containerColor = if (currentColorTheme?.isCustom == true)
+//                        MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+//                )
             ) {
                 Icon(
                     imageVector = Icons.Default.Palette,
@@ -148,7 +174,10 @@ private fun PredefinedColorThemeItem(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.clickable { onClick() }
+        modifier = modifier.clickable(
+            indication = null,
+            interactionSource = remember { MutableInteractionSource() }
+        ) { onClick() }
     ) {
         Box(
             modifier = Modifier
@@ -183,7 +212,7 @@ private fun PredefinedColorThemeItem(
 }
 
 /**
- * دیالوگ انتخاب رنگ سفارشی
+ * دیالوگ انتخاب رنگ سفارشی با انتخابگر پیشرفته
  */
 @Composable
 private fun CustomColorPickerDialog(
@@ -192,7 +221,8 @@ private fun CustomColorPickerDialog(
     onDismiss: () -> Unit
 ) {
     var selectedColor by remember { mutableStateOf(initialColor) }
-    
+    var selectedTab by remember { mutableStateOf(0) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -214,18 +244,51 @@ private fun CustomColorPickerDialog(
                         Text(
                             text = stringResource(R.string.preview),
                             color = if (isLightColor(selectedColor)) Color.Black else Color.White,
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
-                // انتخابگر رنگ ساده
-                ir.dekot.kavosh.ui.composables.SimpleColorPicker(
-                    selectedColor = selectedColor,
-                    onColorSelected = { selectedColor = it }
-                )
+
+                // تب‌های انتخاب نوع رنگ‌گیر
+                TabRow(
+                    selectedTabIndex = selectedTab,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Tab(
+                        selected = selectedTab == 0,
+                        onClick = { selectedTab = 0 },
+                        text = { Text(stringResource(R.string.advanced_color_picker)) }
+                    )
+                    Tab(
+                        selected = selectedTab == 1,
+                        onClick = { selectedTab = 1 },
+                        text = { Text(stringResource(R.string.quick_color_picker)) }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // محتوای تب‌ها
+                when (selectedTab) {
+                    0 -> {
+                        // انتخابگر رنگ پیشرفته با چرخ رنگی
+                        ir.dekot.kavosh.ui.composables.ColorPicker(
+                            selectedColor = selectedColor,
+                            onColorSelected = { selectedColor = it },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    1 -> {
+                        // انتخابگر رنگ ساده
+                        ir.dekot.kavosh.ui.composables.SimpleColorPicker(
+                            selectedColor = selectedColor,
+                            onColorSelected = { selectedColor = it }
+                        )
+                    }
+                }
             }
         },
         confirmButton = {

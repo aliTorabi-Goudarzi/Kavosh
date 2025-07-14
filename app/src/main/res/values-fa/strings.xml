@@ -473,6 +473,8 @@
     <string name="preview">پیش‌نمایش</string>
     <string name="apply_color">اعمال رنگ</string>
     <string name="reset_to_default">بازنشانی به پیش‌فرض</string>
+    <string name="advanced_color_picker">پیشرفته</string>
+    <string name="quick_color_picker">سریع</string>
 
     <!-- General UI -->
     <string name="back_button">بازگشت</string>

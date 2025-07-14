@@ -4,13 +4,29 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,13 +34,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import ir.dekot.kavosh.R
-import kotlin.math.*
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
  * کامپوننت انتخابگر رنگ با چرخ رنگی
@@ -35,9 +51,9 @@ fun ColorPicker(
     onColorSelected: (Color) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var hue by remember { mutableStateOf(0f) }
-    var saturation by remember { mutableStateOf(1f) }
-    var brightness by remember { mutableStateOf(1f) }
+    var hue by remember { mutableFloatStateOf(0f) }
+    var saturation by remember { mutableFloatStateOf(1f) }
+    var brightness by remember { mutableFloatStateOf(1f) }
 
     // تبدیل رنگ انتخاب شده به HSV
     LaunchedEffect(selectedColor) {
@@ -106,7 +122,21 @@ private fun ColorWheel(
     
     Canvas(
         modifier = modifier
-            .clickable { /* Handle click */ }
+            .pointerInput(Unit) {
+                detectTapGestures { offset ->
+                    handleColorWheelTouch(offset, androidx.compose.ui.geometry.Size(size.width.toFloat(), size.height.toFloat()), onColorChange)
+                }
+            }
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = { offset ->
+                        handleColorWheelTouch(offset, androidx.compose.ui.geometry.Size(size.width.toFloat(), size.height.toFloat()), onColorChange)
+                    },
+                    onDrag = { _, offset ->
+                        handleColorWheelTouch(offset, androidx.compose.ui.geometry.Size(size.width.toFloat(), size.height.toFloat()), onColorChange)
+                    }
+                )
+            }
     ) {
         val radius = size.minDimension / 2
         val center = Offset(size.width / 2, size.height / 2)
@@ -134,16 +164,41 @@ private fun ColorWheel(
 }
 
 /**
+ * تابع کمکی برای پردازش لمس روی چرخ رنگی
+ */
+private fun handleColorWheelTouch(
+    offset: Offset,
+    size: androidx.compose.ui.geometry.Size,
+    onColorChange: (Float, Float) -> Unit
+) {
+    val center = Offset(size.width / 2, size.height / 2)
+    val radius = size.minDimension / 2
+
+    val dx = offset.x - center.x
+    val dy = offset.y - center.y
+    val distance = sqrt(dx * dx + dy * dy)
+
+    if (distance <= radius) {
+        val angle = atan2(dy, dx)
+        val hue = (Math.toDegrees(angle.toDouble()).toFloat() + 360) % 360
+        val saturation = (distance / (radius * 0.8f)).coerceIn(0f, 1f)
+
+        onColorChange(hue, saturation)
+    }
+}
+
+/**
  * رسم چرخ رنگی
  */
 private fun DrawScope.drawColorWheel(center: Offset, radius: Float) {
-    val steps = 360
+    // رسم چرخ رنگی ساده
+    val steps = 60 // کاهش تعداد مراحل برای بهبود عملکرد
+
     for (i in 0 until steps) {
-        val startAngle = i.toFloat()
-        val sweepAngle = 1f
+        val startAngle = i * 360f / steps
+        val sweepAngle = 360f / steps + 1f // کمی overlap برای پوشش کامل
         val color = Color.hsv(startAngle, 1f, 1f)
-        
-        // رسم قطعه‌های رنگی
+
         drawArc(
             color = color,
             startAngle = startAngle,
@@ -153,6 +208,13 @@ private fun DrawScope.drawColorWheel(center: Offset, radius: Float) {
             size = androidx.compose.ui.geometry.Size(radius * 2, radius * 2)
         )
     }
+
+    // رسم دایره سفید در مرکز برای saturation کم
+    drawCircle(
+        color = Color.White,
+        radius = radius * 0.15f,
+        center = center
+    )
 }
 
 /**
@@ -239,7 +301,10 @@ fun SimpleColorPicker(
                         color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                         shape = CircleShape
                     )
-                    .clickable { onColorSelected(color) }
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { onColorSelected(color) }
             )
         }
     }

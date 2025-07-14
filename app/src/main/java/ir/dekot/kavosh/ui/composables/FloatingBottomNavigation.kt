@@ -3,11 +3,13 @@ package ir.dekot.kavosh.ui.composables
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -24,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -108,11 +111,21 @@ private fun BottomNavItemContent(
         label = "textColor"
     )
 
-    // انیمیشن اندازه آیکون
+    // انیمیشن اندازه آیکون با فیزیک فنری
     val iconScale by animateFloatAsState(
-        targetValue = if (isSelected) 1.1f else 1f,
-        animationSpec = tween(350),
+        targetValue = if (isSelected) 1.15f else 1f,
+        animationSpec = spring(
+            dampingRatio = 0.6f,
+            stiffness = 800f
+        ),
         label = "iconScale"
+    )
+
+    // انیمیشن ارتفاع کارت
+    val cardElevation by animateFloatAsState(
+        targetValue = if (isSelected) 12f else 8f,
+        animationSpec = tween(300),
+        label = "cardElevation"
     )
 
     Box(
@@ -125,7 +138,10 @@ private fun BottomNavItemContent(
                     MaterialTheme.colorScheme.surface
                 }
             )
-            .clickable { onClick() }
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null // حذف کامل افکت‌های بصری کلیک
+            ) { onClick() }
             .padding(horizontal = 14.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {

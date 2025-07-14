@@ -2,6 +2,8 @@ package ir.dekot.kavosh.ui.screen.tests
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -79,7 +81,7 @@ fun TestsScreen(
 }
 
 /**
- * کارت هر تست
+ * کارت هر تست - بدون افکت‌های بصری کلیک
  */
 @Composable
 private fun TestCard(
@@ -90,8 +92,12 @@ private fun TestCard(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth(),
-        onClick = onClick,
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null, // حذف کامل افکت‌های بصری کلیک
+                onClick = onClick
+            ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)

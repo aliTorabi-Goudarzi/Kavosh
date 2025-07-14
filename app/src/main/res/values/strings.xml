@@ -471,6 +471,8 @@
     <string name="preview">Preview</string>
     <string name="apply_color">Apply Color</string>
     <string name="reset_to_default">Reset to Default</string>
+    <string name="advanced_color_picker">Advanced</string>
+    <string name="quick_color_picker">Quick</string>
 
     <!-- General UI -->
     <string name="back_button">Back</string>

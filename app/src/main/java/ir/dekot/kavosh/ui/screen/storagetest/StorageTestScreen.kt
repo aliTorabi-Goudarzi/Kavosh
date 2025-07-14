@@ -26,9 +26,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -38,7 +36,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import ir.dekot.kavosh.R
+import ir.dekot.kavosh.ui.composables.WaveLoadingIndicator
 import ir.dekot.kavosh.ui.viewmodel.StorageTestViewModel
 import kotlinx.coroutines.launch
 
@@ -305,7 +303,7 @@ private fun SpeedItem(
 }
 
 /**
- * کارت نوار پیشرفت
+ * کارت نوار پیشرفت با انیمیشن موجی
  */
 @Composable
 private fun ProgressCard(progress: Float) {
@@ -313,7 +311,7 @@ private fun ProgressCard(progress: Float) {
         targetValue = progress,
         label = "progress"
     )
-    
+
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -325,28 +323,24 @@ private fun ProgressCard(progress: Float) {
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
-            
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // استفاده از انیمیشن موجی برای نوار پیشرفت
+            WaveLoadingIndicator(
+                progress = animatedProgress,
+                color = MaterialTheme.colorScheme.primary
+            )
+
             Spacer(modifier = Modifier.height(12.dp))
 
-            LinearProgressIndicator(
-            progress = { animatedProgress },
-            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp)
-                                .clip(RoundedCornerShape(4.dp)),
-            color = ProgressIndicatorDefaults.linearColor,
-            trackColor = ProgressIndicatorDefaults.linearTrackColor,
-            strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
             Text(
                 text = "${(animatedProgress * 100).toInt()}%",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold
             )
         }
     }

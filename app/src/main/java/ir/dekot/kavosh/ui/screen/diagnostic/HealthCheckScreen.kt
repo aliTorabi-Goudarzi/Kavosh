@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Battery6Bar
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -43,7 +42,6 @@ import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -69,6 +67,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -77,6 +76,7 @@ import ir.dekot.kavosh.data.model.diagnostic.HealthCheck
 import ir.dekot.kavosh.data.model.diagnostic.HealthCheckResult
 import ir.dekot.kavosh.data.model.diagnostic.HealthCheckSummary
 import ir.dekot.kavosh.data.model.diagnostic.HealthStatus
+import ir.dekot.kavosh.ui.composables.ProfessionalLoadingIndicator
 import ir.dekot.kavosh.ui.viewmodel.DiagnosticViewModel
 import ir.dekot.kavosh.ui.viewmodel.ExportFormat
 import java.text.SimpleDateFormat
@@ -226,7 +226,7 @@ private fun StartTestCard(
                 text = stringResource(R.string.health_check_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -248,7 +248,7 @@ private fun StartTestCard(
 }
 
 /**
- * کارت بارگذاری
+ * کارت بارگذاری با انیمیشن حرفه‌ای
  */
 @Composable
 private fun LoadingCard() {
@@ -262,20 +262,24 @@ private fun LoadingCard() {
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(48.dp),
-                strokeWidth = 4.dp
+            // استفاده از انیمیشن بارگذاری حرفه‌ای
+            ProfessionalLoadingIndicator(
+                size = 64.dp,
+                color = MaterialTheme.colorScheme.tertiary
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = stringResource(R.string.testing),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
             )
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = stringResource(R.string.health_check_analyzing),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
             )
         }
     }
