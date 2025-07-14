@@ -37,12 +37,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.components.WifiScanResult
 import ir.dekot.kavosh.ui.viewmodel.NetworkToolsViewModel
 import ir.dekot.kavosh.util.isLocationEnabled
@@ -103,7 +105,7 @@ fun WifiScannerPage(viewModel: NetworkToolsViewModel) {
             if (isScanning) {
                 CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
             } else {
-                Icon(Icons.Default.Refresh, contentDescription = "Refresh Scan")
+                Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.refresh_scan))
             }
         }
     }
@@ -119,12 +121,12 @@ private fun PermissionRequiredView(onGrantPermission: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "Location permission is required to scan for Wi-Fi networks.",
+            stringResource(R.string.wifi_permission_required_desc),
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(8.dp))
         Button(onClick = onGrantPermission) {
-            Text("Grant Permission")
+            Text(stringResource(R.string.grant_permission))
         }
     }
 }
@@ -138,25 +140,25 @@ private fun LocationDisabledView(onEnableLocation: () -> Unit) {
     ) {
         Icon(
             imageVector = Icons.Default.LocationOff,
-            contentDescription = "Location Off",
+            contentDescription = stringResource(R.string.location_off),
             modifier = Modifier.size(48.dp),
             tint = MaterialTheme.colorScheme.error
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            "Location Service Is Disabled",
+            stringResource(R.string.location_service_disabled),
             style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Center
         )
         Text(
-            "Please turn on your device's location to allow Wi-Fi scanning.",
+            stringResource(R.string.turn_on_location_for_wifi),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 4.dp, start = 16.dp, end = 16.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = onEnableLocation) {
-            Text("Open Location Settings")
+            Text(stringResource(R.string.open_location_settings))
         }
     }
 }
@@ -169,12 +171,12 @@ private fun EmptyResultsView() {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            "No Wi-Fi networks found.",
+            stringResource(R.string.no_wifi_networks_found),
             style = MaterialTheme.typography.titleMedium
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            "Press the refresh button to scan for nearby networks.",
+            stringResource(R.string.press_refresh_to_scan),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
         )
@@ -191,7 +193,7 @@ private fun WifiNetworkItem(result: WifiScanResult) {
         ) {
             Icon(
                 imageVector = if (result.level > -70) Icons.Default.SignalWifi4Bar else Icons.Default.WifiOff,
-                contentDescription = "Signal Strength",
+                contentDescription = stringResource(R.string.signal_strength),
                 tint = if (result.level > -70) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -202,8 +204,8 @@ private fun WifiNetworkItem(result: WifiScanResult) {
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(horizontalAlignment = Alignment.End) {
-                Text(text = "${result.level} dBm", fontWeight = FontWeight.Bold)
-                Text(text = "${result.frequency} MHz", style = MaterialTheme.typography.bodySmall)
+                Text(text = stringResource(R.string.wifi_dbm_format, result.level), fontWeight = FontWeight.Bold)
+                Text(text = stringResource(R.string.wifi_mhz_format, result.frequency), style = MaterialTheme.typography.bodySmall)
             }
         }
     }

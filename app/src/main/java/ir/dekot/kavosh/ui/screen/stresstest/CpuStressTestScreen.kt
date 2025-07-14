@@ -55,7 +55,7 @@ fun CpuStressTestScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("CPU Stress Test") },
+                title = { Text(stringResource(R.string.cpu_stress_test_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
@@ -80,10 +80,10 @@ fun CpuStressTestScreen(
             ) {
                 Icon(
                     imageVector = if (isTesting) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    contentDescription = if (isTesting) "Stop Test" else "Start Test"
+                    contentDescription = if (isTesting) stringResource(R.string.stop_test) else stringResource(R.string.start_test)
                 )
                 Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-                Text(text = if (isTesting) "Stop Test" else "Start Test")
+                Text(text = if (isTesting) stringResource(R.string.stop_test) else stringResource(R.string.start_test))
             }
 
             Spacer(modifier = Modifier.height(24.dp))

@@ -3,6 +3,7 @@ package ir.dekot.kavosh.ui.screen.share
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.TextSnippet
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -78,7 +79,7 @@ fun ShareScreen(
 
             // بخش ذخیره اطلاعات دستگاه
             Text(
-                text = "ذخیره اطلاعات دستگاه",
+                text = stringResource(R.string.save_device_info),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -422,7 +423,7 @@ private fun getExportOptions(): List<ExportOption> = listOf(
         format = ExportFormat.TXT,
         titleResId = R.string.export_format_txt,
         description = "فایل متنی ساده برای مشاهده سریع",
-        icon = Icons.Default.TextSnippet
+        icon = Icons.AutoMirrored.Filled.TextSnippet
     ),
     ExportOption(
         format = ExportFormat.QR_CODE,

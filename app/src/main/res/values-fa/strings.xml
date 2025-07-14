@@ -106,7 +106,7 @@
     <string name="health_status_poor">ضعیف</string>
     <string name="health_status_critical">بحرانی</string>
     <string name="health_check_start_test">شروع بررسی سلامت</string>
-    <string name="health_check_analyzing">در حال تجزیه و تحلیل سلامت دستگاه...</string>
+    <string name="health_check_analyzing">در حال تجزیه و تحلیل سلامت دستگاه…</string>
     <string name="health_check_overall_health">سلامت کلی دستگاه</string>
     <string name="health_check_recommendations_title">توصیه‌ها</string>
     <string name="health_check_history_title">تاریخچه تست‌ها</string>
@@ -120,7 +120,7 @@
     <string name="performance_score_title">امتیاز عملکرد</string>
     <string name="performance_score_subtitle">ارزیابی عملکرد دستگاه شما</string>
     <string name="performance_score_start_test">شروع تست عملکرد</string>
-    <string name="performance_score_running_benchmarks">در حال اجرای تست‌های عملکرد...</string>
+    <string name="performance_score_running_benchmarks">در حال اجرای تست‌های عملکرد…</string>
     <string name="performance_score_this_may_take">این ممکن است چند دقیقه طول بکشد</string>
     <string name="performance_score_overall_score">امتیاز عملکرد</string>
     <string name="performance_score_global_ranking">رتبه‌بندی جهانی</string>
@@ -147,7 +147,7 @@
     <string name="device_comparison_title">مقایسه دستگاه</string>
     <string name="device_comparison_subtitle">مقایسه با دستگاه‌های مشابه</string>
     <string name="device_comparison_start_test">شروع مقایسه دستگاه</string>
-    <string name="device_comparison_comparing">در حال مقایسه دستگاه‌ها...</string>
+    <string name="device_comparison_comparing">در حال مقایسه دستگاه‌ها…</string>
     <string name="device_comparison_analyzing">تجزیه و تحلیل مشخصات و عملکرد</string>
     <string name="comparison_current_device">دستگاه شما</string>
     <string name="comparison_ranking">رتبه: #%d از %d</string>
@@ -395,4 +395,70 @@
     <string name="app_installed_on">تاریخ نصب: %s</string>
     <string name="app_permissions">مجوزها</string>
     <string name="app_no_permissions">هیچ مجوزی درخواست نشده است.</string>
+
+    <!-- CPU Stress Test -->
+    <string name="cpu_stress_test_title">تست استرس پردازنده</string>
+    <string name="start_test">شروع تست</string>
+    <string name="stop_test">توقف تست</string>
+
+    <!-- Network Tools -->
+    <string name="network_tools_title">ابزارهای شبکه</string>
+    <string name="wifi_scanner_tab">اسکنر Wi-Fi</string>
+    <string name="ping_tool_tab">ابزار Ping</string>
+    <string name="location_permission_required">برای اسکن شبکه‌های Wi-Fi، مجوز مکان‌یابی لازم است.</string>
+    <string name="grant_permission">اعطای مجوز</string>
+    <string name="host_or_ip_address">آدرس میزبان یا IP</string>
+    <string name="start_stop_ping">شروع/توقف Ping</string>
+
+    <!-- WiFi Scanner -->
+    <string name="wifi_permission_required_title">مجوز مکان‌یابی لازم است</string>
+    <string name="wifi_permission_required_desc">اسکن Wi-Fi برای عملکرد صحیح نیاز به مجوز مکان‌یابی دارد.</string>
+    <string name="location_disabled_title">سرویس‌های مکان‌یابی غیرفعال</string>
+    <string name="location_disabled_desc">لطفاً سرویس‌های مکان‌یابی را برای اسکن شبکه‌های Wi-Fi فعال کنید.</string>
+    <string name="enable_location">فعال‌سازی مکان‌یابی</string>
+    <string name="no_wifi_networks_found">هیچ شبکه Wi-Fi یافت نشد</string>
+    <string name="tap_to_scan">برای جستجوی شبکه‌ها دکمه اسکن را لمس کنید</string>
+    <string name="scan_wifi">اسکن Wi-Fi</string>
+    <string name="wifi_network_item">%1$s - %2$s</string>
+    <string name="wifi_signal_strength">قدرت سیگنال: %d dBm</string>
+    <string name="wifi_frequency">فرکانس: %d مگاهرتز</string>
+    <string name="wifi_security">امنیت: %s</string>
+    <string name="wifi_capabilities">قابلیت‌ها: %s</string>
+
+    <!-- WiFi Scanner Additional -->
+    <string name="refresh_scan">تازه‌سازی اسکن</string>
+    <string name="location_off">مکان‌یابی خاموش</string>
+    <string name="location_service_disabled">سرویس مکان‌یابی غیرفعال است</string>
+    <string name="turn_on_location_for_wifi">لطفاً مکان‌یابی دستگاه خود را برای اجازه اسکن Wi-Fi روشن کنید.</string>
+    <string name="open_location_settings">باز کردن تنظیمات مکان‌یابی</string>
+    <string name="press_refresh_to_scan">برای اسکن شبکه‌های اطراف دکمه تازه‌سازی را فشار دهید.</string>
+    <string name="signal_strength">قدرت سیگنال</string>
+    <string name="wifi_dbm_format">%d dBm</string>
+    <string name="wifi_mhz_format">%d مگاهرتز</string>
+
+    <!-- Storage Test -->
+    <string name="storage_test_title">تست سرعت حافظه</string>
+    <string name="storage_test_description">این تست سرعت خواندن و نوشتن حافظه داخلی دستگاه شما را اندازه‌گیری می‌کند.</string>
+    <string name="test_results">نتایج تست</string>
+    <string name="read_speed">سرعت خواندن</string>
+    <string name="write_speed">سرعت نوشتن</string>
+    <string name="test_progress">پیشرفت تست</string>
+    <string name="start_test_button">شروع تست</string>
+    <string name="testing_in_progress">در حال تست…</string>
+    <string name="retest">تست مجدد</string>
+    <string name="retry">تلاش مجدد</string>
+
+    <!-- Compass Directions -->
+    <string name="compass_north">شمال</string>
+    <string name="compass_east">شرق</string>
+    <string name="compass_south">جنوب</string>
+    <string name="compass_west">غرب</string>
+
+    <!-- Share Screen -->
+    <string name="save_device_info">ذخیره اطلاعات دستگاه</string>
+
+    <!-- General UI -->
+    <string name="back_button">بازگشت</string>
+    <string name="running">در حال اجرا…</string>
+    <string name="error_prefix">خطا:</string>
 </resources>

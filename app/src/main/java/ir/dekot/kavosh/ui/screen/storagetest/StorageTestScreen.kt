@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -39,10 +40,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.ui.viewmodel.StorageTestViewModel
 import kotlinx.coroutines.launch
 
@@ -65,17 +68,17 @@ fun StorageTestScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Text(
-                        text = "تست سرعت حافظه",
+                        text = stringResource(R.string.storage_test_title),
                         fontWeight = FontWeight.Medium
-                    ) 
+                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack, 
-                            contentDescription = "بازگشت"
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 }
@@ -128,7 +131,7 @@ fun StorageTestScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "شروع تست",
+                            text = stringResource(R.string.start_test_button),
                             style = MaterialTheme.typography.titleMedium
                         )
                     }
@@ -140,7 +143,7 @@ fun StorageTestScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "در حال تست...",
+                            text = stringResource(R.string.testing_in_progress),
                             style = MaterialTheme.typography.titleMedium
                         )
                     }
@@ -152,7 +155,7 @@ fun StorageTestScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "تست مجدد",
+                            text = stringResource(R.string.retest),
                             style = MaterialTheme.typography.titleMedium
                         )
                     }
@@ -164,7 +167,7 @@ fun StorageTestScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "تلاش مجدد",
+                            text = stringResource(R.string.retry),
                             style = MaterialTheme.typography.titleMedium
                         )
                     }
@@ -200,14 +203,14 @@ private fun InfoCard() {
             
             Column {
                 Text(
-                    text = "تست سرعت حافظه",
+                    text = stringResource(R.string.storage_test_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-                
+
                 Text(
-                    text = "این تست سرعت خواندن و نوشتن حافظه داخلی دستگاه شما را اندازه‌گیری می‌کند.",
+                    text = stringResource(R.string.storage_test_description),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )
@@ -232,7 +235,7 @@ private fun ResultsCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "نتایج تست",
+                text = stringResource(R.string.test_results),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -245,14 +248,14 @@ private fun ResultsCard(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 SpeedItem(
-                    title = "سرعت خواندن",
+                    title = stringResource(R.string.read_speed),
                     speed = readSpeed,
                     icon = Icons.Default.Download,
                     color = MaterialTheme.colorScheme.primary
                 )
-                
+
                 SpeedItem(
-                    title = "سرعت نوشتن",
+                    title = stringResource(R.string.write_speed),
                     speed = writeSpeed,
                     icon = Icons.Default.Upload,
                     color = MaterialTheme.colorScheme.secondary
@@ -318,19 +321,22 @@ private fun ProgressCard(progress: Float) {
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "پیشرفت تست",
+                text = stringResource(R.string.test_progress),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
             
             Spacer(modifier = Modifier.height(12.dp))
-            
+
             LinearProgressIndicator(
-                progress = animatedProgress,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
+            progress = { animatedProgress },
+            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(4.dp)),
+            color = ProgressIndicatorDefaults.linearColor,
+            trackColor = ProgressIndicatorDefaults.linearTrackColor,
+            strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
             )
             
             Spacer(modifier = Modifier.height(8.dp))

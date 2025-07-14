@@ -12,8 +12,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.ui.viewmodel.NetworkToolsViewModel
 import kotlinx.coroutines.launch
 
@@ -38,7 +40,7 @@ fun PingToolPage(viewModel: NetworkToolsViewModel) {
             OutlinedTextField(
                 value = host,
                 onValueChange = { host = it },
-                label = { Text("Host or IP Address") },
+                label = { Text(stringResource(R.string.host_or_ip_address)) },
                 modifier = Modifier.weight(1f),
                 singleLine = true,
                 enabled = !pingResult.isPinging
@@ -52,7 +54,7 @@ fun PingToolPage(viewModel: NetworkToolsViewModel) {
             ) {
                 Icon(
                     imageVector = if (pingResult.isPinging) Icons.Default.Stop else Icons.Default.PlayArrow,
-                    contentDescription = "Start/Stop Ping"
+                    contentDescription = stringResource(R.string.start_stop_ping)
                 )
             }
         }
@@ -70,7 +72,7 @@ fun PingToolPage(viewModel: NetworkToolsViewModel) {
                 Text(
                     text = line,
                     fontFamily = FontFamily.Monospace,
-                    color = if (line.startsWith("Error:")) MaterialTheme.colorScheme.error else LocalContentColor.current
+                    color = if (line.startsWith(stringResource(R.string.error_prefix))) MaterialTheme.colorScheme.error else LocalContentColor.current
                 )
             }
             if (pingResult.isPinging) {
