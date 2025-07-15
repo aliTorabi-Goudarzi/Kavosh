@@ -46,7 +46,7 @@ enum class AppsLoadingState { IDLE, LOADING, LOADED }
 class DeviceInfoViewModel @Inject constructor(
     private val repository: DeviceInfoRepository,
     private val sensorHandler: SensorHandler,
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
 

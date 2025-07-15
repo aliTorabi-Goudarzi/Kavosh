@@ -362,13 +362,13 @@ private fun smoothSpeedData(speedHistory: List<SpeedDataPoint>): List<SpeedDataP
     val windowSize = 3 // اندازه پنجره برای میانگین متحرک
 
     speedHistory.forEachIndexed { index, point ->
-        when {
-            index == 0 -> {
+        when (index) {
+            0 -> {
                 // نقطه اول: میانگین خودش و نقطه بعدی
                 val avgSpeed = (point.speed + speedHistory[1].speed) / 2.0
                 smoothedData.add(point.copy(speed = avgSpeed))
             }
-            index == speedHistory.size - 1 -> {
+            speedHistory.size - 1 -> {
                 // نقطه آخر: میانگین خودش و نقطه قبلی
                 val avgSpeed = (point.speed + speedHistory[index - 1].speed) / 2.0
                 smoothedData.add(point.copy(speed = avgSpeed))

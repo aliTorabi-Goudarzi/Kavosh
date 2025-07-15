@@ -15,7 +15,7 @@ import javax.inject.Singleton
 
 @Singleton
 class SimDataSource @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) {
     @RequiresApi(Build.VERSION_CODES.Q)
     fun getSimInfo(): List<SimInfo> {
@@ -38,13 +38,14 @@ class SimDataSource @Inject constructor(
                 false -> "Disabled"
             }
 
+            @Suppress("DEPRECATION")
             SimInfo(
                 slotIndex = subInfo.simSlotIndex,
                 subscriptionId = subInfo.subscriptionId,
                 carrierName = subInfo.carrierName?.toString() ?: "Unknown",
                 countryIso = subInfo.countryIso?.uppercase() ?: "N/A",
-                mobileNetworkCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subInfo.mnc.toString() else "N/A",
-                mobileCountryCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subInfo.mcc.toString() else "N/A",
+                mobileNetworkCode = subInfo.mnc.toString(),
+                mobileCountryCode = subInfo.mcc.toString(),
                 isRoaming = tmForSub.isNetworkRoaming,
                 dataRoaming = dataRoaming
             )

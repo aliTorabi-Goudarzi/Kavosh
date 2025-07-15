@@ -23,7 +23,7 @@ object AppModule {
 
     /**
      * این تابع به Hilt یاد می‌دهد که چگونه یک نمونه از DeviceInfoRepository بسازد.
-     * Hilt به صورت خودکار تمام پارامترهای این تابع (DataSourceها) را فراهم می‌کند.
+     * Hilt به صورت خودکار تمام پارامترهای این تابع (DataSource) را فراهم می‌کند.
      */
     @Provides
     @Singleton

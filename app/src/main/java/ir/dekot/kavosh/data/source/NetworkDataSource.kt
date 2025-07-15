@@ -22,7 +22,7 @@ import javax.inject.Singleton
 
 @Suppress("DEPRECATION")
 @Singleton
-class NetworkDataSource @Inject constructor(@ApplicationContext private val context: Context) {
+class NetworkDataSource @Inject constructor(@param:ApplicationContext private val context: Context) {
 
     private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     private val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
@@ -98,8 +98,8 @@ class NetworkDataSource @Inject constructor(@ApplicationContext private val cont
 
             val ipv6 = allAddresses.firstOrNull { it is Inet6Address }?.let {
                 val rawAddress = it.hostAddress
-                val scopeIndex = rawAddress.indexOf('%')
-                if (scopeIndex > 0) rawAddress.substring(0, scopeIndex) else rawAddress
+                val scopeIndex = rawAddress?.indexOf('%')
+                scopeIndex?.let { it1 -> if (it1 > 0) rawAddress.substring(0, scopeIndex) else rawAddress }
             }?.uppercase() ?: context.getString(R.string.label_undefined)
 
             return ipv4 to ipv6

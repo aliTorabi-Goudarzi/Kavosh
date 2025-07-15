@@ -576,6 +576,7 @@ private fun SettingsRadioItem(
 @Composable
 private fun SettingsToggleItem(
     title: String,
+    @Suppress("SameParameterValue")
     description: String?,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit

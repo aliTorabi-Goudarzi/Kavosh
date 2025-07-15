@@ -83,7 +83,7 @@ private fun multiplyMatrix(matrix: FloatArray, vector: FloatArray): FloatArray {
     return result
 }
 
-private fun project(point: FloatArray, width: Float, height: Float, scale: Float): Offset {
+private fun project(point: FloatArray, width: Float, height: Float, @Suppress("SameParameterValue") scale: Float): Offset {
     val x = point[0] * scale + width / 2
     val y = point[1] * scale + height / 2
     return Offset(x, y)

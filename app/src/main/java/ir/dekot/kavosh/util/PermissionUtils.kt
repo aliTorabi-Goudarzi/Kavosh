@@ -2,7 +2,6 @@ package ir.dekot.kavosh.util
 
 import android.content.Context
 import android.location.LocationManager
-import android.os.Build
 
 /**
  * بررسی می‌کند که آیا سرویس موقعیت مکانی (GPS یا شبکه) در دستگاه روشن است یا خیر.

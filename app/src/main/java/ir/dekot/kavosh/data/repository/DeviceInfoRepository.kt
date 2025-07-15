@@ -189,6 +189,7 @@ class DeviceInfoRepository @Inject constructor(
     // **اصلاح: این تابع حالا suspend است**
     suspend fun getWifiScanResults(): List<WifiScanResult> {
         return networkToolsDataSource.scanForWifiNetworks().map {
+            @Suppress("DEPRECATION")
             WifiScanResult(
                 ssid = it.SSID.ifEmpty { "(Hidden Network)" },
                 bssid = it.BSSID,

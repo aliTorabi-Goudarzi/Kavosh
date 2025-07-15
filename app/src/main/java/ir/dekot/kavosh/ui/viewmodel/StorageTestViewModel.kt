@@ -231,7 +231,7 @@ class StorageTestViewModel @Inject constructor(
     /**
      * شروع تست سرعت حافظه (متد قدیمی برای سازگاری)
      */
-    suspend fun startTest() {
+    fun startTest() {
         startEnhancedTest()
     }
 

@@ -5,7 +5,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
 import ir.dekot.kavosh.ui.viewmodel.DiagnosticExportViewModel
 import ir.dekot.kavosh.ui.viewmodel.DiagnosticViewModel
-import ir.dekot.kavosh.ui.viewmodel.ExportRequest
 import kotlinx.coroutines.flow.collectLatest
 
 /**

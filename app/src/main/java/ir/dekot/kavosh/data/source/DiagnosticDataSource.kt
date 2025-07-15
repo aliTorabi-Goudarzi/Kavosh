@@ -16,7 +16,7 @@ import kotlin.random.Random
  */
 @Singleton
 class DiagnosticDataSource @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val socDataSource: SocDataSource,
     private val memoryDataSource: MemoryDataSource,
     private val powerDataSource: PowerDataSource,
@@ -135,7 +135,7 @@ class DiagnosticDataSource @Inject constructor(
     /**
      * مقایسه دستگاه با دستگاه‌های مشابه
      */
-    suspend fun compareDevice(): DeviceComparison {
+    fun compareDevice(): DeviceComparison {
         val currentDevice = getCurrentDeviceProfile()
         val comparedDevices = getSimilarDevices()
         val comparisonResults = performComparison(currentDevice, comparedDevices)
@@ -188,9 +188,9 @@ class DiagnosticDataSource @Inject constructor(
         delay(200)
         // شبیه‌سازی وضعیت باتری - در واقعیت باید Intent را از جای دیگر دریافت کرد
         val batteryHealth = listOf("Good", "Fair", "Poor").random()
-        val score = when {
-            batteryHealth == "Good" -> Random.nextInt(80, 100)
-            batteryHealth == "Fair" -> Random.nextInt(60, 79)
+        val score = when (batteryHealth) {
+            "Good" -> Random.nextInt(80, 100)
+            "Fair" -> Random.nextInt(60, 79)
             else -> Random.nextInt(30, 59)
         }
 
@@ -252,12 +252,9 @@ class DiagnosticDataSource @Inject constructor(
 
     private suspend fun checkSecurity(): HealthCheck {
         delay(400)
-        val score = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val score =
             Random.nextInt(85, 100)
-        } else {
-            Random.nextInt(60, 84)
-        }
-        
+
         return HealthCheck(
             category = HealthCategory.SECURITY,
             name = context.getString(R.string.health_check_security),

@@ -20,7 +20,7 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 @Singleton
-class SocDataSource @Inject constructor(@ApplicationContext private val context: Context) {
+class SocDataSource @Inject constructor(@param:ApplicationContext private val context: Context) {
 
     fun getCpuInfo(): CpuInfo {
         val coreCount = Runtime.getRuntime().availableProcessors()
@@ -61,7 +61,7 @@ class SocDataSource @Inject constructor(@ApplicationContext private val context:
             architecture = architecture,
             coreCount = coreCount,
             process = context.getString(R.string.label_undefined),
-            topology = if (topologyString.isNotBlank()) topologyString else context.getString(R.string.label_undefined),
+            topology = topologyString.ifBlank { context.getString(R.string.label_undefined) },
             clockSpeedRanges = clockSpeedRanges,
             maxFrequenciesKhz = maxFrequenciesKhz,
             liveFrequencies = List(coreCount) { "..." }

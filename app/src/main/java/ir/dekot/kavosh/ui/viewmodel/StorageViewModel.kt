@@ -17,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class StorageViewModel @Inject constructor(
     private val repository: DeviceInfoRepository,
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
     // --- State های تست سرعت حافظه ---

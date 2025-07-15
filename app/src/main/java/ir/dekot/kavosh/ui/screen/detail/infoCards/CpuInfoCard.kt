@@ -30,7 +30,7 @@ fun CpuInfoCard(info: CpuInfo, liveFrequencies: List<String>) {
 
         SectionTitleInCard(title = stringResource(R.string.cpu_live_speed))
 
-        val freqsToShow = (if (liveFrequencies.isNotEmpty()) liveFrequencies else info.liveFrequencies)
+        val freqsToShow = (liveFrequencies.ifEmpty { info.liveFrequencies })
             .mapIndexed { index, freq -> Pair(index, freq) }
             .chunked(2)
 

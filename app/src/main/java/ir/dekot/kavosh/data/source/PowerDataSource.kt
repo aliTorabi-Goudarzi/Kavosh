@@ -1,5 +1,6 @@
 package ir.dekot.kavosh.data.source
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -14,7 +15,7 @@ import javax.inject.Singleton
 import kotlin.math.abs
 
 @Singleton
-class PowerDataSource @Inject constructor(@ApplicationContext private val context: Context) {
+class PowerDataSource @Inject constructor(@param:ApplicationContext private val context: Context) {
 
     private val hardwareService = context.getSystemService(Context.HARDWARE_PROPERTIES_SERVICE) as? HardwarePropertiesManager
     private val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
@@ -47,6 +48,7 @@ class PowerDataSource @Inject constructor(@ApplicationContext private val contex
         return if (capacity != Int.MIN_VALUE && capacity > 0) capacity / 1000 else 0
     }
 
+    @SuppressLint("PrivateApi")
     private fun getActualCapacity(): Double {
         return try {
             val powerProfileClass = Class.forName("com.android.internal.os.PowerProfile")

@@ -25,7 +25,27 @@ sealed class SensorState {
         val orientationAngles: FloatArray,
         val accelerometerData: FloatArray,
         val magnetometerData: FloatArray
-    ) : SensorState()
+    ) : SensorState() {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as CompassState
+
+            if (!orientationAngles.contentEquals(other.orientationAngles)) return false
+            if (!accelerometerData.contentEquals(other.accelerometerData)) return false
+            if (!magnetometerData.contentEquals(other.magnetometerData)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = orientationAngles.contentHashCode()
+            result = 31 * result + accelerometerData.contentHashCode()
+            result = 31 * result + magnetometerData.contentHashCode()
+            return result
+        }
+    }
 
     /** وضعیت اختصاصی برای وکتور چرخش که تاریخچه مقادیر را برای نمودار نگه می‌دارد. */
     data class RotationVectorState(val history: List<FloatArray>) : SensorState()

@@ -1,9 +1,9 @@
 package ir.dekot.kavosh.ui.viewmodel
 
+import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import android.os.Build
 import ir.dekot.kavosh.data.model.diagnostic.DeviceComparison
 import ir.dekot.kavosh.data.model.diagnostic.HealthCheckResult
 import ir.dekot.kavosh.data.model.diagnostic.HealthCheckSummary
@@ -11,13 +11,12 @@ import ir.dekot.kavosh.data.model.diagnostic.HealthStatus
 import ir.dekot.kavosh.data.model.diagnostic.PerformanceScore
 import ir.dekot.kavosh.data.source.DiagnosticDataSource
 import ir.dekot.kavosh.data.source.SettingsDataSource
-import ir.dekot.kavosh.ui.viewmodel.ExportFormat
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

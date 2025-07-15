@@ -24,7 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ExportViewModel @Inject constructor(
     private val repository: DeviceInfoRepository,
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
     // --- State های مربوط به خروجی گرفتن ---

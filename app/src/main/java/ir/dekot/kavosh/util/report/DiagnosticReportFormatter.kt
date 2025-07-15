@@ -1,5 +1,6 @@
 package ir.dekot.kavosh.util.report
 
+import android.annotation.SuppressLint
 import android.content.Context
 import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.diagnostic.*
@@ -16,6 +17,7 @@ import java.util.*
  */
 object DiagnosticReportFormatter {
 
+    @SuppressLint("ConstantLocale")
     private val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
 
     /**

@@ -7,7 +7,7 @@ import ir.dekot.kavosh.ui.viewmodel.InfoCategory
 data class DashboardItem(
     val category: InfoCategory,
     // *** تغییر کلیدی: ذخیره آیدی منبع به جای متن ثابت ***
-    @StringRes val titleResId: Int,
+    @param:StringRes val titleResId: Int,
     val icon: ImageVector,
     val isVisible: Boolean = true
 )

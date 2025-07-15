@@ -177,8 +177,8 @@ fun AnimatedButton(
  */
 @Composable
 fun AnimatedCard(
-    onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
     enabled: Boolean = true,
     content: @Composable () -> Unit
 ) {

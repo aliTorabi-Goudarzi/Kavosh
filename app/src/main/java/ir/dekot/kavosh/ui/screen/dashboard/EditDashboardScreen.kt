@@ -23,7 +23,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -31,7 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.R
-import ir.dekot.kavosh.ui.viewmodel.DashboardViewModel // <-- ایمپورت ViewModel جدید
+import ir.dekot.kavosh.ui.viewmodel.DashboardViewModel
 
 @RequiresApi(Build.VERSION_CODES.R)
 @OptIn(ExperimentalMaterial3Api::class)

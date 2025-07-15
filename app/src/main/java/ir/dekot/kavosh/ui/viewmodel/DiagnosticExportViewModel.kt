@@ -25,7 +25,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class DiagnosticExportViewModel @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
     // نتیجه خروجی گزارش

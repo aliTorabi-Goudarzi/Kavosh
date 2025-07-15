@@ -18,7 +18,7 @@ import javax.inject.Singleton
 
 @Suppress("DEPRECATION")
 @Singleton
-class SystemDataSource @Inject constructor(@ApplicationContext private val context: Context) {
+class SystemDataSource @Inject constructor(@param:ApplicationContext private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.R)
     fun getDisplayInfo(activity: Activity): DisplayInfo {

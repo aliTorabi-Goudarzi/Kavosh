@@ -15,9 +15,9 @@ android {
     defaultConfig {
         applicationId = "ir.dekot.kavosh"
         minSdk = 28
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
-        versionName = "6.8.0"
+        versionName = "6.8.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -43,7 +43,7 @@ android {
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11) // Or your specific JVM version
             // You can add other Kotlin compiler options here if needed
-            // e.g., freeCompilerArgs.add("-Xopt-in=kotlin.RequiresOptIn")
+            // e.g., freeCompilerArgs.add("-X opt-in=kotlin.RequiresOptIn")
         }
     }
     buildFeatures {

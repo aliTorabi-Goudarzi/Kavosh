@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
     override fun attachBaseContext(newBase: Context) {
         // از متد استاتیک ViewModel جدید استفاده می‌کنیم
         val lang = SettingsViewModel.getSavedLanguage(newBase)
-        val locale = Locale(lang)
+        @Suppress("DEPRECATION") val locale = Locale(lang)
         Locale.setDefault(locale)
         val config = Configuration(newBase.resources.configuration)
         config.setLocale(locale)

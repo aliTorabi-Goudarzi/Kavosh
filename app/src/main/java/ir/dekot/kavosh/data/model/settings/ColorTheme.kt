@@ -84,7 +84,7 @@ enum class PredefinedColorTheme(
 
     companion object {
         fun fromId(id: String): PredefinedColorTheme? {
-            return values().find { it.id == id }
+            return entries.find { it.id == id }
         }
         
         fun getDefault(): PredefinedColorTheme = BLUE

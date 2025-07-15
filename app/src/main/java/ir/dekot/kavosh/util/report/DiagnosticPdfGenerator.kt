@@ -1,3 +1,5 @@
+@file:Suppress("SameParameterValue")
+
 package ir.dekot.kavosh.util.report
 
 import android.content.Context
@@ -14,8 +16,8 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
 import androidx.core.graphics.withTranslation
-import ir.dekot.kavosh.R
 import java.io.FileOutputStream
+import androidx.core.graphics.toColorInt
 
 /**
  * تولیدکننده PDF برای گزارش‌های تشخیصی
@@ -152,7 +154,7 @@ object DiagnosticPdfGenerator {
 
         builder.setSpan(StyleSpan(Typeface.BOLD), startIndex, endIndex, android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE)
         builder.setSpan(RelativeSizeSpan(1.8f), startIndex, endIndex, android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-        builder.setSpan(ForegroundColorSpan(Color.parseColor("#1976D2")), startIndex, endIndex, android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+        builder.setSpan(ForegroundColorSpan("#1976D2".toColorInt()), startIndex, endIndex, android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE)
     }
 
     /**
@@ -167,7 +169,7 @@ object DiagnosticPdfGenerator {
 
         builder.setSpan(StyleSpan(Typeface.BOLD), titleStartIndex, titleEndIndex, android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE)
         builder.setSpan(RelativeSizeSpan(1.3f), titleStartIndex, titleEndIndex, android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE)
-        builder.setSpan(ForegroundColorSpan(Color.parseColor("#424242")), titleStartIndex, titleEndIndex, android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+        builder.setSpan(ForegroundColorSpan("#424242".toColorInt()), titleStartIndex, titleEndIndex, android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE)
 
         // محتوای بخش
         builder.append("${section.content}\n\n")
@@ -253,7 +255,7 @@ object DiagnosticPdfGenerator {
     private fun drawPageHeader(canvas: Canvas, title: String, pageWidth: Int, margin: Float) {
         val paint = Paint().apply {
             textSize = 14f
-            color = Color.parseColor("#1976D2")
+            color = "#1976D2".toColorInt()
             textAlign = Paint.Align.CENTER
             typeface = Typeface.DEFAULT_BOLD
             isAntiAlias = true
@@ -268,7 +270,7 @@ object DiagnosticPdfGenerator {
 
         // خط زیر header
         val linePaint = Paint().apply {
-            color = Color.parseColor("#E0E0E0")
+            color = "#E0E0E0".toColorInt()
             strokeWidth = 1f
         }
         canvas.drawLine(
@@ -286,7 +288,7 @@ object DiagnosticPdfGenerator {
     private fun drawPageFooter(canvas: Canvas, pageNumber: Int, pageWidth: Int, pageHeight: Int, margin: Float) {
         // خط بالای footer
         val linePaint = Paint().apply {
-            color = Color.parseColor("#E0E0E0")
+            color = "#E0E0E0".toColorInt()
             strokeWidth = 1f
         }
         canvas.drawLine(

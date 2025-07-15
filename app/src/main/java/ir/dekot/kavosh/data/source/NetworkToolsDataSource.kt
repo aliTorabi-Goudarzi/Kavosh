@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
+import android.os.Build
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
@@ -23,7 +24,7 @@ import javax.inject.Singleton
 
 @Singleton
 class NetworkToolsDataSource @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) {
     private val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
 
@@ -52,9 +53,12 @@ class NetworkToolsDataSource @Inject constructor(
         }
 
         val intentFilter = IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
-        context.registerReceiver(receiver, intentFilter, Context.RECEIVER_NOT_EXPORTED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(receiver, intentFilter, Context.RECEIVER_NOT_EXPORTED)
+        }
 
         // شروع اسکن
+        @Suppress("DEPRECATION")
         val scanInitiated = wifiManager.startScan()
 
         if (!scanInitiated) {

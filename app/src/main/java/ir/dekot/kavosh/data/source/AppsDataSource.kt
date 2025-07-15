@@ -4,14 +4,13 @@ package ir.dekot.kavosh.data.source
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.os.Build
 import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.dekot.kavosh.data.model.components.AppInfo
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AppsDataSource @Inject constructor(@ApplicationContext private val context: Context) {
+class AppsDataSource @Inject constructor(@param:ApplicationContext private val context: Context) {
 
     /**
      * لیستی از تمام برنامه‌های نصب شده (سیستمی و کاربری) را به همراه جزئیاتشان برمی‌گرداند.

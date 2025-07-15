@@ -164,7 +164,7 @@ class SettingsViewModel @Inject constructor(
      * دریافت لیست تم‌های رنگی از پیش تعریف شده
      */
     fun getPredefinedColorThemes(): List<PredefinedColorTheme> {
-        return PredefinedColorTheme.values().toList()
+        return PredefinedColorTheme.entries
     }
 
     /**

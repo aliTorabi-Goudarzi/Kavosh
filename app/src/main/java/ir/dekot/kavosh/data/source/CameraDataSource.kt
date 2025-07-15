@@ -12,7 +12,7 @@ import javax.inject.Singleton
 import kotlin.math.roundToInt
 
 @Singleton
-class CameraDataSource @Inject constructor(@ApplicationContext private val context: Context) {
+class CameraDataSource @Inject constructor(@param:ApplicationContext private val context: Context) {
 
     private val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
 

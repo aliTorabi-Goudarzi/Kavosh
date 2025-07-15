@@ -21,7 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,7 +41,7 @@ fun NetworkToolsScreen(
     viewModel: NetworkToolsViewModel = hiltViewModel(),
     onBackClick: () -> Unit
 ) {
-    var selectedTabIndex by remember { mutableStateOf(0) }
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf(
         stringResource(R.string.wifi_scanner_tab),
         stringResource(R.string.ping_tool_tab)

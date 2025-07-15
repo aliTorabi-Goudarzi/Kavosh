@@ -21,7 +21,7 @@ import javax.inject.Singleton
 import kotlin.system.measureTimeMillis
 
 @Singleton
-class MemoryDataSource @Inject constructor(@ApplicationContext private val context: Context) {
+class MemoryDataSource @Inject constructor(@param:ApplicationContext private val context: Context) {
 
     // *** تغییر کلیدی و نهایی در این خط ***
     private val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager

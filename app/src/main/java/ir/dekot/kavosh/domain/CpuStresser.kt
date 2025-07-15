@@ -9,7 +9,7 @@ import kotlin.math.sqrt
  */
 class CpuStresser {
 
-    // یک استخر از تردها برای مدیریت پردازش‌های سنگین
+    // یک استخر از تردها برای مدیریت پردازش‌های     سنگین
     private var executor: ExecutorService? = null
     private var coreCount: Int = 0
 

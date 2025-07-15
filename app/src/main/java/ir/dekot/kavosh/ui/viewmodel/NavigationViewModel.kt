@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NavigationViewModel @Inject constructor(
-    private val repository: DeviceInfoRepository
+    repository: DeviceInfoRepository
 ) : ViewModel() {
 
     private val _currentScreen = MutableStateFlow<Screen>(Screen.Splash)
@@ -24,7 +24,7 @@ class NavigationViewModel @Inject constructor(
     private val _backStack = mutableListOf<Screen>()
 
     // **اصلاح جدید: ردیابی بخش فعلی bottom navigation**
-    private val _currentBottomNavSection = MutableStateFlow<BottomNavItem>(BottomNavItem.INFO)
+    private val _currentBottomNavSection = MutableStateFlow(BottomNavItem.INFO)
     val currentBottomNavSection: StateFlow<BottomNavItem> = _currentBottomNavSection.asStateFlow()
 
     // **اصلاح جدید: ردیابی آخرین بخش قبل از رفتن به صفحه جزئیات**
