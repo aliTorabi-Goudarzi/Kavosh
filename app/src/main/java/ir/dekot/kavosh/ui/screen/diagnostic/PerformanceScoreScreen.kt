@@ -50,7 +50,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -76,6 +76,7 @@ import ir.dekot.kavosh.data.model.diagnostic.CategoryScore
 import ir.dekot.kavosh.data.model.diagnostic.PerformanceCategory
 import ir.dekot.kavosh.data.model.diagnostic.PerformanceGrade
 import ir.dekot.kavosh.data.model.diagnostic.PerformanceScore
+import ir.dekot.kavosh.ui.composables.KavoshTopAppBar
 import ir.dekot.kavosh.ui.composables.ProfessionalLoadingIndicator
 import ir.dekot.kavosh.ui.viewmodel.DiagnosticViewModel
 import ir.dekot.kavosh.ui.viewmodel.ExportFormat
@@ -101,13 +102,10 @@ fun PerformanceScoreScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.performance_score_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                    }
-                }
+            // استفاده از نوار بالایی سفارشی برای یکپارچگی رنگی
+            KavoshTopAppBar(
+                title = stringResource(R.string.performance_score_title),
+                onBackClick = onBackClick
             )
         }
     ) { paddingValues ->

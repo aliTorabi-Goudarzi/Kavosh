@@ -21,7 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.R
+import ir.dekot.kavosh.ui.composables.KavoshTopAppBar
 import ir.dekot.kavosh.domain.sensor.SensorState
 import ir.dekot.kavosh.ui.screen.sensordetail.views.AccelerometerView
 import ir.dekot.kavosh.ui.screen.sensordetail.views.AmbientTemperatureSensorView
@@ -74,13 +75,10 @@ fun SensorDetailScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(sensorName) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                    }
-                }
+            // استفاده از نوار بالایی سفارشی برای یکپارچگی رنگی
+            KavoshTopAppBar(
+                title = sensorName,
+                onBackClick = onBackClick
             )
         }
     ) { paddingValues ->

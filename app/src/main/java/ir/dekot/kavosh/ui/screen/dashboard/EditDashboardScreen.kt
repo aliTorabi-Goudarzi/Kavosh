@@ -21,7 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.R
+import ir.dekot.kavosh.ui.composables.KavoshTopAppBar
 import ir.dekot.kavosh.ui.viewmodel.DashboardViewModel
 
 @RequiresApi(Build.VERSION_CODES.R)
@@ -46,13 +47,10 @@ fun EditDashboardScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.edit_dashboard_items)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                    }
-                }
+            // استفاده از نوار بالایی سفارشی برای یکپارچگی رنگی
+            KavoshTopAppBar(
+                title = stringResource(R.string.edit_dashboard_items),
+                onBackClick = onBackClick
             )
         }
     ) { paddingValues ->

@@ -18,7 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -33,6 +33,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import ir.dekot.kavosh.R
+import ir.dekot.kavosh.ui.composables.KavoshTopAppBar
 import ir.dekot.kavosh.ui.viewmodel.NetworkToolsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
@@ -49,17 +50,10 @@ fun NetworkToolsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.network_tools_title)) },
-                // **اصلاح: افزودن دکمه بازگشت**
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = R.string.back)
-                        )
-                    }
-                }
+            // استفاده از نوار بالایی سفارشی برای یکپارچگی رنگی
+            KavoshTopAppBar(
+                title = stringResource(R.string.network_tools_title),
+                onBackClick = onBackClick
             )
         }
     ) { paddingValues ->

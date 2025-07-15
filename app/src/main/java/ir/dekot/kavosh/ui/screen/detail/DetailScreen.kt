@@ -18,7 +18,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import ir.dekot.kavosh.R
+import ir.dekot.kavosh.ui.composables.KavoshTopAppBar
 import ir.dekot.kavosh.ui.screen.detail.pages.AppsPage
 import ir.dekot.kavosh.ui.screen.detail.pages.BatteryPage
 import ir.dekot.kavosh.ui.screen.detail.pages.CameraPage
@@ -172,17 +172,10 @@ fun DetailScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
-            TopAppBar(
-                // *** تغییر کلیدی: استفاده از تابع الحاقی برای عنوان ***
+            // استفاده از نوار بالایی سفارشی برای یکپارچگی رنگی
+            KavoshTopAppBar(
                 title = { Text(category.localizedTitle()) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
-                        )
-                    }
-                },
+                onBackClick = onBackClick,
                 /**
                  * کامنت: یک شرط ساده اضافه شد تا آیکون‌های کپی و اشتراک‌گذاری
                  * فقط برای صفحاتی غیر از "برنامه‌ها" نمایش داده شوند.

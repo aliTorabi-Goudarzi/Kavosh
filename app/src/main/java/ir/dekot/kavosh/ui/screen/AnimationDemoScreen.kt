@@ -24,7 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +39,7 @@ import ir.dekot.kavosh.ui.composables.AnimatedButton
 import ir.dekot.kavosh.ui.composables.AnimatedCard
 import ir.dekot.kavosh.ui.composables.AnimatedExpandableContent
 import ir.dekot.kavosh.ui.composables.InfoCard
+import ir.dekot.kavosh.ui.composables.KavoshTopAppBar
 import ir.dekot.kavosh.ui.composables.ProfessionalLoadingIndicator
 import ir.dekot.kavosh.ui.composables.SkeletonLoadingAnimation
 import ir.dekot.kavosh.ui.composables.WaveLoadingIndicator
@@ -58,16 +59,10 @@ fun AnimationDemoScreen(
     
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("نمایش انیمیشن‌ها") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "بازگشت"
-                        )
-                    }
-                }
+            // استفاده از نوار بالایی سفارشی برای یکپارچگی رنگی
+            KavoshTopAppBar(
+                title = "نمایش انیمیشن‌ها",
+                onBackClick = onBackClick
             )
         }
     ) { paddingValues ->

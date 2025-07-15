@@ -26,6 +26,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import ir.dekot.kavosh.R
+import ir.dekot.kavosh.ui.composables.KavoshTopAppBar
 import ir.dekot.kavosh.ui.viewmodel.DisplayTestMode
 import ir.dekot.kavosh.ui.viewmodel.DisplayTestViewModel
 import ir.dekot.kavosh.ui.viewmodel.GradientType
@@ -96,13 +97,10 @@ fun DisplayTestScreen(
 private fun DisplayTestMenu(viewModel: DisplayTestViewModel, onBackClick: () -> Unit) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(id = R.string.display_test_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.back))
-                    }
-                }
+            // استفاده از نوار بالایی سفارشی برای یکپارچگی رنگی
+            KavoshTopAppBar(
+                title = stringResource(id = R.string.display_test_title),
+                onBackClick = onBackClick
             )
         }
     ) { paddingValues ->
