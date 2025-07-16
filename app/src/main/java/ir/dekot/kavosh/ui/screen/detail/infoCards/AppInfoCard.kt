@@ -3,12 +3,16 @@ package ir.dekot.kavosh.ui.screen.detail.infoCards
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -36,30 +40,63 @@ fun AppInfoCard(info: AppInfo) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { isExpanded = !isExpanded }
+            .border(
+                1.dp,
+                if (isExpanded) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.outline
+                },
+                shape = MaterialTheme.shapes.extraLarge
+            )
+            .clickable { isExpanded = !isExpanded },
+        colors = CardDefaults.cardColors(
+            if (!isExpanded) {
+                MaterialTheme.colorScheme.surfaceVariant
+            } else {
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+            }
+        ),
+        shape = CircleShape.copy(CornerSize(25.dp))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(
                     painter = rememberAsyncImagePainter(model = icon), // استفاده از آیکون بارگذاری شده,
                     contentDescription = info.appName,
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape.copy(CornerSize(18.dp)))
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(info.appName, style = MaterialTheme.typography.titleMedium)
-                    Text(info.packageName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        info.packageName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
             AnimatedVisibility(visible = isExpanded) {
                 Column {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
                     Text(
-                        text = stringResource(R.string.app_version, info.versionName, info.versionCode),
+                        text = stringResource(
+                            R.string.app_version,
+                            info.versionName,
+                            info.versionCode
+                        ),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = stringResource(R.string.app_installed_on, dateFormatter.format(Date(info.installTime))),
+                        text = stringResource(
+                            R.string.app_installed_on,
+                            dateFormatter.format(Date(info.installTime))
+                        ),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Spacer(modifier = Modifier.height(12.dp))

@@ -58,8 +58,8 @@
     <string name="action_confirm">تأیید</string>
 
     <!-- Bottom Navigation -->
-    <string name="nav_info">اطلاعات</string>
-    <string name="nav_info_desc">اطلاعات و مشخصات دستگاه</string>
+    <string name="nav_dashboard">داشبورد</string>
+    <string name="nav_dashboard_desc">اطلاعات و مشخصات دستگاه</string>
     <string name="nav_tests">تست‌ها</string>
     <string name="nav_tests_desc">ابزارهای تست سخت‌افزار</string>
     <string name="nav_settings">تنظیمات</string>

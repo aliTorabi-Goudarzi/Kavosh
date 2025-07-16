@@ -23,8 +23,8 @@ enum class BottomNavItem(
     INFO(
         route = "info",
         icon = Icons.Default.Home,
-        titleResId = ir.dekot.kavosh.R.string.nav_info,
-        descriptionResId = ir.dekot.kavosh.R.string.nav_info_desc
+        titleResId = ir.dekot.kavosh.R.string.nav_dashboard,
+        descriptionResId = ir.dekot.kavosh.R.string.nav_dashboard_desc
     ),
     
     /**

@@ -60,7 +60,8 @@ private fun createCustomColorScheme(
     isDark: Boolean
 ): androidx.compose.material3.ColorScheme {
     val primaryColor = colorTheme.primaryColor
-    val secondaryColor = colorTheme.secondaryColor ?: Color(0xFF03DAC6)
+    val secondaryColor = colorTheme.primaryColor
+//        colorTheme.secondaryColor ?: Color(0xFF03DAC6)
 
     return if (isDark) {
         darkColorScheme(
@@ -94,7 +95,8 @@ private fun createCustomColorScheme(
  */
 private fun createAmoledColorScheme(colorTheme: ColorTheme): androidx.compose.material3.ColorScheme {
     val primaryColor = colorTheme.primaryColor
-    val secondaryColor = colorTheme.secondaryColor ?: Color(0xFF03DAC6)
+    val secondaryColor = colorTheme.primaryColor
+//        colorTheme.secondaryColor ?: Color(0xFF03DAC6)
 
     return darkColorScheme(
         primary = primaryColor,

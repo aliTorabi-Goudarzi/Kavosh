@@ -58,8 +58,8 @@
     <string name="action_confirm">Confirm</string>
 
     <!-- Bottom Navigation -->
-    <string name="nav_info">Info</string>
-    <string name="nav_info_desc">Device information and specifications</string>
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_dashboard_desc">Device information and specifications</string>
     <string name="nav_tests">Tests</string>
     <string name="nav_tests_desc">Hardware testing tools</string>
     <string name="nav_settings">Settings</string>

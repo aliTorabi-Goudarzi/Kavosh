@@ -21,7 +21,8 @@ import ir.dekot.kavosh.ui.composables.SectionTitleInCard
 
 @Composable
 fun CpuInfoCard(info: CpuInfo, liveFrequencies: List<String>) {
-    InfoCard(stringResource(R.string.cpu_title)) {
+    InfoCard(stringResource(R.string.cpu_title),
+        ) {
         InfoRow(stringResource(R.string.cpu_model), info.model)
         InfoRow(stringResource(R.string.cpu_topology), info.topology)
         InfoRow(stringResource(R.string.cpu_process), info.process)
