@@ -23,6 +23,10 @@
     <string name="theme_dark_desc">همیشه تاریک</string>
     <string name="theme_amoled_desc">مشکی خالص برای صفحه‌نمایش AMOLED</string>
 
+    <!-- Language Descriptions -->
+    <string name="language_persian_desc">فارسی - زبان فارسی</string>
+    <string name="language_english_desc">English - زبان انگلیسی</string>
+
     <!-- Settings Screen New Strings -->
     <string name="settings_appearance">ظاهر</string>
     <string name="settings_appearance_desc">تم، رنگ‌ها و زبان</string>

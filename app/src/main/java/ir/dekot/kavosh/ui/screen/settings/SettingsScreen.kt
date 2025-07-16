@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Speed
@@ -63,6 +64,7 @@ import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.data.model.settings.ColorTheme
 import ir.dekot.kavosh.ui.screen.settings.components.ColorThemeSection
+import ir.dekot.kavosh.ui.screen.settings.components.LanguageSelectionDialog
 import ir.dekot.kavosh.ui.screen.settings.components.ThemeSelectionDialog
 import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
@@ -301,7 +303,7 @@ private fun AppearanceSettings(
         SettingsGroup(
             title = stringResource(R.string.language_selection)
         ) {
-            LanguageSelector(
+            LanguageSelectionItem(
                 currentLanguage = currentLanguage,
                 onLanguageSelected = onLanguageSelected
             )
@@ -339,26 +341,39 @@ private fun AppearanceSettings(
 }
 
 /**
- * کامپوننت انتخاب زبان
+ * کامپوننت انتخاب زبان - آیتم تکی که دیالوگ را باز می‌کند
  */
 @Composable
-private fun LanguageSelector(
+private fun LanguageSelectionItem(
     currentLanguage: String,
     onLanguageSelected: (String) -> Unit
 ) {
-    val languages = listOf(
-        "fa" to stringResource(R.string.persian),
-        "en" to stringResource(R.string.english)
+    var showLanguageDialog by remember { mutableStateOf(false) }
+
+    // نمایش زبان فعلی انتخاب شده
+    val currentLanguageText = when (currentLanguage) {
+        "fa" -> stringResource(R.string.persian)
+        "en" -> stringResource(R.string.english)
+        else -> stringResource(R.string.persian) // پیش‌فرض
+    }
+
+    SettingsClickableItem(
+        title = stringResource(R.string.language_selection),
+        description = currentLanguageText,
+        icon = Icons.Default.Language,
+        onClick = { showLanguageDialog = true }
     )
 
-    Column {
-        languages.forEach { (code, name) ->
-            SettingsRadioItem(
-                title = name,
-                selected = currentLanguage == code,
-                onClick = { onLanguageSelected(code) }
-            )
-        }
+    // دیالوگ انتخاب زبان
+    if (showLanguageDialog) {
+        LanguageSelectionDialog(
+            currentLanguage = currentLanguage,
+            onLanguageSelected = { language ->
+                onLanguageSelected(language)
+                showLanguageDialog = false
+            },
+            onDismiss = { showLanguageDialog = false }
+        )
     }
 }
 

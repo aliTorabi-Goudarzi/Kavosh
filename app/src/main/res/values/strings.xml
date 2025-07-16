@@ -23,6 +23,10 @@
     <string name="theme_dark_desc">Always dark</string>
     <string name="theme_amoled_desc">Pure black for AMOLED displays</string>
 
+    <!-- Language Descriptions -->
+    <string name="language_persian_desc">فارسی - Persian language</string>
+    <string name="language_english_desc">English - انگلیسی</string>
+
     <!-- Settings Screen New Strings -->
     <string name="settings_appearance">Appearance</string>
     <string name="settings_appearance_desc">Theme, colors, and language</string>
