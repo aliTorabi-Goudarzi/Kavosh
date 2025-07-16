@@ -63,6 +63,7 @@ import ir.dekot.kavosh.R
 import ir.dekot.kavosh.data.model.settings.Theme
 import ir.dekot.kavosh.data.model.settings.ColorTheme
 import ir.dekot.kavosh.ui.screen.settings.components.ColorThemeSection
+import ir.dekot.kavosh.ui.screen.settings.components.ThemeSelectionDialog
 import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
 
@@ -310,7 +311,7 @@ private fun AppearanceSettings(
         SettingsGroup(
             title = stringResource(R.string.theme_selection)
         ) {
-            ThemeSelector(
+            ThemeSelectionItem(
                 currentTheme = currentTheme,
                 onThemeSelected = onThemeSelected
             )
@@ -362,26 +363,40 @@ private fun LanguageSelector(
 }
 
 /**
- * کامپوننت انتخاب تم
+ * کامپوننت انتخاب تم - آیتم تکی که دیالوگ را باز می‌کند
  */
 @Composable
-private fun ThemeSelector(
+private fun ThemeSelectionItem(
     currentTheme: Theme,
     onThemeSelected: (Theme) -> Unit
 ) {
-    Column {
-        Theme.entries.forEach { theme ->
-            SettingsRadioItem(
-                title = when (theme) {
-                    Theme.SYSTEM -> stringResource(R.string.system_default)
-                    Theme.LIGHT -> stringResource(R.string.light)
-                    Theme.DARK -> stringResource(R.string.dark)
-                    Theme.AMOLED -> stringResource(R.string.amoled)
-                },
-                selected = currentTheme == theme,
-                onClick = { onThemeSelected(theme) }
-            )
-        }
+    var showThemeDialog by remember { mutableStateOf(false) }
+
+    // نمایش تم فعلی انتخاب شده
+    val currentThemeText = when (currentTheme) {
+        Theme.SYSTEM -> stringResource(R.string.system_default)
+        Theme.LIGHT -> stringResource(R.string.light)
+        Theme.DARK -> stringResource(R.string.dark)
+        Theme.AMOLED -> stringResource(R.string.amoled)
+    }
+
+    SettingsClickableItem(
+        title = stringResource(R.string.theme_selection),
+        description = currentThemeText,
+        icon = Icons.Default.Palette,
+        onClick = { showThemeDialog = true }
+    )
+
+    // دیالوگ انتخاب تم
+    if (showThemeDialog) {
+        ThemeSelectionDialog(
+            currentTheme = currentTheme,
+            onThemeSelected = { theme ->
+                onThemeSelected(theme)
+                showThemeDialog = false
+            },
+            onDismiss = { showThemeDialog = false }
+        )
     }
 }
 

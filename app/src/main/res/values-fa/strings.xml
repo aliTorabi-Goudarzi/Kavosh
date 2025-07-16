@@ -17,6 +17,12 @@
     <string name="edit_dashboard_items">نمایش/مخفی کردن آیتم‌ها</string>
     <string name="amoled">AMOLED</string>
 
+    <!-- Theme Descriptions -->
+    <string name="theme_system_desc">پیروی از تنظیمات سیستم</string>
+    <string name="theme_light_desc">همیشه روشن</string>
+    <string name="theme_dark_desc">همیشه تاریک</string>
+    <string name="theme_amoled_desc">مشکی خالص برای صفحه‌نمایش AMOLED</string>
+
     <!-- Settings Screen New Strings -->
     <string name="settings_appearance">ظاهر</string>
     <string name="settings_appearance_desc">تم، رنگ‌ها و زبان</string>

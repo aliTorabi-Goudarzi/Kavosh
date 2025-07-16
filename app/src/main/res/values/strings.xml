@@ -17,6 +17,12 @@
     <string name="edit_dashboard_items">Show/Hide Items</string>
     <string name="amoled">AMOLED</string>
 
+    <!-- Theme Descriptions -->
+    <string name="theme_system_desc">Follow system settings</string>
+    <string name="theme_light_desc">Always light</string>
+    <string name="theme_dark_desc">Always dark</string>
+    <string name="theme_amoled_desc">Pure black for AMOLED displays</string>
+
     <!-- Settings Screen New Strings -->
     <string name="settings_appearance">Appearance</string>
     <string name="settings_appearance_desc">Theme, colors, and language</string>
