@@ -325,7 +325,6 @@ private fun getFormatDisplayName(format: ExportFormat): String {
         ExportFormat.PDF -> stringResource(R.string.export_format_pdf)
         ExportFormat.JSON -> stringResource(R.string.export_format_json)
         ExportFormat.HTML -> stringResource(R.string.export_format_html)
-        ExportFormat.EXCEL -> stringResource(R.string.export_format_excel)
         ExportFormat.QR_CODE -> stringResource(R.string.export_format_qr_code)
     }
 }
@@ -410,12 +409,6 @@ private fun getExportOptions(): List<ExportOption> = listOf(
         titleResId = R.string.export_format_html,
         description = "گزارش وب زیبا قابل مشاهده در مرورگر",
         icon = Icons.Default.Language
-    ),
-    ExportOption(
-        format = ExportFormat.EXCEL,
-        titleResId = R.string.export_format_excel,
-        description = "فایل اکسل با جداول و فرمت‌بندی",
-        icon = Icons.Default.TableChart
     ),
     ExportOption(
         format = ExportFormat.JSON,

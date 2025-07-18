@@ -25,7 +25,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.FileOutputStream
 import java.io.OutputStream
 import java.text.SimpleDateFormat
@@ -104,9 +103,6 @@ class DiagnosticExportViewModel @Inject constructor(
                             }
                             ExportFormat.HTML -> {
                                 generateHtmlReport(request, fos)
-                            }
-                            ExportFormat.EXCEL -> {
-                                generateExcelReport(request, fos)
                             }
                             ExportFormat.QR_CODE -> {
                                 generateQrCodeReport(request, fos)
@@ -358,29 +354,6 @@ class DiagnosticExportViewModel @Inject constructor(
     /**
      * تولید گزارش Excel
      */
-    private fun generateExcelReport(request: ExportRequest, outputStream: OutputStream) {
-        // برای سادگی، از یک Excel ساده استفاده می‌کنیم
-        val workbook = XSSFWorkbook()
-
-        try {
-            val sheet = workbook.createSheet(getReportTitle(request))
-            val textContent = generateTextReport(request)
-            val lines = textContent.split("\n")
-
-            lines.forEachIndexed { index, line ->
-                val row = sheet.createRow(index)
-                val cell = row.createCell(0)
-                cell.setCellValue(line)
-            }
-
-            // تنظیم عرض ستون
-            sheet.setColumnWidth(0, 15000)
-
-            workbook.write(outputStream)
-        } finally {
-            workbook.close()
-        }
-    }
 
     /**
      * تولید QR Code

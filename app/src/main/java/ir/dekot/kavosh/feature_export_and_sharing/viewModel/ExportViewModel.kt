@@ -15,7 +15,6 @@ import ir.dekot.kavosh.feature_deviceInfo.model.repository.PowerRepository
 import ir.dekot.kavosh.feature_deviceInfo.model.DeviceInfo
 import ir.dekot.kavosh.feature_deviceInfo.viewModel.ExportResult
 import ir.dekot.kavosh.feature_export_and_sharing.model.ExportFormat
-import ir.dekot.kavosh.feature_export_and_sharing.model.ExcelReportGenerator
 import ir.dekot.kavosh.feature_export_and_sharing.model.HtmlReportGenerator
 import ir.dekot.kavosh.feature_export_and_sharing.model.PdfGenerator
 import ir.dekot.kavosh.feature_export_and_sharing.model.QrCodeGenerator
@@ -87,9 +86,6 @@ class ExportViewModel @Inject constructor(
                             }
                             ExportFormat.HTML -> {
                                 HtmlReportGenerator.generateHtmlReport(context, fos, deviceInfo, currentBatteryInfo)
-                            }
-                            ExportFormat.EXCEL -> {
-                                ExcelReportGenerator.generateExcelReport(context, fos, deviceInfo, currentBatteryInfo)
                             }
                             ExportFormat.QR_CODE -> {
                                 val qrBitmap = QrCodeGenerator.generateQuickShareQrCode(context, deviceInfo, currentBatteryInfo)

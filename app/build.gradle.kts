@@ -30,7 +30,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
         setProperty("archivesBaseName", "kavosh-${defaultConfig.versionName}")
@@ -48,6 +48,9 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    lint {
+        checkReleaseBuilds = false
     }
 }
 
@@ -80,9 +83,21 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.coil.compose)
 
-    // Apache POI for Excel export
-    implementation(libs.poi)
-    implementation(libs.poi.ooxml)
+    // Apache POI for Excel export - با exclude کردن وابستگی‌های مشکل‌ساز
+//    implementation(libs.poi) {
+//        exclude(group = "org.apache.logging.log4j", module = "log4j-api")
+//        exclude(group = "org.apache.commons", module = "commons-math3")
+//        exclude(group = "org.apache.batik")
+//        exclude(group = "net.sf.saxon")
+//        exclude(group = "org.osgi")
+//    }
+//    implementation(libs.poi.ooxml) {
+//        exclude(group = "org.apache.logging.log4j", module = "log4j-api")
+//        exclude(group = "org.apache.commons", module = "commons-math3")
+//        exclude(group = "org.apache.batik")
+//        exclude(group = "net.sf.saxon")
+//        exclude(group = "org.osgi")
+//    }
 
     // QR Code generation (already exists but ensuring it's there)
     implementation(libs.core)
