@@ -24,15 +24,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import ir.dekot.kavosh.data.model.settings.Theme
-import ir.dekot.kavosh.ui.screen.DeviceInspectorApp
-import ir.dekot.kavosh.ui.viewmodel.DeviceInfoViewModel
-import ir.dekot.kavosh.ui.viewmodel.SettingsViewModel // <-- ایمپورت جدید
-import ir.dekot.kavosh.ui.theme.KavoshTheme // <-- ایمپورت اصلاح شده
-import ir.dekot.kavosh.ui.viewmodel.DashboardViewModel
-import ir.dekot.kavosh.ui.viewmodel.ExportViewModel
-import ir.dekot.kavosh.ui.viewmodel.DiagnosticExportViewModel
-import ir.dekot.kavosh.ui.viewmodel.NavigationViewModel
+import ir.dekot.kavosh.feature_customeTheme.Theme
+import ir.dekot.kavosh.core.navigation.DeviceInspectorApp
+import ir.dekot.kavosh.feature_settings.viewModel.SettingsViewModel // <-- ایمپورت جدید
+import ir.dekot.kavosh.feature_customeTheme.theme.KavoshTheme // <-- ایمپورت اصلاح شده
+import ir.dekot.kavosh.feature_dashboard.viewModel.DashboardViewModel
+import ir.dekot.kavosh.feature_export_and_sharing.viewModel.ExportViewModel
+import ir.dekot.kavosh.feature_export_and_sharing.viewModel.DiagnosticExportViewModel
+import ir.dekot.kavosh.core.navigation.NavigationViewModel
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceInfoViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Locale
