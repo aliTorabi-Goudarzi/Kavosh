@@ -1,7 +1,8 @@
 package ir.dekot.kavosh.feature_deviceInfo.model.repository
 
 import ir.dekot.kavosh.data.model.components.SystemInfo
-import ir.dekot.kavosh.feature_deviceInfo.model.SystemDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.SystemInfoDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.AppInfoDataSource
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -11,18 +12,19 @@ import javax.inject.Singleton
  */
 @Singleton
 class SystemRepository @Inject constructor(
-    private val systemDataSource: SystemDataSource
+    private val systemInfoDataSource: SystemInfoDataSource,
+    private val appInfoDataSource: AppInfoDataSource
 ) {
 
     /**
      * دریافت اطلاعات سیستم‌عامل
      * @return اطلاعات کامل سیستم شامل نسخه اندروید، مدل دستگاه و سازنده
      */
-    fun getSystemInfo(): SystemInfo = systemDataSource.getSystemInfo()
+    fun getSystemInfo(): SystemInfo = systemInfoDataSource.getSystemInfo()
 
     /**
      * دریافت نسخه برنامه
      * @return رشته نسخه برنامه فعلی
      */
-    fun getAppVersion(): String = systemDataSource.getAppVersion()
+    fun getAppVersion(): String = appInfoDataSource.getAppVersion()
 }

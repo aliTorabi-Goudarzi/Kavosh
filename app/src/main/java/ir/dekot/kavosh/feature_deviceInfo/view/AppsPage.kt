@@ -47,18 +47,21 @@ import androidx.compose.ui.unit.dp
 import ir.dekot.kavosh.R
 import ir.dekot.kavosh.feature_deviceInfo.view.infoCards.AppInfoCard
 import ir.dekot.kavosh.feature_deviceInfo.viewModel.AppsLoadingState
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceCacheViewModel
 import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceInfoViewModel
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceScanViewModel
 
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
-fun AppsPage(viewModel: DeviceInfoViewModel) {
+fun AppsPage(
+    deviceCacheViewModel: DeviceCacheViewModel) {
     LaunchedEffect(Unit) {
-        viewModel.loadAppsListIfNeeded()
+        deviceCacheViewModel.loadAppsListIfNeeded()
     }
 
-    val userApps by viewModel.userApps.collectAsState()
-    val systemApps by viewModel.systemApps.collectAsState()
-    val loadingState by viewModel.appsLoadingState.collectAsState()
+    val userApps by deviceCacheViewModel.userApps.collectAsState()
+    val systemApps by deviceCacheViewModel.systemApps.collectAsState()
+    val loadingState by deviceCacheViewModel.appsLoadingState.collectAsState()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     Column(modifier = Modifier.fillMaxSize()) {

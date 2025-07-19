@@ -32,15 +32,20 @@ import ir.dekot.kavosh.feature_dashboard.viewModel.DashboardViewModel
 import ir.dekot.kavosh.feature_export_and_sharing.viewModel.ExportViewModel
 import ir.dekot.kavosh.feature_export_and_sharing.viewModel.DiagnosticExportViewModel
 import ir.dekot.kavosh.core.navigation.NavigationViewModel
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceCacheViewModel
 import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceInfoViewModel
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceScanViewModel
+import ir.dekot.kavosh.feature_testing.viewModel.StorageViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Locale
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
+    private val storageViewModel: StorageViewModel by viewModels()
     private val deviceInfoViewModel: DeviceInfoViewModel by viewModels()
+    private val deviceCacheViewModel: DeviceCacheViewModel by viewModels()
+    private val deviceScanViewModel: DeviceScanViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val dashboardViewModel: DashboardViewModel by viewModels()
     private val exportViewModel: ExportViewModel by viewModels() // <-- اضافه کردن ViewModel جدید
@@ -112,7 +117,15 @@ class MainActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                deviceInfoViewModel.loadDataForNonFirstLaunch(this@MainActivity)
+                deviceScanViewModel.loadDataForNonFirstLaunch(this@MainActivity)
+
+                // **اصلاح کلیدی: همگام‌سازی داده‌ها پس از بارگذاری برای اجراهای غیر اول**
+                // پس از بارگذاری داده‌ها، آن‌ها را به DeviceCacheViewModel منتقل می‌کنیم
+                deviceScanViewModel.deviceInfo.collect { freshDeviceInfo ->
+                    if (freshDeviceInfo.apps.isNotEmpty()) { // فقط اگر داده‌ها بارگذاری شده باشند
+                        deviceCacheViewModel.updateDeviceInfo(freshDeviceInfo)
+                    }
+                }
             }
         }
 
@@ -148,6 +161,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         DeviceInspectorApp(
                             // هر دو ViewModel را به تابع اصلی پاس می‌دهیم
+                            deviceScanViewModel = deviceScanViewModel,
                             deviceInfoViewModel = deviceInfoViewModel,
                             settingsViewModel = settingsViewModel,
                             dashboardViewModel = dashboardViewModel, // <-- پاس دادن ViewModel جدید
@@ -155,11 +169,17 @@ class MainActivity : ComponentActivity() {
                             diagnosticExportViewModel = diagnosticExportViewModel, // <-- پاس دادن ViewModel جدید
                             navigationViewModel = navigationViewModel, // <-- پاس دادن ViewModel جدید
                             onStartScan = {
-                                deviceInfoViewModel.startScan(this) {
+                                deviceScanViewModel.startScan(this) {
+                                    // **اصلاح کلیدی: همگام‌سازی نتایج اسکن با DeviceCacheViewModel**
+                                    // پس از اتمام اسکن، داده‌های جدید را به DeviceCacheViewModel منتقل می‌کنیم
+                                    deviceCacheViewModel.updateDeviceInfo(deviceScanViewModel.deviceInfo.value)
+
                                     // بعد از اتمام اسکن، به ViewModel ناوبری اطلاع می‌دهیم
                                     navigationViewModel.onScanCompleted()
                                 }
-                            }
+                            },
+                            deviceCacheViewModel = deviceCacheViewModel,
+                            storageViewModel = storageViewModel
                         )
                     }
                 }

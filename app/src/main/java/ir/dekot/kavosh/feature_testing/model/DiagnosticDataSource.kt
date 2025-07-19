@@ -4,10 +4,11 @@ import android.content.Context
 import android.os.Build
 import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.dekot.kavosh.R
-import ir.dekot.kavosh.feature_deviceInfo.model.MemoryDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.RamDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.StorageDataSource
 import ir.dekot.kavosh.feature_deviceInfo.model.PowerDataSource
-import ir.dekot.kavosh.feature_deviceInfo.model.SocDataSource
-import ir.dekot.kavosh.feature_deviceInfo.model.SystemDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.CpuDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.SystemInfoDataSource
 import kotlinx.coroutines.delay
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,10 +25,11 @@ import kotlin.text.toInt
 @Singleton
 class DiagnosticDataSource @Inject constructor(
     @param:ApplicationContext private val context: Context,
-    private val socDataSource: SocDataSource,
-    private val memoryDataSource: MemoryDataSource,
+    private val cpuDataSource: CpuDataSource,
+    private val ramDataSource: RamDataSource,
+    private val storageDataSource: StorageDataSource,
     private val powerDataSource: PowerDataSource,
-    private val systemDataSource: SystemDataSource
+    private val systemInfoDataSource: SystemInfoDataSource
 ) {
 
     /**
@@ -180,7 +182,7 @@ class DiagnosticDataSource @Inject constructor(
 
     private suspend fun checkStorage(): HealthCheck {
         delay(300)
-        val storageInfo = memoryDataSource.getStorageInfo()
+        val storageInfo = storageDataSource.getStorageInfo()
         // شبیه‌سازی محاسبه فضای خالی - در واقعیت باید از StorageInfo استفاده کرد
         val freeSpacePercent = Random.Default.nextInt(20, 80) // شبیه‌سازی
         val score = when {
@@ -234,7 +236,7 @@ class DiagnosticDataSource @Inject constructor(
 
     private suspend fun checkMemory(): HealthCheck {
         delay(200)
-        val ramInfo = memoryDataSource.getRamInfo()
+        val ramInfo = ramDataSource.getRamInfo()
         // شبیه‌سازی محاسبه درصد رم آزاد
         val freeRamPercent = Random.Default.nextInt(20, 60) // شبیه‌سازی
         val score = when {
@@ -475,8 +477,8 @@ class DiagnosticDataSource @Inject constructor(
     }
 
     private fun getCurrentDeviceSpecs(): DeviceSpecs {
-        val ramInfo = memoryDataSource.getRamInfo()
-        val storageInfo = memoryDataSource.getStorageInfo()
+        val ramInfo = ramDataSource.getRamInfo()
+        val storageInfo = storageDataSource.getStorageInfo()
 
         return DeviceSpecs(
             cpu = CpuSpec(

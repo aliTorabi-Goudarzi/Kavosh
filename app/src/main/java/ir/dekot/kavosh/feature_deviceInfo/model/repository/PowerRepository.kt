@@ -37,9 +37,5 @@ class PowerRepository @Inject constructor(
         return getInitialBatteryInfo() ?: BatteryInfo()
     }
 
-    /**
-     * دریافت اطلاعات حرارتی دستگاه
-     * @return لیست اطلاعات حرارتی از منابع مختلف
-     */
-    fun getThermalInfo(): List<ThermalInfo> = powerDataSource.getThermalInfo()
+
 }

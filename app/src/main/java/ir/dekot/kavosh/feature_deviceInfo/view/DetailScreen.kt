@@ -40,7 +40,9 @@ import ir.dekot.kavosh.feature_export_and_sharing.model.ReportFormatter
 import ir.dekot.kavosh.core.util.shareText
 import ir.dekot.kavosh.feature_deviceInfo.model.InfoCategory
 import ir.dekot.kavosh.feature_deviceInfo.model.localizedTitle
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceCacheViewModel
 import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceInfoViewModel
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceScanViewModel
 import ir.dekot.kavosh.feature_testing.viewModel.StorageViewModel
 import kotlinx.coroutines.launch
 
@@ -75,23 +77,24 @@ private fun buildSelectedItemsString(
 @Composable
 fun DetailScreen(
     category: InfoCategory,
-    viewModel: DeviceInfoViewModel,
+    deviceInfoViewModel: DeviceInfoViewModel,
+    deviceCacheViewModel: DeviceCacheViewModel,
     navigationViewModel: NavigationViewModel, // <-- پارامتر جدید
     onBackClick: () -> Unit,
     // **اصلاح کلیدی: دریافت مستقیم StorageViewModel با Hilt**
     storageViewModel: StorageViewModel = hiltViewModel()
 ) {
-    val appsLoadingState by viewModel.appsLoadingState.collectAsState()
-    val deviceInfo by viewModel.deviceInfo.collectAsState()
-    val batteryInfo by viewModel.batteryInfo.collectAsState()
-    val thermalDetails by viewModel.thermalDetails.collectAsState()
-    val liveCpuFrequencies by viewModel.liveCpuFrequencies.collectAsState()
-    val liveGpuLoad by viewModel.liveGpuLoad.collectAsState()
-    val downloadSpeed by viewModel.downloadSpeed.collectAsState()
-    val uploadSpeed by viewModel.uploadSpeed.collectAsState()
+    val appsLoadingState by deviceCacheViewModel.appsLoadingState.collectAsState()
+    val deviceInfo by deviceCacheViewModel.deviceInfo.collectAsState()
+    val batteryInfo by deviceInfoViewModel.batteryInfo.collectAsState()
+    val thermalDetails by deviceInfoViewModel.thermalDetails.collectAsState()
+    val liveCpuFrequencies by deviceInfoViewModel.liveCpuFrequencies.collectAsState()
+    val liveGpuLoad by deviceInfoViewModel.liveGpuLoad.collectAsState()
+    val downloadSpeed by deviceInfoViewModel.downloadSpeed.collectAsState()
+    val uploadSpeed by deviceInfoViewModel.uploadSpeed.collectAsState()
     // تمام وضعیت‌های مورد نیاز در اینجا collect می‌شوند
-    val userApps by viewModel.userApps.collectAsState()
-    val systemApps by viewModel.systemApps.collectAsState()
+    val userApps by deviceCacheViewModel.userApps.collectAsState()
+    val systemApps by deviceCacheViewModel.systemApps.collectAsState()
 
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
@@ -104,7 +107,7 @@ fun DetailScreen(
     // وقتی کاربر وارد صفحه می‌شود، درخواست بارگذاری را ارسال کن
     LaunchedEffect(category) {
         if (category == InfoCategory.APPS) {
-            viewModel.loadAppsListIfNeeded()
+            deviceCacheViewModel.loadAppsListIfNeeded()
         }
     }
 
@@ -143,15 +146,21 @@ fun DetailScreen(
 
     // *** شروع اصلاحات کلیدی ***
 
+    // **اصلاح کلیدی: همگام‌سازی داده‌ها بین دو ViewModel**
+    // این افکت داده‌های دستگاه را از DeviceCacheViewModel به DeviceInfoViewModel منتقل می‌کند
+    LaunchedEffect(deviceInfo) {
+        deviceInfoViewModel.updateDeviceInfo(deviceInfo)
+    }
+
     // این افکت با ورود به صفحه اجرا شده و polling را آغاز می‌کند
     LaunchedEffect(key1 = category) {
-        viewModel.startPollingForCategory(category)
+        deviceInfoViewModel.startPollingForCategory(category)
     }
 
     // این افکت با خروج از صفحه اجرا شده و تمام polling ها را متوقف می‌کند
     DisposableEffect(key1 = Unit) {
         onDispose {
-            viewModel.stopAllPolling()
+            deviceInfoViewModel.stopAllPolling()
         }
     }
 
@@ -185,7 +194,7 @@ fun DetailScreen(
         // **کامنت: برای دسته APPS، دیگر از LazyColumn استفاده نمی‌کنیم چون صفحه خودش اسکرول دارد.**
         if (category == InfoCategory.APPS) {
             Box(modifier = Modifier.padding(paddingValues)) {
-                AppsPage(viewModel = viewModel)
+                AppsPage(deviceCacheViewModel = deviceCacheViewModel)
             }
         } else {
             // برای سایر صفحات، از LazyColumn استفاده می‌کنیم تا اسکرول داشته باشند
@@ -199,24 +208,27 @@ fun DetailScreen(
                 item {
                     when (category) {
                         InfoCategory.SOC -> SocPage(
-                            viewModel,
+                            deviceInfoViewModel,
                             onNavigateToStressTest = { navigationViewModel.navigateToCpuStressTest() })
 
                         InfoCategory.DEVICE -> DevicePage(
-                            viewModel,
+                            deviceInfoViewModel,
                             storageViewModel,
                             onNavigateToDisplayTest = { navigationViewModel.navigateToDisplayTest() })
 
-                        InfoCategory.SYSTEM -> SystemPage(viewModel)
-                        InfoCategory.BATTERY -> BatteryPage(viewModel)
-                        InfoCategory.SENSORS -> SensorsPage(viewModel, navigationViewModel)
-                        InfoCategory.THERMAL -> ThermalPage(viewModel)
-                        InfoCategory.CAMERA -> CameraPage(viewModel)
+                        InfoCategory.SYSTEM -> SystemPage(deviceInfoViewModel)
+                        InfoCategory.BATTERY -> BatteryPage(deviceInfoViewModel)
+                        InfoCategory.SENSORS -> SensorsPage(deviceInfoViewModel, navigationViewModel)
+                        InfoCategory.THERMAL -> ThermalPage(deviceInfoViewModel)
+                        InfoCategory.CAMERA -> CameraPage(deviceInfoViewModel)
                         InfoCategory.NETWORK -> NetworkPage(
-                            viewModel,
+                            deviceInfoViewModel,
                             onNavigateToTools = { navigationViewModel.navigateToNetworkTools() })
 
-                        InfoCategory.SIM -> SimPage(viewModel)
+                        InfoCategory.SIM -> SimPage(
+                            deviceInfoViewModel,
+                            deviceCacheViewModel
+                        )
                         InfoCategory.APPS -> { /* Handled above */
                         }
                     }

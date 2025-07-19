@@ -1,13 +1,9 @@
 package ir.dekot.kavosh.feature_deviceInfo.model
 
-import android.app.ActivityManager
 import android.content.Context
-import android.os.Environment
-import android.os.StatFs
-import dagger.hilt.android.qualifiers.ApplicationContext
-import ir.dekot.kavosh.core.util.formatSizeOrSpeed
-import ir.dekot.kavosh.R
 import android.util.Log
+import dagger.hilt.android.qualifiers.ApplicationContext
+import ir.dekot.kavosh.R
 import ir.dekot.kavosh.feature_testing.model.SpeedDataPoint
 import ir.dekot.kavosh.feature_testing.model.StorageSpeedTestResult
 import ir.dekot.kavosh.feature_testing.model.StorageTestStatus
@@ -18,31 +14,18 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.system.measureTimeMillis
 
+/**
+ * منبع داده برای تست سرعت حافظه
+ * مسئول انجام تست‌های سرعت نوشتن و خواندن حافظه
+ */
 @Singleton
-class MemoryDataSource @Inject constructor(@param:ApplicationContext private val context: Context) {
+class StorageTestDataSource @Inject constructor(@param:ApplicationContext private val context: Context) {
 
-    // *** تغییر کلیدی و نهایی در این خط ***
-    private val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-
-    fun getRamInfo(): RamInfo {
-        val memoryInfo = ActivityManager.MemoryInfo()
-        activityManager.getMemoryInfo(memoryInfo)
-        return RamInfo(
-            total = formatSizeOrSpeed(context, memoryInfo.totalMem),
-            available = formatSizeOrSpeed(context, memoryInfo.availMem)
-        )
-    }
-
-    fun getStorageInfo(): StorageInfo {
-        val internalStat = StatFs(Environment.getDataDirectory().path)
-        val totalBytes = internalStat.blockCountLong * internalStat.blockSizeLong
-        val availableBytes = internalStat.availableBlocksLong * internalStat.blockSizeLong
-        return StorageInfo(
-            total = formatSizeOrSpeed(context, totalBytes),
-            available = formatSizeOrSpeed(context, availableBytes)
-        )
-    }
-
+    /**
+     * انجام تست ساده سرعت حافظه
+     * @param onProgress callback برای نمایش پیشرفت تست
+     * @return جفت رشته حاوی سرعت نوشتن و خواندن
+     */
     fun performStorageSpeedTest(onProgress: (Float) -> Unit): Pair<String, String> {
         val testFileName = "kavosh_speed_test.tmp"
         val testFile = File(context.filesDir, testFileName)
@@ -70,7 +53,6 @@ class MemoryDataSource @Inject constructor(@param:ApplicationContext private val
             }
             val writeSpeedMbPerSec = if (writeTime > 0) (fileSizeMb.toDouble() / (writeTime / 1000.0)) else 0.0
             writeSpeedResult = "${"%.2f".format(writeSpeedMbPerSec)} MB/s"
-
 
             // Read phase
             val readTime = measureTimeMillis {
@@ -208,7 +190,6 @@ class MemoryDataSource @Inject constructor(@param:ApplicationContext private val
             val readStartTime = System.currentTimeMillis()
             var totalBytesRead = 0L
             lastSpeedUpdate = readStartTime
-
 
             // خواندن مکرر فایل برای ۵ ثانیه
             var readCycles = 0

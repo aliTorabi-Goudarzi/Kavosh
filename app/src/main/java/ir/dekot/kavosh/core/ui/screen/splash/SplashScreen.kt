@@ -26,15 +26,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ir.dekot.kavosh.R
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceCacheViewModel
 import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceInfoViewModel
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceScanViewModel
 
 // --- صفحه اسپلش (Splash) ---
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
-fun SplashScreen(onStartScan: () -> Unit, viewModel: DeviceInfoViewModel) {
-    val isScanning by viewModel.isScanning.collectAsState()
-    val progress by viewModel.scanProgress.collectAsState()
-    val scanText by viewModel.scanStatusText.collectAsState() // دریافت متن اسکن از ViewModel
+fun SplashScreen(onStartScan: () -> Unit,
+                 deviceScanViewModel: DeviceScanViewModel) {
+    val isScanning by deviceScanViewModel.isScanning.collectAsState()
+    val progress by deviceScanViewModel.scanProgress.collectAsState()
+    val scanText by deviceScanViewModel.scanStatusText.collectAsState() // دریافت متن اسکن از ViewModel
     val animatedProgress =
         animateFloatAsState(targetValue = progress, label = "progress_anim").value
 

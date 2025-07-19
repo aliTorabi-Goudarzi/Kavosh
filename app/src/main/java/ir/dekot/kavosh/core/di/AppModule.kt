@@ -21,12 +21,19 @@ import ir.dekot.kavosh.feature_deviceInfo.model.repository.SettingsRepository
 import ir.dekot.kavosh.feature_deviceInfo.model.repository.TestingRepository
 import ir.dekot.kavosh.feature_deviceInfo.model.AppsDataSource
 import ir.dekot.kavosh.feature_deviceInfo.model.CameraDataSource
-import ir.dekot.kavosh.feature_deviceInfo.model.MemoryDataSource
 import ir.dekot.kavosh.feature_deviceInfo.model.NetworkDataSource
 import ir.dekot.kavosh.feature_deviceInfo.model.PowerDataSource
 import ir.dekot.kavosh.feature_deviceInfo.model.SimDataSource
-import ir.dekot.kavosh.feature_deviceInfo.model.SocDataSource
-import ir.dekot.kavosh.feature_deviceInfo.model.SystemDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.SystemInfoDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.DisplayDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.SensorDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.AppInfoDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.RamDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.StorageDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.StorageTestDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.CpuDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.GpuDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.ThermalDataSource
 import ir.dekot.kavosh.feature_testing.model.NetworkToolsDataSource
 import ir.dekot.kavosh.feature_testing.model.DiagnosticDataSource
 
@@ -44,22 +51,66 @@ object AppModule {
         return PowerDataSource(context)
     }
 
+    // --- New split data sources ---
+
     @Provides
     @Singleton
-    fun provideSocDataSource(@ApplicationContext context: Context): SocDataSource {
-        return SocDataSource(context)
+    fun provideSystemInfoDataSource(@ApplicationContext context: Context): SystemInfoDataSource {
+        return SystemInfoDataSource(context)
     }
 
     @Provides
     @Singleton
-    fun provideSystemDataSource(@ApplicationContext context: Context): SystemDataSource {
-        return SystemDataSource(context)
+    fun provideDisplayDataSource(@ApplicationContext context: Context): DisplayDataSource {
+        return DisplayDataSource(context)
     }
 
     @Provides
     @Singleton
-    fun provideMemoryDataSource(@ApplicationContext context: Context): MemoryDataSource {
-        return MemoryDataSource(context)
+    fun provideSensorDataSource(@ApplicationContext context: Context): SensorDataSource {
+        return SensorDataSource(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppInfoDataSource(@ApplicationContext context: Context): AppInfoDataSource {
+        return AppInfoDataSource(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRamDataSource(@ApplicationContext context: Context): RamDataSource {
+        return RamDataSource(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideStorageDataSource(@ApplicationContext context: Context): StorageDataSource {
+        return StorageDataSource(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideStorageTestDataSource(@ApplicationContext context: Context): StorageTestDataSource {
+        return StorageTestDataSource(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCpuDataSource(@ApplicationContext context: Context): CpuDataSource {
+        return CpuDataSource(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGpuDataSource(@ApplicationContext context: Context): GpuDataSource {
+        return GpuDataSource(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideThermalDataSource(@ApplicationContext context: Context): ThermalDataSource {
+        return ThermalDataSource(context)
     }
 
     @Provides
@@ -103,20 +154,34 @@ object AppModule {
     @Provides
     @Singleton
     fun provideHardwareRepository(
-        socDataSource: SocDataSource,
-        systemDataSource: SystemDataSource,
-        memoryDataSource: MemoryDataSource,
+        cpuDataSource: CpuDataSource,
+        gpuDataSource: GpuDataSource,
+        thermalDataSource: ThermalDataSource,
+        ramDataSource: RamDataSource,
+        storageDataSource: StorageDataSource,
+        displayDataSource: DisplayDataSource,
+        sensorDataSource: SensorDataSource,
         powerDataSource: PowerDataSource,
     ): HardwareRepository {
-        return HardwareRepository(socDataSource, systemDataSource, memoryDataSource, powerDataSource)
+        return HardwareRepository(
+            cpuDataSource,
+            gpuDataSource,
+            thermalDataSource,
+            ramDataSource,
+            storageDataSource,
+            displayDataSource,
+            sensorDataSource,
+            powerDataSource
+        )
     }
 
     @Provides
     @Singleton
     fun provideSystemRepository(
-        systemDataSource: SystemDataSource
+        systemInfoDataSource: SystemInfoDataSource,
+        appInfoDataSource: AppInfoDataSource
     ): SystemRepository {
-        return SystemRepository(systemDataSource)
+        return SystemRepository(systemInfoDataSource, appInfoDataSource)
     }
 
     @Provides
@@ -165,10 +230,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideTestingRepository(
-        memoryDataSource: MemoryDataSource,
+        storageTestDataSource: StorageTestDataSource,
         settingsDataSource: SettingsDataSource
     ): TestingRepository {
-        return TestingRepository(memoryDataSource, settingsDataSource)
+        return TestingRepository(storageTestDataSource, settingsDataSource)
     }
 
     @Provides
@@ -211,17 +276,19 @@ object AppModule {
     @Singleton
     fun provideDiagnosticDataSource(
         @ApplicationContext context: Context,
-        socDataSource: SocDataSource,
-        memoryDataSource: MemoryDataSource,
+        cpuDataSource: CpuDataSource,
+        ramDataSource: RamDataSource,
+        storageDataSource: StorageDataSource,
         powerDataSource: PowerDataSource,
-        systemDataSource: SystemDataSource
+        systemInfoDataSource: SystemInfoDataSource
     ): DiagnosticDataSource {
         return DiagnosticDataSource(
             context,
-            socDataSource,
-            memoryDataSource,
+            cpuDataSource,
+            ramDataSource,
+            storageDataSource,
             powerDataSource,
-            systemDataSource
+            systemInfoDataSource
         )
     }
 }

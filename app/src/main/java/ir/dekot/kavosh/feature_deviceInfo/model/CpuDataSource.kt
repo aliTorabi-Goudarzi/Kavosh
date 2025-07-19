@@ -1,25 +1,24 @@
 package ir.dekot.kavosh.feature_deviceInfo.model
 
-import android.app.Activity
 import android.content.Context
-import android.opengl.GLSurfaceView
 import android.os.Build
-import android.view.ViewGroup
-import android.widget.FrameLayout
 import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.dekot.kavosh.R
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.microedition.khronos.egl.EGLConfig
-import javax.microedition.khronos.opengles.GL10
 
+/**
+ * منبع داده برای اطلاعات پردازنده
+ * مسئول دریافت مشخصات CPU و مانیتورینگ فرکانس زنده هسته‌ها
+ */
 @Singleton
-class SocDataSource @Inject constructor(@param:ApplicationContext private val context: Context) {
+class CpuDataSource @Inject constructor(@param:ApplicationContext private val context: Context) {
 
+    /**
+     * دریافت اطلاعات کامل پردازنده
+     * @return اطلاعات کامل CPU شامل تعداد هسته، معماری و فرکانس
+     */
     fun getCpuInfo(): CpuInfo {
         val coreCount = Runtime.getRuntime().availableProcessors()
         val architecture = System.getProperty("os.arch") ?: context.getString(R.string.label_undefined)
@@ -66,17 +65,10 @@ class SocDataSource @Inject constructor(@param:ApplicationContext private val co
         )
     }
 
-    private fun getCpuModel(): String {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            Build.SOC_MODEL.let {
-                if (it.isNotBlank() && it != "unknown") return it
-            }
-        }
-        return Build.HARDWARE.takeIf { !it.isNullOrBlank() }
-            ?: Build.BOARD.takeIf { !it.isNullOrBlank() }
-            ?: context.getString(R.string.label_undefined)
-    }
-
+    /**
+     * دریافت فرکانس زنده هسته‌های پردازنده
+     * @return لیست فرکانس فعلی هر هسته
+     */
     fun getLiveCpuFrequencies(): List<String> {
         return (0 until Runtime.getRuntime().availableProcessors()).map { i ->
             try {
@@ -88,46 +80,18 @@ class SocDataSource @Inject constructor(@param:ApplicationContext private val co
         }
     }
 
-    fun getGpuLoadPercentage(): Int? {
-        val kgslPath = "/sys/class/kgsl/kgsl-3d0/gpu_busy_percentage"
-        return try {
-            val file = File(kgslPath)
-            if (file.exists() && file.canRead()) {
-                file.readText().trim().substringBefore(" ").toIntOrNull()
-            } else {
-                null
+    /**
+     * دریافت مدل پردازنده
+     * @return نام مدل CPU
+     */
+    private fun getCpuModel(): String {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Build.SOC_MODEL.let {
+                if (it.isNotBlank() && it != "unknown") return it
             }
-        } catch (_: Exception) {
-            null
         }
-    }
-
-    @Suppress("DEPRECATION")
-    suspend fun getGpuInfo(activity: Activity): GpuInfo {
-        val rootView = activity.findViewById<ViewGroup>(android.R.id.content)
-        val deferred = CompletableDeferred<GpuInfo>()
-
-        withContext(Dispatchers.Main) {
-            val glSurfaceView = GLSurfaceView(activity).apply {
-                setRenderer(object : GLSurfaceView.Renderer {
-                    override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-                        val vendor = gl?.glGetString(GL10.GL_VENDOR)
-                            ?: context.getString(R.string.label_undefined)
-                        val renderer = gl?.glGetString(GL10.GL_RENDERER)
-                            ?: context.getString(R.string.label_undefined)
-                        deferred.complete(GpuInfo(vendor = vendor, model = renderer))
-                        rootView.post {
-                            rootView.removeView(this@apply)
-                        }
-                    }
-
-                    override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {}
-                    override fun onDrawFrame(gl: GL10?) {}
-                })
-                layoutParams = FrameLayout.LayoutParams(1, 1)
-            }
-            rootView.addView(glSurfaceView)
-        }
-        return deferred.await()
+        return Build.HARDWARE.takeIf { !it.isNullOrBlank() }
+            ?: Build.BOARD.takeIf { !it.isNullOrBlank() }
+            ?: context.getString(R.string.label_undefined)
     }
 }

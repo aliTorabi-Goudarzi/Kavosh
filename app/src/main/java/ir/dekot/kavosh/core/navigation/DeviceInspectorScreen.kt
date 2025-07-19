@@ -17,6 +17,7 @@ import ir.dekot.kavosh.core.ui.screen.splash.SplashScreen
 import ir.dekot.kavosh.feature_dashboard.viewModel.DashboardViewModel
 import ir.dekot.kavosh.feature_deviceInfo.view.DetailScreen
 import ir.dekot.kavosh.feature_deviceInfo.view.SensorDetailScreen
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceCacheViewModel
 
 import ir.dekot.kavosh.feature_export_and_sharing.viewModel.ExportViewModel
 import ir.dekot.kavosh.feature_export_and_sharing.viewModel.DiagnosticExportViewModel
@@ -26,16 +27,21 @@ import ir.dekot.kavosh.ui.screen.diagnostic.HealthCheckScreen
 import ir.dekot.kavosh.ui.screen.diagnostic.PerformanceScoreScreen
 import ir.dekot.kavosh.feature_settings.view.SettingsScreen
 import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceInfoViewModel
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceScanViewModel
 import ir.dekot.kavosh.feature_testing.view.DisplayTestScreen
 import ir.dekot.kavosh.feature_testing.view.NetworkToolsScreen
 import ir.dekot.kavosh.feature_testing.view.CpuStressTestScreen
 import ir.dekot.kavosh.feature_testing.view.StorageTestScreen
+import ir.dekot.kavosh.feature_testing.viewModel.StorageViewModel
 
 @SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
 fun DeviceInspectorApp(
+    deviceScanViewModel: DeviceScanViewModel,
     deviceInfoViewModel: DeviceInfoViewModel,
+    deviceCacheViewModel: DeviceCacheViewModel,
+    storageViewModel: StorageViewModel,
     settingsViewModel: SettingsViewModel,
     dashboardViewModel: DashboardViewModel,
     exportViewModel: ExportViewModel,
@@ -50,7 +56,7 @@ fun DeviceInspectorApp(
     // **اصلاح ۱: استفاده از انیمیشن انتقال صفحات**
     AnimatedScreenTransition(currentScreen = currentScreen) { screen ->
         when (screen) {
-            is Screen.Splash -> SplashScreen(onStartScan = onStartScan, viewModel = deviceInfoViewModel)
+            is Screen.Splash -> SplashScreen(onStartScan = onStartScan, deviceScanViewModel = deviceScanViewModel)
 
         is Screen.Dashboard -> MainScreen(
             deviceInfoViewModel = deviceInfoViewModel,
@@ -84,9 +90,11 @@ fun DeviceInspectorApp(
             BackHandler { navigationViewModel.navigateBack() }
             DetailScreen(
                 category = screen.category,
-                viewModel = deviceInfoViewModel,
+                deviceInfoViewModel = deviceInfoViewModel,
                 navigationViewModel = navigationViewModel,
-                onBackClick = { navigationViewModel.navigateBack() }
+                onBackClick = { navigationViewModel.navigateBack() },
+                deviceCacheViewModel = deviceCacheViewModel,
+                storageViewModel = storageViewModel
             )
         }
 

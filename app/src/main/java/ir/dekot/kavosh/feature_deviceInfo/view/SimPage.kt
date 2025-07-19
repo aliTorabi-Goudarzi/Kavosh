@@ -26,14 +26,18 @@ import com.google.accompanist.permissions.rememberPermissionState
 import ir.dekot.kavosh.R
 import ir.dekot.kavosh.core.ui.shared_components.EmptyStateMessage
 import ir.dekot.kavosh.feature_deviceInfo.view.infoCards.SimInfoCard
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceCacheViewModel
 import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceInfoViewModel
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceScanViewModel
 import kotlinx.coroutines.flow.filter
 
 @RequiresApi(Build.VERSION_CODES.R)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun SimPage(viewModel: DeviceInfoViewModel) {
-    val deviceInfo by viewModel.deviceInfo.collectAsState()
+fun SimPage(deviceInfoViewModel: DeviceInfoViewModel,
+            deviceCacheViewModel: DeviceCacheViewModel
+) {
+    val deviceInfo by deviceInfoViewModel.deviceInfo.collectAsState()
     val permissionState = rememberPermissionState(Manifest.permission.READ_PHONE_STATE)
 
     // **اصلاح کلیدی: استفاده از LaunchedEffect برای واکنش به تغییر مجوز**
@@ -44,7 +48,7 @@ fun SimPage(viewModel: DeviceInfoViewModel) {
             .filter { it.isGranted }
             .collect {
                 // اطلاعات سیم‌کارت را دوباره واکشی کن
-                viewModel.fetchSimInfo()
+                deviceCacheViewModel.fetchSimInfo()
             }
     }
 

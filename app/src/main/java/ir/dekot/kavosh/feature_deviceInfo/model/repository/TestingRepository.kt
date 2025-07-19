@@ -1,6 +1,6 @@
 package ir.dekot.kavosh.feature_deviceInfo.model.repository
 
-import ir.dekot.kavosh.feature_deviceInfo.model.MemoryDataSource
+import ir.dekot.kavosh.feature_deviceInfo.model.StorageTestDataSource
 import ir.dekot.kavosh.feature_settings.model.SettingsDataSource
 import ir.dekot.kavosh.feature_testing.model.SpeedDataPoint
 import ir.dekot.kavosh.feature_testing.model.StorageSpeedTestResult
@@ -15,7 +15,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class TestingRepository @Inject constructor(
-    private val memoryDataSource: MemoryDataSource,
+    private val storageTestDataSource: StorageTestDataSource,
     private val settingsDataSource: SettingsDataSource,
 ) {
 
@@ -27,7 +27,7 @@ class TestingRepository @Inject constructor(
      * @return جفت رشته حاوی سرعت نوشتن و خواندن
      */
     fun performStorageSpeedTest(onProgress: (Float) -> Unit): Pair<String, String> =
-        memoryDataSource.performStorageSpeedTest(onProgress)
+        storageTestDataSource.performStorageSpeedTest(onProgress)
 
     /**
      * انجام تست پیشرفته سرعت حافظه با فایل ۱ گیگابایتی
@@ -42,7 +42,7 @@ class TestingRepository @Inject constructor(
         onSpeedUpdate: (writeSpeed: Double, readSpeed: Double) -> Unit,
         onPhaseChange: (phase: String) -> Unit,
         onSpeedHistoryUpdate: (writeHistory: List<SpeedDataPoint>, readHistory: List<SpeedDataPoint>) -> Unit
-    ): StorageSpeedTestResult = memoryDataSource.performEnhancedStorageSpeedTest(
+    ): StorageSpeedTestResult = storageTestDataSource.performEnhancedStorageSpeedTest(
         onProgress, onSpeedUpdate, onPhaseChange, onSpeedHistoryUpdate
     )
 
