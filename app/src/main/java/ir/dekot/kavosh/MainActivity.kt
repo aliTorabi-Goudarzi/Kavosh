@@ -20,37 +20,40 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.lifecycle.Lifecycle
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import ir.dekot.kavosh.feature_customeTheme.Theme
 import ir.dekot.kavosh.core.navigation.DeviceInspectorApp
-import ir.dekot.kavosh.feature_settings.viewModel.SettingsViewModel // <-- ایمپورت جدید
-import ir.dekot.kavosh.feature_customeTheme.theme.KavoshTheme // <-- ایمپورت اصلاح شده
-import ir.dekot.kavosh.feature_dashboard.viewModel.DashboardViewModel
-import ir.dekot.kavosh.feature_export_and_sharing.viewModel.ExportViewModel
-import ir.dekot.kavosh.feature_export_and_sharing.viewModel.DiagnosticExportViewModel
 import ir.dekot.kavosh.core.navigation.NavigationViewModel
-import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceCacheViewModel
+import ir.dekot.kavosh.core.splash.SplashScreenManager
+import ir.dekot.kavosh.feature_customeTheme.Theme
+import ir.dekot.kavosh.feature_customeTheme.theme.KavoshTheme
+import ir.dekot.kavosh.feature_dashboard.viewModel.DashboardViewModel
+import ir.dekot.kavosh.feature_deviceInfo.model.repository.SettingsRepository
 import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceInfoViewModel
-import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceScanViewModel
-import ir.dekot.kavosh.feature_testing.viewModel.StorageViewModel
+import ir.dekot.kavosh.feature_export_and_sharing.viewModel.DiagnosticExportViewModel
+import ir.dekot.kavosh.feature_export_and_sharing.viewModel.ExportViewModel
+import ir.dekot.kavosh.feature_settings.viewModel.SettingsViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Locale
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val storageViewModel: StorageViewModel by viewModels()
+
+    @Inject
+    lateinit var settingsRepository: SettingsRepository
+
     private val deviceInfoViewModel: DeviceInfoViewModel by viewModels()
-    private val deviceCacheViewModel: DeviceCacheViewModel by viewModels()
-    private val deviceScanViewModel: DeviceScanViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val dashboardViewModel: DashboardViewModel by viewModels()
     private val exportViewModel: ExportViewModel by viewModels() // <-- اضافه کردن ViewModel جدید
     private val diagnosticExportViewModel: DiagnosticExportViewModel by viewModels() // <-- اضافه کردن ViewModel جدید
     private val navigationViewModel: NavigationViewModel by viewModels() // <-- اضافه کردن ViewModel جدید
+
+    // SplashScreenManager as regular class instance
+    private lateinit var splashScreenManager: SplashScreenManager
 
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -90,7 +93,28 @@ class MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
+        // نصب صفحه اسپلش قبل از super.onCreate()
+        // Install splash screen before super.onCreate()
+        val splashScreen = installSplashScreen()
+
         super.onCreate(savedInstanceState)
+
+        // ایجاد SplashScreenManager پس از super.onCreate()
+        // Create SplashScreenManager after super.onCreate()
+        splashScreenManager = SplashScreenManager.create(this, settingsRepository)
+
+        // پیکربندی صفحه اسپلش با بارگذاری داده‌ها
+        // Configure splash screen with data loading
+        splashScreenManager.configureSplashScreen(
+            splashScreen = splashScreen,
+            activity = this,
+            deviceInfoViewModel = deviceInfoViewModel,
+            dashboardViewModel = dashboardViewModel,
+            onDataLoadingComplete = {
+                // داده‌ها آماده است، صفحه اسپلش می‌تواند بسته شود
+                // Data is ready, splash screen can be dismissed
+            }
+        )
 
         // به رویدادهای ViewModel جدید گوش می‌دهیم
         lifecycleScope.launch {
@@ -115,19 +139,12 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                deviceScanViewModel.loadDataForNonFirstLaunch(this@MainActivity)
-
-                // **اصلاح کلیدی: همگام‌سازی داده‌ها پس از بارگذاری برای اجراهای غیر اول**
-                // پس از بارگذاری داده‌ها، آن‌ها را به DeviceCacheViewModel منتقل می‌کنیم
-                deviceScanViewModel.deviceInfo.collect { freshDeviceInfo ->
-                    if (freshDeviceInfo.apps.isNotEmpty()) { // فقط اگر داده‌ها بارگذاری شده باشند
-                        deviceCacheViewModel.updateDeviceInfo(freshDeviceInfo)
-                    }
-                }
-            }
-        }
+        // حذف شده: بارگذاری داده‌ها حالا در صفحه Loading انجام می‌شود
+        // lifecycleScope.launch {
+        //     lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        //         deviceInfoViewModel.loadDataForNonFirstLaunch(this@MainActivity)
+        //     }
+        // }
 
         enableEdgeToEdge()
         setContent {
@@ -161,29 +178,32 @@ class MainActivity : ComponentActivity() {
                     ) {
                         DeviceInspectorApp(
                             // هر دو ViewModel را به تابع اصلی پاس می‌دهیم
-                            deviceScanViewModel = deviceScanViewModel,
                             deviceInfoViewModel = deviceInfoViewModel,
                             settingsViewModel = settingsViewModel,
                             dashboardViewModel = dashboardViewModel, // <-- پاس دادن ViewModel جدید
                             exportViewModel = exportViewModel, // <-- پاس دادن ViewModel جدید
                             diagnosticExportViewModel = diagnosticExportViewModel, // <-- پاس دادن ViewModel جدید
                             navigationViewModel = navigationViewModel, // <-- پاس دادن ViewModel جدید
-                            onStartScan = {
-                                deviceScanViewModel.startScan(this) {
-                                    // **اصلاح کلیدی: همگام‌سازی نتایج اسکن با DeviceCacheViewModel**
-                                    // پس از اتمام اسکن، داده‌های جدید را به DeviceCacheViewModel منتقل می‌کنیم
-                                    deviceCacheViewModel.updateDeviceInfo(deviceScanViewModel.deviceInfo.value)
 
+                            onStartScan = {
+                                deviceInfoViewModel.startScan(this) {
                                     // بعد از اتمام اسکن، به ViewModel ناوبری اطلاع می‌دهیم
                                     navigationViewModel.onScanCompleted()
                                 }
-                            },
-                            deviceCacheViewModel = deviceCacheViewModel,
-                            storageViewModel = storageViewModel
+                            }
                         )
                     }
                 }
             }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // پاک کردن منابع SplashScreenManager
+        // Clean up SplashScreenManager resources
+        if (::splashScreenManager.isInitialized) {
+            splashScreenManager.cleanup()
         }
     }
 }

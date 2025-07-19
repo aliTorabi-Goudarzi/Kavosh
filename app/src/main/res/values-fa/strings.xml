@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">کاوش</string>
+    <string name="app_description">بازرس پیشرفته دستگاه</string>
     <string name="settings">تنظیمات</string>
     <string name="back">بازگشت</string>
     <string name="choose_app_theme">انتخاب تم برنامه</string>
@@ -26,6 +27,8 @@
     <!-- Language Descriptions -->
     <string name="language_persian_desc">فارسی - زبان فارسی</string>
     <string name="language_english_desc">English - زبان انگلیسی</string>
+
+
 
     <!-- Settings Screen New Strings -->
     <string name="settings_appearance">ظاهر</string>

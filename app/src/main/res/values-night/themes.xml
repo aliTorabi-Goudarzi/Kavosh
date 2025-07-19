@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Kavosh" parent="android:Theme.Material.Light.NoActionBar" />
-
-    <!-- Splash Screen Theme for Light Mode -->
+    <!-- Splash Screen Theme for Dark Mode -->
     <style name="Theme.Kavosh.SplashScreen" parent="Theme.SplashScreen">
-        <!-- Set the splash screen background color for light theme -->
-        <item name="android:windowSplashScreenBackground">@color/splash_background_light</item>
+        <!-- Set the splash screen background color for dark theme -->
+        <item name="android:windowSplashScreenBackground">@color/splash_background_dark</item>
 
         <!-- Set the animated icon for the splash screen -->
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/my_animation_avd</item>

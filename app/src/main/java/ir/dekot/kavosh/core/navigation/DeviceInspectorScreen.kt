@@ -7,46 +7,38 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import ir.dekot.kavosh.core.ui.shared_components.AnimatedScreenTransition
 import ir.dekot.kavosh.core.ui.screen.about.AboutScreen
-import ir.dekot.kavosh.feature_dashboard.view.EditDashboardScreen
-
-import ir.dekot.kavosh.feature_dashboard.view.MainScreen
-
 import ir.dekot.kavosh.core.ui.screen.splash.SplashScreen
+import ir.dekot.kavosh.core.ui.shared_components.AnimatedScreenTransition
+import ir.dekot.kavosh.feature_dashboard.view.EditDashboardScreen
+import ir.dekot.kavosh.feature_dashboard.view.MainScreen
 import ir.dekot.kavosh.feature_dashboard.viewModel.DashboardViewModel
 import ir.dekot.kavosh.feature_deviceInfo.view.DetailScreen
 import ir.dekot.kavosh.feature_deviceInfo.view.SensorDetailScreen
-import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceCacheViewModel
-
-import ir.dekot.kavosh.feature_export_and_sharing.viewModel.ExportViewModel
+import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceInfoViewModel
 import ir.dekot.kavosh.feature_export_and_sharing.viewModel.DiagnosticExportViewModel
+import ir.dekot.kavosh.feature_export_and_sharing.viewModel.ExportViewModel
+import ir.dekot.kavosh.feature_settings.view.SettingsScreen
 import ir.dekot.kavosh.feature_settings.viewModel.SettingsViewModel
+import ir.dekot.kavosh.feature_testing.view.CpuStressTestScreen
+import ir.dekot.kavosh.feature_testing.view.DisplayTestScreen
+import ir.dekot.kavosh.feature_testing.view.NetworkToolsScreen
+import ir.dekot.kavosh.feature_testing.view.StorageTestScreen
 import ir.dekot.kavosh.ui.screen.diagnostic.ComparisonScreen
 import ir.dekot.kavosh.ui.screen.diagnostic.HealthCheckScreen
 import ir.dekot.kavosh.ui.screen.diagnostic.PerformanceScoreScreen
-import ir.dekot.kavosh.feature_settings.view.SettingsScreen
-import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceInfoViewModel
-import ir.dekot.kavosh.feature_deviceInfo.viewModel.DeviceScanViewModel
-import ir.dekot.kavosh.feature_testing.view.DisplayTestScreen
-import ir.dekot.kavosh.feature_testing.view.NetworkToolsScreen
-import ir.dekot.kavosh.feature_testing.view.CpuStressTestScreen
-import ir.dekot.kavosh.feature_testing.view.StorageTestScreen
-import ir.dekot.kavosh.feature_testing.viewModel.StorageViewModel
 
 @SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
 fun DeviceInspectorApp(
-    deviceScanViewModel: DeviceScanViewModel,
     deviceInfoViewModel: DeviceInfoViewModel,
-    deviceCacheViewModel: DeviceCacheViewModel,
-    storageViewModel: StorageViewModel,
     settingsViewModel: SettingsViewModel,
     dashboardViewModel: DashboardViewModel,
     exportViewModel: ExportViewModel,
     diagnosticExportViewModel: DiagnosticExportViewModel,
     navigationViewModel: NavigationViewModel,
+
     onStartScan: () -> Unit
 ) {
     val currentScreen by navigationViewModel.currentScreen.collectAsState()
@@ -56,7 +48,9 @@ fun DeviceInspectorApp(
     // **اصلاح ۱: استفاده از انیمیشن انتقال صفحات**
     AnimatedScreenTransition(currentScreen = currentScreen) { screen ->
         when (screen) {
-            is Screen.Splash -> SplashScreen(onStartScan = onStartScan, deviceScanViewModel = deviceScanViewModel)
+            is Screen.Splash -> SplashScreen(onStartScan = onStartScan, viewModel = deviceInfoViewModel)
+
+
 
         is Screen.Dashboard -> MainScreen(
             deviceInfoViewModel = deviceInfoViewModel,
@@ -90,11 +84,9 @@ fun DeviceInspectorApp(
             BackHandler { navigationViewModel.navigateBack() }
             DetailScreen(
                 category = screen.category,
-                deviceInfoViewModel = deviceInfoViewModel,
+                viewModel = deviceInfoViewModel,
                 navigationViewModel = navigationViewModel,
-                onBackClick = { navigationViewModel.navigateBack() },
-                deviceCacheViewModel = deviceCacheViewModel,
-                storageViewModel = storageViewModel
+                onBackClick = { navigationViewModel.navigateBack() }
             )
         }
 

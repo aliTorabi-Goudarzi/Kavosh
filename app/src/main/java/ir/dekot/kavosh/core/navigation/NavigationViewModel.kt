@@ -5,7 +5,6 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.dekot.kavosh.feature_deviceInfo.model.InfoCategory
-import ir.dekot.kavosh.feature_deviceInfo.model.repository.DeviceInfoRepository
 import ir.dekot.kavosh.feature_deviceInfo.model.repository.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +30,8 @@ class NavigationViewModel @Inject constructor(
     private var lastBottomNavSection: BottomNavItem = BottomNavItem.INFO
 
     init {
+        // همیشه با صفحه اسپلش شروع می‌کنیم که خود داده‌ها را بارگذاری می‌کند
+        // Always start with splash screen which handles data loading itself
         if (settingsRepository.isFirstLaunch()) {
             _currentScreen.value = Screen.Splash
         } else {
@@ -147,7 +148,8 @@ class NavigationViewModel @Inject constructor(
     }
 
     fun onScanCompleted() {
-        // پس از اسکن، تاریخچه باید پاک شود
+        // پس از اسکن، مستقیماً به داشبورد می‌رویم
+        // After scan, go directly to dashboard
         _backStack.clear()
         _currentScreen.value = Screen.Dashboard
         _currentBottomNavSection.value = BottomNavItem.INFO
